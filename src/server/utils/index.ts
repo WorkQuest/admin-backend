@@ -3,7 +3,6 @@ import { Boom, } from '@hapi/boom';
 import * as FileType from 'file-type';
 import * as speakeasy from 'speakeasy';
 import config from '../config/config';
-import { UserAvatar, } from '../models/UserAvatar';
 
 interface IFileWithExt {
   data: Buffer;
