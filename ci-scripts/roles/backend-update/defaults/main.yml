@@ -1,0 +1,5 @@
+---
+# defaults file for backend-update
+backend_bin: '/home/centos/backend'
+backend_bin_mode: '0640'
+backend_env: .env
