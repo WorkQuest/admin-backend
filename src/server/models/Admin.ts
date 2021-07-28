@@ -1,0 +1,77 @@
+import {
+    Column, DataType, Model, Scopes, Table, HasOne,
+  } from 'sequelize-typescript';
+  import * as bcrypt from 'bcrypt';
+  import { getUUID, } from '../utils';
+  import { UserAvatar, } from './UserAvatar';
+  
+  export enum AdminRole {
+    MAIN_ADMIN = "main_admin",
+    DISPUT_ADMIN = "disput_admin",
+    ADVERTISING_ADMIN = "advertising_admin",
+    KYC_ADMIN = "kyc_admin",
+  }
+
+  export enum AdminStatus {
+    CONFIRMED = "confirmed",
+    UNCONFIRMED = "unconfirmed",
+  }
+  
+  export interface AccountSettings {
+    confirmCode: string | null
+    confirmCodeValidUntil: string | null
+  
+    changePasswordCode: string | null
+    changePasswordCodeValidUntil: string | null
+  }
+
+  export const accountSettingsDefault: AccountSettings = {
+    confirmCode: null,
+    confirmCodeValidUntil: null,
+  
+    changePasswordCode: null,
+    changePasswordCodeValidUntil: null
+  }
+
+  @Scopes(() => ({
+    defaultScope: {
+      attributes: {
+        exclude: ["password", "settings", "createdAt", "updatedAt", "deletedAt"],
+      },
+    },
+    withPassword: {
+      attributes: {
+        include: ["password", "settings"],
+      },
+    },
+  }))
+  @Table
+  export class Admin extends Model {
+    @Column({ primaryKey: true, type: DataType.STRING, defaultValue: () => getUUID(), }) id: string;
+
+    @Column({type: DataType.STRING, unique: true}) email: string
+  
+    @Column({
+      type: DataType.STRING,
+      set(value: string) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(value, salt);
+        this.setDataValue('password', hash);
+      },
+      get() {
+        return this.getDataValue('password');
+      },
+    })
+    password: string;
+
+    @Column(DataType.STRING) firstName: string
+    @Column(DataType.STRING) lastName: string
+    @Column({type: DataType.STRING, defaultValue: AdminRole.MAIN_ADMIN}) adminRole: AdminRole
+    @Column({type: DataType.STRING, defaultValue: AdminStatus.UNCONFIRMED}) adminStatus: AdminStatus
+    @Column({ type: DataType.JSONB, defaultValue: accountSettingsDefault })
+    settings: AccountSettings;
+
+    async passwordCompare(pwd: string) {
+      return bcrypt.compareSync(pwd, this.password);
+    }
+  }
