@@ -1,3 +1,4 @@
+
 import * as Hapi from '@hapi/hapi';
 import * as Nes from '@hapi/nes';
 import * as Inert from '@hapi/inert';
@@ -14,6 +15,8 @@ import { handleValidationError, responseHandler, } from './utils';
 import { tokenValidate, } from './utils/auth';
 import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
+import sequelize from "./models";
+import { run } from "graphile-worker";
 
 const HapiSwagger = require('hapi-swagger');
 const Package = require('../../package.json');
@@ -51,6 +54,13 @@ const init = async () => {
     { plugin: Pino, options: pinoConfig(false), },
     { plugin: HapiSwagger, options: SwaggerOptions, }
   ]);
+  server.app.db = sequelize;
+  server.app.scheduler = await run({
+    connectionString: config.dbLink,
+    concurrency: 5,
+    pollInterval: 1000,
+    taskDirectory: `${__dirname}/jobs` // Папка с исполняемыми тасками.
+  });
 
   // Авторизация через соцсети
   // server.auth.strategy('google', 'bell', {
@@ -115,4 +125,4 @@ const init = async () => {
   return server;
 };
 
-export { init, };
+export { init };
