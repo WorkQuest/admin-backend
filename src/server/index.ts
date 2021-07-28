@@ -15,7 +15,7 @@ import { handleValidationError, responseHandler, } from './utils';
 import { tokenValidate, } from './utils/auth';
 import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
-import sequelize from "./models";
+import {initDatabase} from "./models";
 import { run } from "graphile-worker";
 
 const HapiSwagger = require('hapi-swagger');
@@ -54,7 +54,7 @@ const init = async () => {
     { plugin: Pino, options: pinoConfig(false), },
     { plugin: HapiSwagger, options: SwaggerOptions, }
   ]);
-  server.app.db = sequelize;
+  server.app.db = initDatabase(config.dbLink, false, true);
   server.app.scheduler = await run({
     connectionString: config.dbLink,
     concurrency: 5,

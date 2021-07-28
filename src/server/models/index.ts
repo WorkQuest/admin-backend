@@ -5,9 +5,26 @@ import { Session, } from './Session';
 import { UserAvatar } from './UserAvatar';
 import { Admin } from './Admin';
 
-const sequelize = new Sequelize(config.dbLink, {
-  dialect: 'postgres',
-  models: [User, Session, UserAvatar, Admin],
-});
-sequelize.sync();
-export default sequelize;
+export async function initDatabase(
+  dbLink: string,
+  logging = false,
+  sync: boolean = false
+) {
+  let sequelize: Sequelize;
+
+  sequelize = new Sequelize(dbLink, {
+    dialect: "postgres",
+    models: [
+      User,
+      Admin,
+      UserAvatar,
+      Session
+    ],
+    logging: logging,
+  })
+
+  if (sync) await sequelize.sync();
+
+  return { sequelize };
+}
+

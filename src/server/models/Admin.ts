@@ -11,11 +11,13 @@ import {
     ADVERTISING_ADMIN = "advertising_admin",
     KYC_ADMIN = "kyc_admin",
   }
+  export const adminRoles = Object.values(AdminRole)
 
   export enum AdminStatus {
     CONFIRMED = "confirmed",
     UNCONFIRMED = "unconfirmed",
   }
+  export const adminStatuses = Object.values(AdminStatus)
   
   export interface AccountSettings {
     confirmCode: string | null
@@ -47,9 +49,11 @@ import {
   }))
   @Table
   export class Admin extends Model {
-    @Column({ primaryKey: true, type: DataType.STRING, defaultValue: () => getUUID(), }) id: string;
+    @Column({ primaryKey: true, type: DataType.STRING, defaultValue: () => getUUID(), }) 
+    id: string;
 
-    @Column({type: DataType.STRING, unique: true}) email: string
+    @Column({type: DataType.STRING, unique: true}) 
+    email: string
   
     @Column({
       type: DataType.STRING,
@@ -64,10 +68,15 @@ import {
     })
     password: string;
 
-    @Column(DataType.STRING) firstName: string
-    @Column(DataType.STRING) lastName: string
-    @Column({type: DataType.STRING, defaultValue: AdminRole.MAIN_ADMIN}) adminRole: AdminRole
-    @Column({type: DataType.STRING, defaultValue: AdminStatus.UNCONFIRMED}) adminStatus: AdminStatus
+    @Column(DataType.STRING) 
+    firstName: string
+    @Column(DataType.STRING) 
+    lastName: string
+
+    @Column({type: DataType.STRING, defaultValue: AdminRole.MAIN_ADMIN}) 
+    adminRole: AdminRole
+    @Column({type: DataType.STRING, defaultValue: AdminStatus.UNCONFIRMED}) 
+    adminStatus: AdminStatus
     @Column({ type: DataType.JSONB, defaultValue: accountSettingsDefault })
     settings: AccountSettings;
 
