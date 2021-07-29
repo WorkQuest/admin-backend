@@ -9,6 +9,9 @@ pids
 allFiredEvents
 scTopics
 
+#migrations
+db-config.json
+
 # node-waf configuration
 .lock-wscript
 
