@@ -2,15 +2,15 @@ import {
   BelongsTo, Column, DataType, ForeignKey, Model, Table,
 } from 'sequelize-typescript';
 import { getUUID, } from '../utils';
-import { User, } from './User';
 import { Admin } from './Admin';
 
 @Table
 export class Session extends Model {
-  @Column({ primaryKey: true, type: DataType.STRING, defaultValue: () => getUUID(), }) id: string;
+  @Column({ type: DataType.STRING, defaultValue: getUUID, primaryKey: true }) 
+  id: string;
 
   @ForeignKey(() => Admin) 
-  @Column(DataType.STRING) accountId: string;
+  @Column(DataType.STRING) userId: string;
 
-  @BelongsTo(() => Admin) account: Admin;
+  @BelongsTo(() => Admin) user: Admin;
 }

@@ -1,9 +1,9 @@
 import {
-    Column, DataType, Model, Scopes, Table, HasOne,
+    Column, DataType, Model, Scopes, Table, HasOne, HasMany,
   } from 'sequelize-typescript';
-  import * as bcrypt from 'bcrypt';
-  import { getUUID, } from '../utils';
-  import { UserAvatar, } from './UserAvatar';
+import * as bcrypt from 'bcrypt';
+import { getUUID, } from '../utils';
+import { Session } from './Session';
   
   export enum AdminRole {
     MAIN_ADMIN = "main_admin",
@@ -11,7 +11,7 @@ import {
     ADVERTISING_ADMIN = "advertising_admin",
     KYC_ADMIN = "kyc_admin",
   }
-  export const adminRoles = Object.values(AdminRole)
+  export const adminRoles= Object.values(AdminRole)
 
   export enum AdminStatus {
     CONFIRMED = "confirmed",
@@ -49,7 +49,7 @@ import {
   }))
   @Table
   export class Admin extends Model {
-    @Column({ primaryKey: true, type: DataType.STRING, defaultValue: () => getUUID(), }) 
+    @Column({ type: DataType.STRING, defaultValue: getUUID, primaryKey: true }) 
     id: string;
 
     @Column({type: DataType.STRING, unique: true}) 

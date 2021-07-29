@@ -3,6 +3,7 @@ import { Boom, } from '@hapi/boom';
 import * as FileType from 'file-type';
 import * as speakeasy from 'speakeasy';
 import config from '../config/config';
+import * as crypto from "crypto"
 
 interface IFileWithExt {
   data: Buffer;
@@ -35,6 +36,10 @@ export function error(code: number, msg: string, data: object): Boom {
     },
     statusCode: Math.floor(code / 1000),
   });
+}
+
+export function getHexConfirmToken(): string {
+  return crypto.randomBytes(3).toString('hex');
 }
 
 export function totpValidate(totp: string, secret: string): boolean {
@@ -123,3 +128,5 @@ export const saveImage = async (userId: string, file: Buffer) => {
     throw err;
   }
 };
+
+

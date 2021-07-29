@@ -18,6 +18,6 @@ export const accountSchema = Joi.object({
 	firstName: firstNameSchema,
 	lastName: lastNameSchema,
 
-	adminRole: adminRoleSchema,
+	adminType: adminRoleSchema,
 	adminStatus: adminStatusSchema,
 }).label('AccountSchema')

@@ -1,9 +1,9 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { User, } from '../models/User';
 import { Session, } from '../models/Session';
 import { Errors, } from './errors';
+import { Admin } from '../models/Admin';
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
@@ -30,12 +30,12 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
   return async function (r, token: string) {
     const data = await decodeJwt(token, config.auth.jwt[tokenType].secret);
 
-    const { account } = await Session.findByPk(data.id, {
-      include: [{ model: User, }],
+    const { user } = await Session.findByPk(data.id, {
+      include: [{ model: Admin}],
     });
 
-    if (account) {
-      return { isValid: true, credentials: account, artifacts: { token, type: tokenType, }, };
+    if (user) {
+      return { isValid: true, credentials: user, artifacts: { token, type: tokenType, }, };
     }
 
     throw error(Errors.SessionNotFound, 'User not found', {});

@@ -5,6 +5,7 @@ config();
 export default {
   dbLink: process.env.DB_LINK,
   auth: {
+    emailConfirmCodeLifetime: Number(process.env.EMAIL_CONFIRM_CODE_LIFETIME),
     jwt: {
       access: {
         secret: process.env.JWT_ACCESS_SECRET,

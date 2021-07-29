@@ -3,15 +3,15 @@ import { registerAccount } from "../../api/v1/auth";
 import { AdminRole } from "../../models/Admin";
 import { adminRoleSchema, adminStatusSchema } from "../../schemes/admin";
 import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "../../schemes/common";
-import { outputOkSchema } from "../../schemes";
+import { emptyOutputSchema, outputOkSchema } from "../../schemes";
 
 export const registerAdminSchema = Joi.object({
   firstName: firstNameSchema.required(),
   lastName: lastNameSchema.required(),
   email: emailSchema.required(),
-  role: adminRoleSchema.required(),
+  adminRole: adminRoleSchema.required(),
   password: passwordSchema.required(),
-})
+}).label("RegisterAdminSchema")
 
 const tokensWithStatus = Joi.object({
   access: jwtToken,
@@ -32,7 +32,7 @@ export default[{
       payload: registerAdminSchema.label('RegisterAdminPayload')
     },
     response: {
-      schema: outputOkSchema(tokensWithStatus).label("TokensWithStatusResponse")
+      schema: emptyOutputSchema//outputOkSchema(tokensWithStatus).label("TokensWithStatusResponse")
     }
   }
 }]
