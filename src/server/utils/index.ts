@@ -4,6 +4,7 @@ import * as FileType from 'file-type';
 import * as speakeasy from 'speakeasy';
 import config from '../config/config';
 import * as crypto from "crypto"
+import axios from "axios"
 
 interface IFileWithExt {
   data: Buffer;
@@ -128,5 +129,20 @@ export const saveImage = async (userId: string, file: Buffer) => {
     throw err;
   }
 };
+
+export async function validCaptcha(token: string) : Promise<boolean> {
+  if (config.debug) return true;
+
+  const form = new URLSearchParams();
+  form.append('secret', config.auth.captcha.secret);
+  form.append('response', token);
+  const captchaResponse = await axios.post('https://www.google.com/recaptcha/api/siteverify', form, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  });
+
+  return captchaResponse.data.success
+}
 
 

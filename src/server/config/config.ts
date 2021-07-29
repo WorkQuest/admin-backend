@@ -6,6 +6,9 @@ export default {
   dbLink: process.env.DB_LINK,
   auth: {
     emailConfirmCodeLifetime: Number(process.env.EMAIL_CONFIRM_CODE_LIFETIME),
+    captcha: {
+      secret: process.env.CAPTCHA_SECRET
+    },
     jwt: {
       access: {
         secret: process.env.JWT_ACCESS_SECRET,
@@ -17,6 +20,7 @@ export default {
       },
     },
   },
+  debug: process.env.DEBUG === 'true',
   server: {
     port: process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3000,
     host: process.env.SERVER_HOST ? process.env.SERVER_HOST : 'localhost',
