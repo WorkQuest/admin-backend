@@ -37,7 +37,6 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     if (user) {
       return { isValid: true, credentials: user, artifacts: { token, type: tokenType, }, };
     }
-
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
 }

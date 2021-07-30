@@ -26,7 +26,6 @@ export async function checkExisting(email: string) {
 }
 
 export async function registerAccount(r){
-  console.log(r.auth)
   if(r.auth.credentials.adminRole !== Role.main){
     error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
@@ -35,12 +34,14 @@ export async function registerAccount(r){
   if(checkEmail){
     return error(Errors.AlreadyExist, "Account with this email already exist", {})
   }
+  //TOTP
 
+  
   let admin = await Admin.create({
     firstName: r.payload.firstName,
     lastName: r.payload.lastName,
     email: r.payload.email,
-    adminRole: r.payload.role,
+    adminRole: r.payload.adminRole,
     password: r.payload.password,
   })
 
@@ -53,16 +54,20 @@ export async function registerAccount(r){
 export async function login(r) {
   const account = await Admin.scope("withPassword").findOne({
     where: {
-      email: { [Op.iLike]: r.payload.email }
+      email: {
+        [Op.iLike]: r.payload.email
+      }
     }
   });
   //password validation
 
-  if (!account)
+  if (!account){
     return error(Errors.NotFound, "Account not found", {});
-  if (!await account.passwordCompare(r.payload.password))
+  }
+
+  if (!await account.passwordCompare(r.payload.password)){
     return error(Errors.NotFound, "Invalid password", {});
-  
+  }
   console.log(account.id)
   const session = await Session.create({
     userId: account.id

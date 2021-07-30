@@ -13,20 +13,11 @@ export const registerAdminSchema = Joi.object({
   password: passwordSchema.required(),
 }).label("RegisterAdminSchema")
 
-const tokens = Joi.object({
-  access: jwtToken,
-  refresh: jwtToken,
-}).label("Tokens");
-
-const captchaTokenSchema = Joi.string().example('recaptcha token');
-const tokensWithStatusResponse = outputOkSchema(tokens).label("TokensResponse");
-
 export default[{
   method: "POST",
   path: "/v1/auth/register/sub-admin",
   handler: registerAccount,
   options: {
-    auth: false,
     id: "v1.auth.register.subAdmin",
     tags: ["api", "auth",],
     description: "Register new sub-admin account",
@@ -34,7 +25,7 @@ export default[{
       payload: registerAdminSchema.label('RegisterAdminPayload')
     },
     response: {
-      schema: outputOkSchema(tokens).label("TokensResponse")
+      schema: outputOkSchema(jwtToken).label("TokensResponse")
     }
   }
 }, {
@@ -53,7 +44,7 @@ export default[{
       }).label("AuthLoginPayload")
     },
     response: {
-      schema: tokensWithStatusResponse
+      schema: outputOkSchema(jwtToken).label("TokensResponse")
     }
   }
 },]
