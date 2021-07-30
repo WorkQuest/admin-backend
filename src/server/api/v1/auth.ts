@@ -44,7 +44,6 @@ export function registerAccount(role: AdminRole){
     if(checkEmail){
       return error(Errors.AlreadyExist, "Account with this email already exist", {})
     }
-    console.log(role)
 
     let admin = await Admin.create({
       firstName: r.payload.firstName,
@@ -53,21 +52,23 @@ export function registerAccount(role: AdminRole){
       adminRole: role,
       password: r.payload.password,
     })
-    const confirmEmail = getHexConfirmToken()
+    const confirmCode = getHexConfirmToken()
 
     const codeValidUntil = moment().add(config.auth.emailConfirmCodeLifetime, "ms").toISOString();
     await admin.update({
-      "settings.confirmCode": confirmEmail,
+      "settings.confirmCode": confirmCode,
       "settings.confirmCodeValidUntil": codeValidUntil
     });
+    
     const htmlEmail = confirmTemplate({
-      confirmCode: confirmEmail.toUpperCase(),
+      confirmCode: confirmCode.toUpperCase(),
       emailCodeLifetime: Math.floor(config.auth.emailConfirmCodeLifetime / msInMinute)
     });
+    console.log("HERE!!!!" + Math.floor(config.auth.emailConfirmCodeLifetime / msInMinute))
     await addSendEmailJob({
       email: r.payload.email,
       subject: "[WorkQuest] Confirmation code",
-      text: `Confirmation code: ${confirmEmail}.`,
+      text: `Confirmation code: ${confirmCode}.`,
       html: htmlEmail
     });
     const session = await Session.create({
@@ -98,6 +99,7 @@ export async function login(r) {
   return output({ ...generateJwt({ id: session.id }), userStatus: account.adminStatus });
 }
 
+//заменить подтверждение email на номер телефона?
 export async function confirmEmail(r) {
   let accountToConfirm = await Admin.scope("withPassword").findByPk(r.auth.credentials.id);
   if (accountToConfirm.settings.confirmCode !== r.payload.confirmCode)
