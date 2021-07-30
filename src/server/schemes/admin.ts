@@ -6,10 +6,9 @@ import {
 	lastNameSchema,
 } from "./common";
 
-import { AdminRole, adminRoles, AdminStatus, adminStatuses } from "../models/Admin";
+import { Role, Roles, } from "../models/Admin";
 
-export const adminRoleSchema = Joi.string().allow(...adminRoles).default(AdminRole.MAIN_ADMIN);
-export const adminStatusSchema = Joi.string().allow(...adminStatuses).default(AdminStatus.UNCONFIRMED);
+export const adminRoleSchema = Joi.string().allow(...Roles).default(Role.main);
 
 export const accountSchema = Joi.object({
 	id: idSchema,
@@ -18,6 +17,5 @@ export const accountSchema = Joi.object({
 	firstName: firstNameSchema,
 	lastName: lastNameSchema,
 
-	adminType: adminRoleSchema,
-	adminStatus: adminStatusSchema,
+	adminRole: adminRoleSchema,
 }).label('AccountSchema')

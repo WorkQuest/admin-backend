@@ -5,35 +5,29 @@ import * as bcrypt from 'bcrypt';
 import { getUUID, } from '../utils';
 import { Session } from './Session';
   
-  export enum AdminRole {
-    MAIN_ADMIN = "main_admin",
-    DISPUT_ADMIN = "disput_admin",
-    ADVERTISING_ADMIN = "advertising_admin",
-    KYC_ADMIN = "kyc_admin",
+  export enum Role {
+    main = "main",
+    disput = "disput",
+    advertising = "advertising",
+    KYC = "KYC",
   }
-  export const adminRoles= Object.values(AdminRole)
+  export const Roles= Object.values(Role)
 
-  export enum AdminStatus {
-    CONFIRMED = "confirmed",
-    UNCONFIRMED = "unconfirmed",
+  export interface TOTP {
+    secret: string;
   }
-  export const adminStatuses = Object.values(AdminStatus)
-  
+
+  export interface Security {
+    TOTOP: TOTP;
+  }
+
   export interface AccountSettings {
-    confirmCode: string | null
-    confirmCodeValidUntil: string | null
-  
-    changePasswordCode: string | null
-    changePasswordCodeValidUntil: string | null
+    security: Security
   }
 
-  export const accountSettingsDefault: AccountSettings = {
-    confirmCode: null,
-    confirmCodeValidUntil: null,
-  
-    changePasswordCode: null,
-    changePasswordCodeValidUntil: null
-  }
+  const defaultAccountSettings: AccountSettings = {
+    security: null
+  };
 
   @Scopes(() => ({
     defaultScope: {
@@ -73,11 +67,9 @@ import { Session } from './Session';
     @Column(DataType.STRING) 
     lastName: string
 
-    @Column({type: DataType.STRING, defaultValue: AdminRole.MAIN_ADMIN}) 
-    adminRole: AdminRole
-    @Column({type: DataType.STRING, defaultValue: AdminStatus.UNCONFIRMED}) 
-    adminStatus: AdminStatus
-    @Column({ type: DataType.JSONB, defaultValue: accountSettingsDefault })
+    @Column({type: DataType.STRING, defaultValue: Role.main}) 
+    adminRole: Role
+    @Column({ type: DataType.JSONB, defaultValue: defaultAccountSettings})
     settings: AccountSettings;
 
     async passwordCompare(pwd: string) {
