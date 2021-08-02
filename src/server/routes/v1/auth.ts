@@ -1,9 +1,9 @@
 import * as Joi from "joi";
 import { login, registerAccount } from "../../api/v1/auth";
-import { Role } from "../../models/Admin";
-import { adminRoleSchema, } from "../../schemes/admin";
-import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "../../schemes/common";
-import { emptyOutputSchema, jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "../../schemes";
+import { Role } from "database-models/lib/models/Admin";
+import { adminRoleSchema, } from "database-models/lib/schemes/admin";
+import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "database-models/lib/schemes/common";
+import { emptyOutputSchema, jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 

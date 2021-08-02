@@ -1,10 +1,10 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Session, } from '../models/Session';
+import { Session } from "database-models/lib/models/Session";
 import { Errors, } from './errors';
-import { Admin } from '../models/Admin';
-import * as speakeasy from "speakeasy"
+import { Admin, } from "database-models/lib/models/Admin"
+
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
@@ -52,14 +52,4 @@ export async function checkExisting(email: string) {
     return true
   }
   return false
-}
-
-export function totpValidation(totp: string, secret: string) {
-  console.log("totp: " + totp)
-  console.log("secret: " + secret)
-  return speakeasy.totp.verify({
-    secret: secret,
-    encoding: 'base32',
-    token: Number(totp)
-  });
 }

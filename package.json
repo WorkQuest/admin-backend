@@ -29,6 +29,7 @@
     "bcrypt": "^5.0.0",
     "bignumber.js": "^9.0.1",
     "crypto": "^1.0.1",
+    "database-models": "github:WorkQuest/database-models#37369c7981b0fab8a86583fc4aa6a028031777f9",
     "dotenv": "^8.2.0",
     "file-type": "^16.4.0",
     "filepaths": "^0.3.0",

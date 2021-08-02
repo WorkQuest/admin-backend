@@ -1,14 +1,14 @@
 import { Errors } from "../../utils/errors";
-import { output, error, getHexConfirmToken,validCaptcha } from "../../utils";
-import { Admin, Role } from "../../models/Admin";
-import { Session } from "../../models/Session";
+import { output, error} from "../../utils";
+import {Admin, Role} from "database-models/lib/models/Admin"
+import { Session } from "database-models/lib/models/Session";
 import { generateJwt, checkExisting } from "../../utils/auth";
 import { Op } from "sequelize";
 import * as speakeasy from "speakeasy"
 
 export async function registerAccount(r){
   if(r.auth.credentials.adminRole !== Role.main){
-    error(Errors.InvalidAdminType, 'Invalid admin type', {})
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
   const checkEmail = await checkExisting(r.payload.email)
 
@@ -53,7 +53,9 @@ export async function login(r) {
     return error(Errors.NotFound, "Invalid password", {});
   }
 
-  account.validateTOTP(r.payload.totp)
+  if(!await account.validateTOTP(r.payload.totp)){
+    throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
+  }
 
   const session = await Session.create({
     userId: account.id
