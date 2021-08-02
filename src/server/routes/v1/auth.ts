@@ -15,14 +15,6 @@ export const registerAdminSchema = Joi.object({
   password: passwordSchema.required(),
 }).label("RegisterAdminSchema")
 
-// export const userWithSecretSchema = Joi.object({
-//   firstName: firstNameSchema.required(),
-//   lastName: lastNameSchema.required(),
-//   email: emailSchema.required(),
-//   adminRole: adminRoleSchema.required(),
-//   secret: secretSchema.required(),
-// })
-
 export const jwtWithSecretSchema = Joi.object({
   access: jwtTokenAccess,
   refresh: jwtTokenRefresh,
