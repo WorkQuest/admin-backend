@@ -3,8 +3,10 @@ import {
   } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 import { getUUID, } from '../utils';
-import { Session } from './Session';
-  
+import { totpValidation } from '../utils/auth';
+import { error } from '../utils';
+import { Errors } from '../utils/errors';
+
   export enum Role {
     main = "main",
     disput = "disput",
@@ -18,7 +20,7 @@ import { Session } from './Session';
   }
 
   export interface Security {
-    TOTOP: TOTP;
+    TOTP: TOTP;
   }
 
   export interface AccountSettings {
@@ -74,5 +76,11 @@ import { Session } from './Session';
 
     async passwordCompare(pwd: string) {
       return bcrypt.compareSync(pwd, this.password);
+    }
+
+    validateTOTP(TOTP: string){
+      if (!totpValidation(TOTP, this.settings.security.TOTP.secret)) {
+        throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
+      }
     }
   }

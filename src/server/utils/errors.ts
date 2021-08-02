@@ -5,6 +5,7 @@ export enum Errors {
   AlreadyExist = 400002,
   EmailConfirmCodeExpired = 400003,
   InvalidCaptcha = 400004,
+  InvalidTOTP = 400005,
   // Authorization errors (401)
   TokenExpired = 401001,
   TokenInvalid = 401002,

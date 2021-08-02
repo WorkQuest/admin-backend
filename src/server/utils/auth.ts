@@ -4,6 +4,7 @@ import { error, } from './index';
 import { Session, } from '../models/Session';
 import { Errors, } from './errors';
 import { Admin } from '../models/Admin';
+import * as speakeasy from "speakeasy"
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
@@ -39,4 +40,26 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     }
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
+}
+
+export async function checkExisting(email: string) {
+  const checkEmail = await Admin.findOne({
+    where: {
+      email: email,
+    }
+  })
+  if(checkEmail){
+    return true
+  }
+  return false
+}
+
+export function totpValidation(totp: string, secret: string) {
+  console.log("totp: " + totp)
+  console.log("secret: " + secret)
+  return speakeasy.totp.verify({
+    secret: secret,
+    encoding: 'base32',
+    token: Number(totp)
+  });
 }

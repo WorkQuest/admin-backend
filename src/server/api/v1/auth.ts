@@ -1,29 +1,10 @@
 import { Errors } from "../../utils/errors";
-import { addSendEmailJob } from "../../jobs/sendEmail";
-import config from "../../config/config";
 import { output, error, getHexConfirmToken,validCaptcha } from "../../utils";
 import { Admin, Role } from "../../models/Admin";
-import * as moment from "moment";
-import * as path from "path";
-import * as fs from "fs";
-import Handlebars = require("handlebars");
 import { Session } from "../../models/Session";
-import { generateJwt } from "../../utils/auth";
+import { generateJwt, checkExisting } from "../../utils/auth";
 import { Op } from "sequelize";
-import auth from "../../routes/v1/auth";
-
-export async function checkExisting(email: string) {
-  const checkEmail = await Admin.findOne({
-    where: {
-      email: email,
-    }
-  })
-  if(checkEmail){
-    return true
-  }
-
-  return false
-}
+import * as speakeasy from "speakeasy"
 
 export async function registerAccount(r){
   if(r.auth.credentials.adminRole !== Role.main){
@@ -34,21 +15,25 @@ export async function registerAccount(r){
   if(checkEmail){
     return error(Errors.AlreadyExist, "Account with this email already exist", {})
   }
-  //TOTP
 
-  
-  let admin = await Admin.create({
+  //TOTP
+  const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWokQuest'})
+
+  await Admin.create({
     firstName: r.payload.firstName,
     lastName: r.payload.lastName,
     email: r.payload.email,
     adminRole: r.payload.adminRole,
     password: r.payload.password,
+    settings: {
+      security: {
+        TOTP: {
+          secret: base32
+        }
+      }
+    }
   })
-
-  const session = await Session.create({
-    userId: admin.id
-  });
-  return output({ ...generateJwt({ id: session.id })});
+  return output( base32 );
 }
 
 export async function login(r) {
@@ -59,7 +44,6 @@ export async function login(r) {
       }
     }
   });
-  //password validation
 
   if (!account){
     return error(Errors.NotFound, "Account not found", {});
@@ -68,7 +52,9 @@ export async function login(r) {
   if (!await account.passwordCompare(r.payload.password)){
     return error(Errors.NotFound, "Invalid password", {});
   }
-  console.log(account.id)
+
+  account.validateTOTP(r.payload.totp)
+
   const session = await Session.create({
     userId: account.id
   });
