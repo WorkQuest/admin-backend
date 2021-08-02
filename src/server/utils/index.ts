@@ -145,4 +145,13 @@ export async function validCaptcha(token: string) : Promise<boolean> {
   return captchaResponse.data.success
 }
 
+export const paginate = (request) => {
+  const offset = request.query.offset;
+  const limit = request.query.limit;
+  return {
+    offset,
+    limit,
+  };
+};
+
 

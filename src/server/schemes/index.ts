@@ -17,7 +17,6 @@ export function outputPaginationSchema(title: string, item: Joi.Schema): Joi.Sch
   })
 }
 
-
 export const emptyOutputSchema = Joi.object({
   ok: Joi.boolean().example(true)
 }).label('EmptyOutputSchema')

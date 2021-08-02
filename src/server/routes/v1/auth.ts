@@ -1,9 +1,9 @@
 import * as Joi from "joi";
-import { login, registerAccount } from "../../api/v1/auth";
-import { Role } from "database-models/lib/models/Admin";
+import { login, registerAccount, } from "../../api/v1/auth";
 import { adminRoleSchema, } from "database-models/lib/schemes/admin";
-import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "database-models/lib/schemes/common";
-import { emptyOutputSchema, jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
+import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, } from "database-models/lib/schemes/common";
+import { jwtTokens, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
+import {outputOkSchema } from "../../schemes";
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
@@ -14,14 +14,6 @@ export const registerAdminSchema = Joi.object({
   adminRole: adminRoleSchema.required(),
   password: passwordSchema.required(),
 }).label("RegisterAdminSchema")
-
-// export const userWithSecretSchema = Joi.object({
-//   firstName: firstNameSchema.required(),
-//   lastName: lastNameSchema.required(),
-//   email: emailSchema.required(),
-//   adminRole: adminRoleSchema.required(),
-//   secret: secretSchema.required(),
-// })
 
 export const jwtWithSecretSchema = Joi.object({
   access: jwtTokenAccess,
