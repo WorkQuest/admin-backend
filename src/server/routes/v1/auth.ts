@@ -53,7 +53,7 @@ export default[{
   }
  }, {
   method: "POST",
-  path: "/v1/auth/register/sub-admin",
+  path: "/v1/settings/register/sub-admin",
   handler: registerAccount,
   options: {
     id: "v1.auth.register.subAdmin",
