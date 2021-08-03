@@ -5,6 +5,7 @@ import { Session } from "database-models/lib/models/Session";
 import { checkExisting } from "../../utils/auth";
 import * as speakeasy from "speakeasy"
 
+
 export async function registerAdminAccount(r){
   if(r.auth.credentials.adminRole !== Role.main){
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
@@ -36,22 +37,62 @@ export async function registerAdminAccount(r){
 }
 
 export async function deleteAdminAccount(r){
-    if(r.auth.credentials.adminRole !== Role.main){
-      return error(Errors.InvalidAdminType, 'Invalid admin type', {})
-    }
-
-    if(r.params.userId === r.auth.credentials.id){
-      return error(Errors.InvalidUserId, 'Can not delete your own account', {})
-    }
-
-    await Session.destroy({
-      where: {
-        userId: r.params.userId
-      },
-    })
-
-    const account = await Admin.findByPk(r.params.userId)
-
-    await account.destroy()
-    return output();
+  if(r.auth.credentials.adminRole !== Role.main){
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
+
+  if(r.params.userId === r.auth.credentials.id){
+    return error(Errors.InvalidUserId, 'Can not delete your own account', {})
+  }
+
+  await Session.destroy({
+    where: {
+      userId: r.params.userId
+    },
+  })
+
+  const account = await Admin.findByPk(r.params.userId)
+
+  await account.destroy()
+  return output();
+}
+
+export async function activateAdminAccount(r){
+  if(r.auth.credentials.adminRole !== Role.main){
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
+  }
+
+  if(r.params.userId === r.auth.credentials.id){
+    return error(Errors.InvalidUserId, 'Can not activate your own account', {})
+  }
+
+  const account = await Admin.findByPk(r.params.userId)
+
+  if(!account.isActive){
+    account.update({
+      isActive: true,
+    })
+  }
+
+  return output()
+}
+
+export async function deactivateAdminAccount(r){
+  if(r.auth.credentials.adminRole !== Role.main){
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
+  }
+
+  if(r.params.userId === r.auth.credentials.id){
+    return error(Errors.InvalidUserId, 'Can not deactivate your own account', {})
+  }
+
+  const account = await Admin.findByPk(r.params.userId)
+
+  if(account.isActive){
+    account.update({
+      isActive: false,
+    })
+  }
+
+  return output()
+}

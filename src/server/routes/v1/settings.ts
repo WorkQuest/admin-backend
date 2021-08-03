@@ -1,5 +1,9 @@
 import * as Joi from "joi";
-import { deleteAdminAccount, registerAdminAccount } from "../../api/v1/settings";
+import { activateAdminAccount, deactivateAdminAccount, deleteAdminAccount, registerAdminAccount } from "../../api/v1/settings";
+import {
+  Admin
+} from "@workquest/database-models/lib/models"
+
 import { adminRoleSchema, } from "database-models/lib/schemes/admin";
 import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, idSchema, } from "database-models/lib/schemes/common";
 import { outputOkSchema, jwtTokenAccess, jwtTokenRefresh, emptyOutputSchema  } from "database-models/lib/schemes";
@@ -13,14 +17,6 @@ export const registerAdminSchema = Joi.object({
   adminRole: adminRoleSchema.required(),
   password: passwordSchema.required(),
 }).label("RegisterAdminSchema")
-
-// export const userWithSecretSchema = Joi.object({
-//   firstName: firstNameSchema.required(),
-//   lastName: lastNameSchema.required(),
-//   email: emailSchema.required(),
-//   adminRole: adminRoleSchema.required(),
-//   secret: secretSchema.required(),
-// })
 
 export const jwtWithSecretSchema = Joi.object({
   access: jwtTokenAccess,
@@ -47,6 +43,36 @@ export default[{
     },
     response: {
       schema: outputOkSchema(secretSchema).label("RegisterThenGetSecretResponse")
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/settings/activate/sub-admin/{userId}",
+  handler: activateAdminAccount,
+  options: {
+    id: "v1.auth.activate.subAdmin",
+    tags: ["api", "settings",],
+    description: "Activate sub-admin account",
+    validate: {
+      params: accountIdParams.label('ActivateAccountParams')
+    },
+    response: {
+      schema: emptyOutputSchema.label('ActivateAccountEmptyOutputSchema')
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/settings/deactivate/sub-admin/{userId}",
+  handler: deactivateAdminAccount,
+  options: {
+    id: "v1.auth.deactivate.subAdmin",
+    tags: ["api", "settings",],
+    description: "Deactivate sub-admin account",
+    validate: {
+      params: accountIdParams.label('DeactivateAccountParams')
+    },
+    response: {
+      schema: emptyOutputSchema.label('DeactivateAccountEmptyOutputSchema')
     }
   }
 }, {

@@ -1,3 +1,0 @@
-[submodule "database-models"]
-	path = database-models
-	url = https://github.com/WorkQuest/database-models.git
