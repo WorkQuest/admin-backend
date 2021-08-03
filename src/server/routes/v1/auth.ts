@@ -1,9 +1,8 @@
 import * as Joi from "joi";
-import { login, registerAccount } from "../../api/v1/auth";
-import { Role } from "database-models/lib/models/Admin";
+import { login } from "../../api/v1/auth";
 import { adminRoleSchema, } from "database-models/lib/schemes/admin";
 import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "database-models/lib/schemes/common";
-import { emptyOutputSchema, jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
+import { jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
@@ -51,19 +50,4 @@ export default[{
       schema: outputOkSchema(jwtTokens).label("TokensResponse")
     }
   }
- }, {
-  method: "POST",
-  path: "/v1/settings/register/sub-admin",
-  handler: registerAccount,
-  options: {
-    id: "v1.auth.register.subAdmin",
-    tags: ["api", "auth",],
-    description: "Register new sub-admin account",
-    validate: {
-      payload: registerAdminSchema.label('RegisterAdminPayload')
-    },
-    response: {
-      schema: outputOkSchema(secretSchema).label("RegisterThenGetSecretResponse")
-    }
-  }
-},]
+ },]
