@@ -1,7 +1,6 @@
 import { Errors } from "../../utils/errors";
 import { output, error} from "../../utils";
-import {Admin, Role} from "database-models/lib/models/Admin"
-import { Session } from "database-models/lib/models/Session";
+import {Admin, Role, Session} from "@workquest/database-models/lib/models"
 import { checkExisting } from "../../utils/auth";
 import * as speakeasy from "speakeasy"
 

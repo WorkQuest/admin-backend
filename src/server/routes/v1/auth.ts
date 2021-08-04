@@ -1,26 +1,25 @@
 import * as Joi from "joi";
 import { login } from "../../api/v1/auth";
-import { adminRoleSchema, } from "database-models/lib/schemes/admin";
-import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, } from "database-models/lib/schemes/common";
-import { jwtTokens, outputOkSchema, jwtTokenAccess, jwtTokenRefresh  } from "database-models/lib/schemes";
+import { adminRoleSchema,
+  adminEmailSchema,
+  adminFirstNameSchema,
+  adminLastNameSchema,
+  adminPasswordSchema,
+  jwtTokens,
+  outputOkSchema,
+  jwtTokenAccess,
+  jwtTokenRefresh
+} from "@workquest/database-models/lib/schemes";
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
 export const registerAdminSchema = Joi.object({
-  firstName: firstNameSchema.required(),
-  lastName: lastNameSchema.required(),
-  email: emailSchema.required(),
+  firstName: adminFirstNameSchema.required(),
+  lastName: adminLastNameSchema.required(),
+  email: adminEmailSchema.required(),
   adminRole: adminRoleSchema.required(),
-  password: passwordSchema.required(),
+  password: adminPasswordSchema.required(),
 }).label("RegisterAdminSchema")
-
-// export const userWithSecretSchema = Joi.object({
-//   firstName: firstNameSchema.required(),
-//   lastName: lastNameSchema.required(),
-//   email: emailSchema.required(),
-//   adminRole: adminRoleSchema.required(),
-//   secret: secretSchema.required(),
-// })
 
 export const jwtWithSecretSchema = Joi.object({
   access: jwtTokenAccess,
@@ -41,8 +40,8 @@ export default[{
     description: "Login into account",
     validate: {
       payload: Joi.object({
-        email: emailSchema.required(),
-        password: passwordSchema.required(),
+        email: adminEmailSchema.required(),
+        password: adminPasswordSchema.required(),
         totp: totpSchema,
       }).label("AuthLoginPayload")
     },

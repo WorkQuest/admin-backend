@@ -1,9 +1,10 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Session } from "database-models/lib/models/Session";
+import { Admin,
+  Session
+} from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
-import { Admin, } from "database-models/lib/models/Admin"
 
 
 export const generateJwt = (data: object) => {

@@ -4,18 +4,27 @@ import {
   Admin
 } from "@workquest/database-models/lib/models"
 
-import { adminRoleSchema, } from "database-models/lib/schemes/admin";
-import { emailSchema, firstNameSchema, lastNameSchema, passwordSchema, jwtToken, idSchema, } from "database-models/lib/schemes/common";
-import { outputOkSchema, jwtTokenAccess, jwtTokenRefresh, emptyOutputSchema  } from "database-models/lib/schemes";
+import { adminRoleSchema,
+  adminEmailSchema,
+  adminFirstNameSchema,
+  adminLastNameSchema,
+  adminPasswordSchema,
+  idSchema,
+  outputOkSchema,
+  jwtTokenAccess,
+  jwtTokenRefresh,
+  emptyOkSchema
+} from "@workquest/database-models/lib/schemes";
+
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
 export const registerAdminSchema = Joi.object({
-  firstName: firstNameSchema.required(),
-  lastName: lastNameSchema.required(),
-  email: emailSchema.required(),
+  firstName: adminFirstNameSchema.required(),
+  lastName: adminLastNameSchema.required(),
+  email: adminEmailSchema.required(),
   adminRole: adminRoleSchema.required(),
-  password: passwordSchema.required(),
+  password: adminPasswordSchema.required(),
 }).label("RegisterAdminSchema")
 
 export const jwtWithSecretSchema = Joi.object({
@@ -57,7 +66,7 @@ export default[{
       params: accountIdParams.label('ActivateAccountParams')
     },
     response: {
-      schema: emptyOutputSchema.label('ActivateAccountEmptyOutputSchema')
+      schema: emptyOkSchema.label('ActivateAccountEmptyOutputSchema')
     }
   }
 }, {
@@ -72,7 +81,7 @@ export default[{
       params: accountIdParams.label('DeactivateAccountParams')
     },
     response: {
-      schema: emptyOutputSchema.label('DeactivateAccountEmptyOutputSchema')
+      schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')
     }
   }
 }, {
@@ -87,7 +96,7 @@ export default[{
         params: accountIdParams.label('DeleteAccountParams')
       },
       response: {
-        schema: emptyOutputSchema.label('DeleteAccountEmptyOutputSchema')
+        schema: emptyOkSchema.label('DeleteAccountEmptyOutputSchema')
       }
     }
   },]

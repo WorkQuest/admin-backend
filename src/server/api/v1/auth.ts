@@ -1,7 +1,6 @@
 import { Errors } from "../../utils/errors";
 import { output, error} from "../../utils";
-import { Admin } from "database-models/lib/models/Admin"
-import { Session } from "database-models/lib/models/Session";
+import { Admin, Session, } from "@workquest/database-models/lib/models"
 import { generateJwt, checkExisting } from "../../utils/auth";
 import { Op } from "sequelize";
 
