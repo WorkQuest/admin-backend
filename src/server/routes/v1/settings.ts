@@ -1,5 +1,11 @@
 import * as Joi from "joi";
-import { activateAdminAccount, deactivateAdminAccount, deleteAdminAccount, registerAdminAccount } from "../../api/v1/settings";
+import {
+  activateAdminAccount, changeLogin,
+  changePassword,
+  deactivateAdminAccount,
+  deleteAdminAccount,
+  registerAdminAccount
+} from "../../api/v1/settings";
 import {
   Admin
 } from "@workquest/database-models/lib/models"
@@ -36,7 +42,7 @@ export const jwtWithSecretSchema = Joi.object({
 export const totpSchema = Joi.string().max(255).example('772670')
 
 export const accountIdParams = Joi.object({
-    userId: idSchema.required()
+  userId: idSchema.required()
 })
 
 export default[{
@@ -79,6 +85,44 @@ export default[{
     description: "Deactivate sub-admin account",
     validate: {
       params: accountIdParams.label('DeactivateAccountParams')
+    },
+    response: {
+      schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/settings/changeLogin/sub-admin/{userId}",
+  handler: changeLogin,
+  options: {
+    id: "v1.auth.changeLogin",
+    tags: ["api", "settings",],
+    description: "Change sub-admin login",
+    validate: {
+      params: accountIdParams.label('DeactivateAccountParams'),
+      payload: Joi.object({
+        newLogin: adminEmailSchema,
+        totp: totpSchema,
+      })
+    },
+    response: {
+      schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/settings/changePassword/sub-admin/{userId}",
+  handler: changePassword,
+  options: {
+    id: "v1.auth.changePassword",
+    tags: ["api", "settings",],
+    description: "Change sub-admin password",
+    validate: {
+      params: accountIdParams.label('DeactivateAccountParams'),
+      payload: Joi.object({
+        newPassword: adminPasswordSchema,
+        totp: totpSchema,
+      })
     },
     response: {
       schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')

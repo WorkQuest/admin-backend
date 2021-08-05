@@ -6,7 +6,6 @@ import * as speakeasy from "speakeasy"
 
 
 export async function registerAdminAccount(r){
-  console.log("HERERERER")
   if(r.auth.credentials.adminRole !== Role.main){
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
@@ -72,9 +71,11 @@ export async function activateAdminAccount(r){
     account.update({
       isActive: true,
     })
+    return output()
   }
 
-  return output()
+  return error(Errors.AlreadyExist, 'Account already activated', {})
+
 }
 
 export async function deactivateAdminAccount(r){
@@ -92,7 +93,55 @@ export async function deactivateAdminAccount(r){
     account.update({
       isActive: false,
     })
+    return output()
   }
+  return error(Errors.AlreadyExist, 'Account already deactivated', {})
+}
+
+export async function changeLogin(r){
+  if(r.auth.credentials.adminRole !== Role.main){
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
+  }
+
+  const account = await Admin.findByPk(r.params.userId)
+  if(!account){
+    return error(Errors.NotFound, 'Account not found', {})
+  }
+
+  if(await checkExisting(r.payload.newLogin)){
+    return error(Errors.AlreadyExist, 'Email already exist', {})
+  }
+
+  const admin = await Admin.scope("withPassword").findByPk(r.auth.credentials.id)
+  if(!await admin.validateTOTP(r.payload.totp)){
+    throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
+  }
+
+  await account.update({
+    email: r.payload.newLogin
+  })
+
+  return output()
+}
+
+export async function changePassword(r){
+  if(r.auth.credentials.adminRole !== Role.main){
+    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
+  }
+
+  const account = await Admin.scope("withPassword").findByPk(r.params.userId)
+  if(await account.passwordCompare(r.payload.newPassword)){
+    return error(Errors.AlreadyExist, "New password is the same with the old one", {})
+  }
+
+  const admin = await Admin.scope("withPassword").findByPk(r.auth.credentials.id)
+  if(!await admin.validateTOTP(r.payload.totp)){
+    throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
+  }
+
+  await account.update({
+    password: r.payload.newPassword
+  })
 
   return output()
 }
