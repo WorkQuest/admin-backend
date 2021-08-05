@@ -25,7 +25,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/joi": "^14.3.4",
     "@types/validator": "^13.1.0",
-    "@workquest/database-models": "github:WorkQuest/database-models#627f1fa002aec8db72102b7b63d5aa053706eb07",
+    "@workquest/database-models": "github:WorkQuest/database-models#97ade1720bc3a0e512681e6163a63db55c45f6af",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
     "bignumber.js": "^9.0.1",

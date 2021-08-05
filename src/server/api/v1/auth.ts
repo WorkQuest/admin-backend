@@ -1,9 +1,8 @@
 import { Errors } from "../../utils/errors";
 import { output, error} from "../../utils";
-import { Admin, Session, } from "@workquest/database-models/lib/models"
+import { Admin, Session, AdminSession} from "@workquest/database-models/lib/models"
 import { generateJwt, checkExisting } from "../../utils/auth";
 import { Op } from "sequelize";
-import {AdminSession} from "@workquest/database-models/lib/models/AdminSession";
 
 export async function login(r) {
   const account = await Admin.scope("withPassword").findOne({
@@ -14,15 +13,15 @@ export async function login(r) {
     }
   });
 
-  if (!account){
+  if (!account) {
     return error(Errors.NotFound, "Account not found", {});
   }
 
-  if (!await account.passwordCompare(r.payload.password)){
+  if (!await account.passwordCompare(r.payload.password)) {
     return error(Errors.NotFound, "Invalid password", {});
   }
 
-  if(!await account.validateTOTP(r.payload.totp)){
+  if(!await account.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 
