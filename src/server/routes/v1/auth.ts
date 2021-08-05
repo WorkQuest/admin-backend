@@ -1,6 +1,7 @@
 import * as Joi from "joi";
-import { login } from "../../api/v1/auth";
-import { adminRoleSchema,
+import { login, logout } from "../../api/v1/auth";
+import {
+  adminRoleSchema,
   adminEmailSchema,
   adminFirstNameSchema,
   adminLastNameSchema,
@@ -8,7 +9,7 @@ import { adminRoleSchema,
   jwtTokens,
   outputOkSchema,
   jwtTokenAccess,
-  jwtTokenRefresh
+  jwtTokenRefresh, emptyOkSchema
 } from "@workquest/database-models/lib/schemes";
 
 export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
@@ -30,6 +31,18 @@ export const jwtWithSecretSchema = Joi.object({
 export const totpSchema = Joi.string().max(255).example('772670')
 
 export default[{
+  method: "GET",
+  path: "/v1/auth/logout",
+  handler: logout,
+  options: {
+    id: "v1.auth.logout",
+    tags: ["api", "auth"],
+    description: "Logout from account",
+    response: {
+      schema: emptyOkSchema.label("LogoutResponse")
+    }
+  }
+}, {
   method: "POST",
   path: "/v1/auth/login",
   handler: login,

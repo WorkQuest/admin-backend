@@ -6,6 +6,7 @@ import * as speakeasy from "speakeasy"
 
 
 export async function registerAdminAccount(r){
+  console.log("HERERERER")
   if(r.auth.credentials.adminRole !== Role.main){
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }

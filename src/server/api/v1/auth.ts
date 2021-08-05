@@ -32,3 +32,12 @@ export async function login(r) {
 
   return output({ ...generateJwt({ id: session.id })});
 }
+
+export async function logout(r){
+  await AdminSession.destroy({
+    where: {
+      adminId: r.auth.credentials.id
+    }
+  })
+  return output()
+}
