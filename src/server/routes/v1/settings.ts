@@ -32,6 +32,10 @@ export const registerAdminSchema = Joi.object({
   adminRole: adminRoleSchema.required(),
   password: adminPasswordSchema.required(),
 }).label("RegisterAdminSchema")
+const registerAdminWithSecretSchema = Joi.object({
+  data: registerAdminSchema,
+  secret: secretSchema
+}).label("RegisterAdminSchema")
 
 export const jwtWithSecretSchema = Joi.object({
   access: jwtTokenAccess,
@@ -50,6 +54,7 @@ export default[{
   path: "/v1/settings/register/sub-admin",
   handler: registerAdminAccount,
   options: {
+    auth: false,
     id: "v1.auth.register.subAdmin",
     tags: ["api", "settings",],
     description: "Register new sub-admin account",
@@ -57,7 +62,7 @@ export default[{
       payload: registerAdminSchema.label('RegisterAdminPayload')
     },
     response: {
-      schema: outputOkSchema(secretSchema).label("RegisterThenGetSecretResponse")
+      schema: outputOkSchema(registerAdminWithSecretSchema).label("RegisterThenGetSecretResponse")
     }
   }
 }, {

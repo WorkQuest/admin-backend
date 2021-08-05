@@ -1,24 +1,22 @@
 import { Errors } from "../../utils/errors";
 import { output, error} from "../../utils";
 import {Admin, Role, Session} from "@workquest/database-models/lib/models"
-import { checkExisting } from "../../utils/auth";
 import * as speakeasy from "speakeasy"
 
 
-export async function registerAdminAccount(r){
-  if(r.auth.credentials.adminRole !== Role.main){
-    return error(Errors.InvalidAdminType, 'Invalid admin type', {})
-  }
-  const checkEmail = await checkExisting(r.payload.email)
+export async function registerAdminAccount(r) {
+  // if(r.auth.credentials.adminRole !== Role.main) {
+  //   return error(Errors.InvalidAdminType, 'Invalid admin type', {})
+  // }
 
-  if(checkEmail){
+  if(await Admin.isEmailExist(r.payload.email)) {
     return error(Errors.AlreadyExist, "Account with this email already exist", {})
   }
 
   //TOTP
   const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWokQuest'})
 
-  await Admin.create({
+  const newAdmin = await Admin.create({
     firstName: r.payload.firstName,
     lastName: r.payload.lastName,
     email: r.payload.email,
@@ -32,15 +30,15 @@ export async function registerAdminAccount(r){
       }
     }
   })
-  return output( base32 );
+  return output( {data: newAdmin, secret: base32} );
 }
 
-export async function deleteAdminAccount(r){
-  if(r.auth.credentials.adminRole !== Role.main){
+export async function deleteAdminAccount(r) {
+  if(r.auth.credentials.adminRole !== Role.main) {
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
 
-  if(r.params.userId === r.auth.credentials.id){
+  if(r.params.userId === r.auth.credentials.id) {
     return error(Errors.InvalidUserId, 'Can not delete your own account', {})
   }
 
@@ -56,18 +54,18 @@ export async function deleteAdminAccount(r){
   return output();
 }
 
-export async function activateAdminAccount(r){
+export async function activateAdminAccount(r) {
   if(r.auth.credentials.adminRole !== Role.main){
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
 
-  if(r.params.userId === r.auth.credentials.id){
+  if(r.params.userId === r.auth.credentials.id) {
     return error(Errors.InvalidUserId, 'Can not activate your own account', {})
   }
 
   const account = await Admin.findByPk(r.params.userId)
 
-  if(!account.isActive){
+  if(!account.isActive) {
     account.update({
       isActive: true,
     })
@@ -78,18 +76,18 @@ export async function activateAdminAccount(r){
 
 }
 
-export async function deactivateAdminAccount(r){
-  if(r.auth.credentials.adminRole !== Role.main){
+export async function deactivateAdminAccount(r) {
+  if(r.auth.credentials.adminRole !== Role.main) {
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
 
-  if(r.params.userId === r.auth.credentials.id){
+  if(r.params.userId === r.auth.credentials.id) {
     return error(Errors.InvalidUserId, 'Can not deactivate your own account', {})
   }
 
   const account = await Admin.findByPk(r.params.userId)
 
-  if(account.isActive){
+  if(account.isActive) {
     account.update({
       isActive: false,
     })
@@ -98,22 +96,22 @@ export async function deactivateAdminAccount(r){
   return error(Errors.AlreadyExist, 'Account already deactivated', {})
 }
 
-export async function changeLogin(r){
+export async function changeLogin(r) {
   if(r.auth.credentials.adminRole !== Role.main){
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
 
   const account = await Admin.findByPk(r.params.userId)
-  if(!account){
+  if(!account) {
     return error(Errors.NotFound, 'Account not found', {})
   }
 
-  if(await checkExisting(r.payload.newLogin)){
+  if(await Admin.isEmailExist(r.payload.newLogin)) {
     return error(Errors.AlreadyExist, 'Email already exist', {})
   }
 
   const admin = await Admin.scope("withPassword").findByPk(r.auth.credentials.id)
-  if(!await admin.validateTOTP(r.payload.totp)){
+  if(!await admin.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 
@@ -124,18 +122,18 @@ export async function changeLogin(r){
   return output()
 }
 
-export async function changePassword(r){
-  if(r.auth.credentials.adminRole !== Role.main){
+export async function changePassword(r) {
+  if(r.auth.credentials.adminRole !== Role.main) {
     return error(Errors.InvalidAdminType, 'Invalid admin type', {})
   }
 
   const account = await Admin.scope("withPassword").findByPk(r.params.userId)
-  if(await account.passwordCompare(r.payload.newPassword)){
+  if(await account.passwordCompare(r.payload.newPassword)) {
     return error(Errors.AlreadyExist, "New password is the same with the old one", {})
   }
 
   const admin = await Admin.scope("withPassword").findByPk(r.auth.credentials.id)
-  if(!await admin.validateTOTP(r.payload.totp)){
+  if(!await admin.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 

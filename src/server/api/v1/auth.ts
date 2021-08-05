@@ -1,7 +1,7 @@
 import { Errors } from "../../utils/errors";
 import { output, error} from "../../utils";
-import { Admin, Session, AdminSession} from "@workquest/database-models/lib/models"
-import { generateJwt, checkExisting } from "../../utils/auth";
+import { Admin, AdminSession} from "@workquest/database-models/lib/models"
+import { generateJwt, } from "../../utils/auth";
 import { Op } from "sequelize";
 
 export async function login(r) {
@@ -32,7 +32,7 @@ export async function login(r) {
   return output({ ...generateJwt({ id: session.id })});
 }
 
-export async function logout(r){
+export async function logout(r) {
   await AdminSession.destroy({
     where: {
       adminId: r.auth.credentials.id
