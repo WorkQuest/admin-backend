@@ -1,10 +1,10 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, Role} from "@workquest/database-models/lib/models"
+import {Admin, AdminRole} from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
-  r.auth.credentials.checkAdminRole(Role.main);
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
   // TODO добавить фильтры,
   const { count, rows } = await Admin.findAndCountAll();
@@ -13,7 +13,7 @@ export async function getAdmins(r) {
 }
 
 export async function registerAdminAccount(r) {
-  r.auth.credentials.checkAdminRole(Role.main); // TODO mustHaveRole
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
   if (await Admin.isEmailExist(r.payload.email)) {
     return error(Errors.AlreadyExist, "Account with this email already exist", {})
@@ -42,13 +42,13 @@ export async function registerAdminAccount(r) {
 }
 
 export async function deleteAdminAccount(r) {
-  r.auth.credentials.checkAdminRole(Role.main); // TODO MustHave Role
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
-  if (r.params.userId === r.auth.credentials.id) {
+  if (r.params.adminId === r.auth.credentials.id) {
     // TODO error
   }
 
-  const subAdmin = await Admin.findByPk(r.params.userId);
+  const subAdmin = await Admin.findByPk(r.params.adminId);
 
   if (!subAdmin) {
     // TODO: error
@@ -60,13 +60,13 @@ export async function deleteAdminAccount(r) {
 }
 
 export async function activateAdminAccount(r) {
-  r.auth.credentials.checkAdminRole(Role.main);
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
-  if (r.params.userId === r.auth.credentials.id) {
+  if (r.params.adminId === r.auth.credentials.id) {
     // TODO error
   }
 
-  const subAdmin = await Admin.findByPk(r.params.userId);
+  const subAdmin = await Admin.findByPk(r.params.adminId);
 
   if (!subAdmin) {
     // TODO: error
@@ -80,13 +80,13 @@ export async function activateAdminAccount(r) {
 }
 
 export async function deactivateAdminAccount(r) {
-  r.auth.credentials.checkAdminRole(Role.main);
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
-  if (r.params.userId === r.auth.credentials.id) {
+  if (r.params.adminId === r.auth.credentials.id) {
     // TODO error
   }
 
-  const subAdmin = await Admin.findByPk(r.params.userId);
+  const subAdmin = await Admin.findByPk(r.params.adminId);
 
   if (!subAdmin) {
     // TODO: error
@@ -100,13 +100,13 @@ export async function deactivateAdminAccount(r) {
 }
 
 export async function changeLogin(r) {
-  r.auth.credentials.checkAdminRole(Role.main);
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
-  if (r.params.userId === r.auth.credentials.id) {
+  if (r.params.adminId === r.auth.credentials.id) {
     // TODO error
   }
 
-  const subAdmin = await Admin.findByPk(r.params.userId); // TODO: adminId везде исправь
+  const subAdmin = await Admin.findByPk(r.params.adminId);
 
   if (!subAdmin) {
     return error(Errors.NotFound, 'Account not found', {})
@@ -124,16 +124,16 @@ export async function changeLogin(r) {
 }
 
 export async function changePassword(r) {
-  r.auth.credentials.checkAdminRole(Role.main);
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
-  const subAdmin = await Admin.scope("withPassword").findByPk(r.params.userId);
+  const subAdmin = await Admin.scope("withPassword").findByPk(r.params.adminId);
 
   if(await subAdmin.passwordCompare(r.payload.newPassword)) {
     return error(Errors.AlreadyExist, "New password is the same with the old one", {})
   }
 
   await subAdmin.update({
-    password: r.payload.newPassword // TODO проверь в базе, чтобы он хеш пароля сохранял, а не сам пароль
+    password: r.payload.newPassword
   })
 
   return output();

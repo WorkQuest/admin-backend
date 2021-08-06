@@ -19,21 +19,9 @@ import {
   emptyOkSchema,
   outputPaginationSchema,
 } from "@workquest/database-models/lib/schemes";
-import {
-  Role
-} from "@workquest/database-models/lib/models";
 
 
 const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
-
-// TODO зачем выностить схему, если она используется только в одном роуте
-const registerAdminSchema = Joi.object({
-  firstName: adminFirstNameSchema.required(),
-  lastName: adminLastNameSchema.required(),
-  email: adminEmailSchema.required(),
-  adminRole: adminRoleSchema.required(),
-  password: adminPasswordSchema.required(),
-}).label("RegisterAdminSchema")
 
 const adminSchema = Joi.object({
   id: idSchema,
@@ -50,12 +38,12 @@ const registerAdminWithSecretSchema = Joi.object({
 
 
 const adminIdParams = Joi.object({
-  userId: idSchema.required()
+  adminId: idSchema.required()
 });
 
 export default[{
   method: "GET",
-  path: "/v1/settings/adminsList", // TODO v1/admins
+  path: "v1/admins",
   handler: getAdmins,
   options: {
     id: "v1.auth.adminsList",
@@ -65,20 +53,25 @@ export default[{
       // query: , TODO посмори как это сделано в квестах
     },
     response: {
-      // TODO просто admins
-      schema: outputPaginationSchema('adminsList', adminSchema). label('GetAdminsListResponse')
+      schema: outputPaginationSchema('admins', adminSchema). label('GetAdminsListResponse')
     }
   }
 }, {
   method: "POST",
-  path: "/v1/settings/register/sub-admin", // TODO роуты не корректны, v1/admin/create
+  path: "v1/admin/create",
   handler: registerAdminAccount,
   options: {
     id: "v1.auth.register.subAdmin",
     tags: ["api", "settings"],
     description: "Register new sub-admin account",
     validate: {
-      payload: registerAdminSchema.label('RegisterAdminPayload')
+      payload: Joi.object({
+        firstName: adminFirstNameSchema.required(),
+        lastName: adminLastNameSchema.required(),
+        email: adminEmailSchema.required(),
+        adminRole: adminRoleSchema.required(),
+        password: adminPasswordSchema.required(),
+      }).label('RegisterAdminPayload')
     },
     response: {
       schema: outputOkSchema(registerAdminWithSecretSchema).label("RegisterThenGetSecretResponse")
@@ -86,7 +79,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/activate/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/activate
+  path: "v1/admin/{adminId}/activate",
   handler: activateAdminAccount,
   options: {
     id: "v1.auth.activate.subAdmin",
@@ -101,7 +94,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/deactivate/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/deactivate
+  path: "v1/admin/{adminId}/deactivate",
   handler: deactivateAdminAccount,
   options: {
     id: "v1.auth.deactivate.subAdmin",
@@ -116,7 +109,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/changeLogin/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/change/login
+  path: "v1/admin/{adminId}/change/login",
   handler: changeLogin,
   options: {
     id: "v1.auth.changeLogin",
@@ -135,7 +128,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/changePassword/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/change/password
+  path: "v1/admin/{adminId}/change/password",
   handler: changePassword,
   options: {
     id: "v1.auth.changePassword",
@@ -154,7 +147,7 @@ export default[{
   }
 }, {
     method: "DELETE",
-    path: "/v1/settings/delete/sub-admin/{userId}", // // TODO роуты не корректны, v1/admin/{adminId}
+    path: "v1/admin/{adminId}",
     handler: deleteAdminAccount,
     options: {
       id: "v1.auth.delete.subAdminAccount",
