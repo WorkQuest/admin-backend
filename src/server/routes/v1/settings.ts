@@ -18,6 +18,7 @@ import {
   totpSchema,
   emptyOkSchema,
   outputPaginationSchema,
+  adminQuerySchema,
 } from "@workquest/database-models/lib/schemes";
 
 
@@ -50,7 +51,7 @@ export default[{
     tags: ["api", "settings"],
     description: "Get admins list",
     validate: {
-      // query: , TODO посмори как это сделано в квестах
+      query: adminQuerySchema,
     },
     response: {
       schema: outputPaginationSchema('admins', adminSchema). label('GetAdminsListResponse')
