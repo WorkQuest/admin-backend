@@ -1,26 +1,13 @@
 import * as Joi from "joi";
 import { login, logout } from "../../api/v1/auth";
 import {
-  adminRoleSchema,
   adminEmailSchema,
-  adminFirstNameSchema,
-  adminLastNameSchema,
   adminPasswordSchema,
   jwtTokens,
   outputOkSchema,
-  jwtTokenAccess,
-  jwtTokenRefresh, emptyOkSchema
+  emptyOkSchema,
+  totpSchema
 } from "@workquest/database-models/lib/schemes";
-
-export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
-
-export const jwtWithSecretSchema = Joi.object({
-  access: jwtTokenAccess,
-  refresh: jwtTokenRefresh,
-  secret: secretSchema,
-}).label('JwtWithSecretSchema')
-
-export const totpSchema = Joi.string().max(255).example('772670')
 
 export default[{
   method: "GET",

@@ -7,7 +7,7 @@ import {
   registerAdminAccount
 } from "../../api/v1/settings";
 import {
-  Admin
+  Role
 } from "@workquest/database-models/lib/models"
 
 import { adminRoleSchema,
@@ -17,44 +17,41 @@ import { adminRoleSchema,
   adminPasswordSchema,
   idSchema,
   outputOkSchema,
-  jwtTokenAccess,
-  jwtTokenRefresh,
+  totpSchema,
   emptyOkSchema
 } from "@workquest/database-models/lib/schemes";
 
 
-export const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
+const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
-export const registerAdminSchema = Joi.object({
+const registerAdminSchema = Joi.object({
   firstName: adminFirstNameSchema.required(),
   lastName: adminLastNameSchema.required(),
   email: adminEmailSchema.required(),
   adminRole: adminRoleSchema.required(),
   password: adminPasswordSchema.required(),
 }).label("RegisterAdminSchema")
+
 const registerAdminWithSecretSchema = Joi.object({
-  data: registerAdminSchema,
-  secret: secretSchema
-}).label("RegisterAdminSchema")
+  data: {
+    id: idSchema,
+    firstName: adminFirstNameSchema.required(),
+    lastName: adminLastNameSchema.required(),
+    email: adminEmailSchema.required(),
+    adminRole: adminRoleSchema.required(),
+  },
+  secret: secretSchema.required(),
+})
 
-export const jwtWithSecretSchema = Joi.object({
-  access: jwtTokenAccess,
-  refresh: jwtTokenRefresh,
-  secret: secretSchema,
-}).label('JwtWithSecretSchema')
-
-export const totpSchema = Joi.string().max(255).example('772670')
-
-export const accountIdParams = Joi.object({
+const accountIdParams = Joi.object({
   userId: idSchema.required()
 })
 
 export default[{
   method: "POST",
   path: "/v1/settings/register/sub-admin",
-  handler: registerAdminAccount,
+  handler: registerAdminAccount(Role.main),
   options: {
-    auth: false,
     id: "v1.auth.register.subAdmin",
     tags: ["api", "settings",],
     description: "Register new sub-admin account",
@@ -68,7 +65,7 @@ export default[{
 }, {
   method: "POST",
   path: "/v1/settings/activate/sub-admin/{userId}",
-  handler: activateAdminAccount,
+  handler: activateAdminAccount(Role.main),
   options: {
     id: "v1.auth.activate.subAdmin",
     tags: ["api", "settings",],
@@ -83,7 +80,7 @@ export default[{
 }, {
   method: "POST",
   path: "/v1/settings/deactivate/sub-admin/{userId}",
-  handler: deactivateAdminAccount,
+  handler: deactivateAdminAccount(Role.main),
   options: {
     id: "v1.auth.deactivate.subAdmin",
     tags: ["api", "settings",],
@@ -98,7 +95,7 @@ export default[{
 }, {
   method: "POST",
   path: "/v1/settings/changeLogin/sub-admin/{userId}",
-  handler: changeLogin,
+  handler: changeLogin(Role.main),
   options: {
     id: "v1.auth.changeLogin",
     tags: ["api", "settings",],
@@ -117,7 +114,7 @@ export default[{
 }, {
   method: "POST",
   path: "/v1/settings/changePassword/sub-admin/{userId}",
-  handler: changePassword,
+  handler: changePassword(Role.main),
   options: {
     id: "v1.auth.changePassword",
     tags: ["api", "settings",],
@@ -136,7 +133,7 @@ export default[{
 }, {
     method: "DELETE",
     path: "/v1/settings/delete/sub-admin/{userId}",
-    handler: deleteAdminAccount,
+    handler: deleteAdminAccount(Role.main),
     options: {
       id: "v1.auth.delete.subAdminAccount",
       tags: ["api", "settings",],
