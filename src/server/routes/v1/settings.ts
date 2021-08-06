@@ -5,12 +5,8 @@ import {
   deactivateAdminAccount,
   deleteAdminAccount,
   registerAdminAccount,
-  getAdminsList,
+  getAdmins,
 } from "../../api/v1/settings";
-import {
-  Role
-} from "@workquest/database-models/lib/models"
-
 import {
   adminRoleSchema,
   adminEmailSchema,
@@ -21,13 +17,16 @@ import {
   outputOkSchema,
   totpSchema,
   emptyOkSchema,
-  paginationFields, outputPaginationSchema,
+  outputPaginationSchema,
 } from "@workquest/database-models/lib/schemes";
-import {logout} from "../../api/v1/auth";
+import {
+  Role
+} from "@workquest/database-models/lib/models";
 
 
 const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
+// TODO зачем выностить схему, если она используется только в одном роуте
 const registerAdminSchema = Joi.object({
   firstName: adminFirstNameSchema.required(),
   lastName: adminLastNameSchema.required(),
@@ -50,34 +49,33 @@ const registerAdminWithSecretSchema = Joi.object({
 }).label('RegisterAdminWithSecretSchema')
 
 
-const accountIdParams = Joi.object({
+const adminIdParams = Joi.object({
   userId: idSchema.required()
-})
+});
 
 export default[{
   method: "GET",
-  path: "/v1/settings/adminsList",
-  handler: getAdminsList(Role.main),
+  path: "/v1/settings/adminsList", // TODO v1/admins
+  handler: getAdmins,
   options: {
     id: "v1.auth.adminsList",
     tags: ["api", "settings"],
     description: "Get admins list",
     validate: {
-      query: Joi.object({
-        ...paginationFields
-      }).label('GetAdminListQuery'),
+      // query: , TODO посмори как это сделано в квестах
     },
     response: {
+      // TODO просто admins
       schema: outputPaginationSchema('adminsList', adminSchema). label('GetAdminsListResponse')
     }
   }
 }, {
   method: "POST",
-  path: "/v1/settings/register/sub-admin",
-  handler: registerAdminAccount(Role.main),
+  path: "/v1/settings/register/sub-admin", // TODO роуты не корректны, v1/admin/create
+  handler: registerAdminAccount,
   options: {
     id: "v1.auth.register.subAdmin",
-    tags: ["api", "settings",],
+    tags: ["api", "settings"],
     description: "Register new sub-admin account",
     validate: {
       payload: registerAdminSchema.label('RegisterAdminPayload')
@@ -88,14 +86,14 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/activate/sub-admin/{userId}",
-  handler: activateAdminAccount(Role.main),
+  path: "/v1/settings/activate/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/activate
+  handler: activateAdminAccount,
   options: {
     id: "v1.auth.activate.subAdmin",
-    tags: ["api", "settings",],
+    tags: ["api", "settings"],
     description: "Activate sub-admin account",
     validate: {
-      params: accountIdParams.label('ActivateAccountParams')
+      params: adminIdParams.label('ActivateAccountParams')
     },
     response: {
       schema: emptyOkSchema.label('ActivateAccountEmptyOutputSchema')
@@ -103,14 +101,14 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/deactivate/sub-admin/{userId}",
-  handler: deactivateAdminAccount(Role.main),
+  path: "/v1/settings/deactivate/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/deactivate
+  handler: deactivateAdminAccount,
   options: {
     id: "v1.auth.deactivate.subAdmin",
-    tags: ["api", "settings",],
+    tags: ["api", "settings"],
     description: "Deactivate sub-admin account",
     validate: {
-      params: accountIdParams.label('DeactivateAccountParams')
+      params: adminIdParams.label('DeactivateAccountParams')
     },
     response: {
       schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')
@@ -118,14 +116,14 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/changeLogin/sub-admin/{userId}",
-  handler: changeLogin(Role.main),
+  path: "/v1/settings/changeLogin/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/change/login
+  handler: changeLogin,
   options: {
     id: "v1.auth.changeLogin",
     tags: ["api", "settings",],
     description: "Change sub-admin login",
     validate: {
-      params: accountIdParams.label('DeactivateAccountParams'),
+      params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
         newLogin: adminEmailSchema,
         totp: totpSchema,
@@ -137,14 +135,14 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "/v1/settings/changePassword/sub-admin/{userId}",
-  handler: changePassword(Role.main),
+  path: "/v1/settings/changePassword/sub-admin/{userId}", // TODO роуты не корректны, v1/admin/{adminId}/change/password
+  handler: changePassword,
   options: {
     id: "v1.auth.changePassword",
     tags: ["api", "settings",],
     description: "Change sub-admin password",
     validate: {
-      params: accountIdParams.label('DeactivateAccountParams'),
+      params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
         newPassword: adminPasswordSchema,
         totp: totpSchema,
@@ -156,14 +154,14 @@ export default[{
   }
 }, {
     method: "DELETE",
-    path: "/v1/settings/delete/sub-admin/{userId}",
-    handler: deleteAdminAccount(Role.main),
+    path: "/v1/settings/delete/sub-admin/{userId}", // // TODO роуты не корректны, v1/admin/{adminId}
+    handler: deleteAdminAccount,
     options: {
       id: "v1.auth.delete.subAdminAccount",
       tags: ["api", "settings",],
       description: "Delete sub-admin account",
       validate: {
-        params: accountIdParams.label('DeleteAccountParams')
+        params: adminIdParams.label('DeleteAccountParams')
       },
       response: {
         schema: emptyOkSchema.label('DeleteAccountEmptyOutputSchema')

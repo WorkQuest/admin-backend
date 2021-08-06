@@ -16,11 +16,9 @@ export async function login(r) {
   if (!account) {
     return error(Errors.NotFound, "Account not found", {});
   }
-
   if (!await account.passwordCompare(r.payload.password)) {
     return error(Errors.NotFound, "Invalid password", {});
   }
-
   if(!await account.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
@@ -29,14 +27,13 @@ export async function login(r) {
     adminId: account.id
   });
 
-  return output({ ...generateJwt({ id: session.id })});
+  return output({
+    ...generateJwt({ id: session.id })
+  });
 }
 
 export async function logout(r) {
-  await AdminSession.destroy({
-    where: {
-      adminId: r.auth.credentials.id
-    }
-  })
-  return output()
+  // TODO
+
+  return output();
 }
