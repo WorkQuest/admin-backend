@@ -4,13 +4,15 @@ import {
   changePassword,
   deactivateAdminAccount,
   deleteAdminAccount,
-  registerAdminAccount
+  registerAdminAccount,
+  getAdminsList,
 } from "../../api/v1/settings";
 import {
   Role
 } from "@workquest/database-models/lib/models"
 
-import { adminRoleSchema,
+import {
+  adminRoleSchema,
   adminEmailSchema,
   adminFirstNameSchema,
   adminLastNameSchema,
@@ -18,8 +20,10 @@ import { adminRoleSchema,
   idSchema,
   outputOkSchema,
   totpSchema,
-  emptyOkSchema
+  emptyOkSchema,
+  paginationFields, outputPaginationSchema,
 } from "@workquest/database-models/lib/schemes";
+import {logout} from "../../api/v1/auth";
 
 
 const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
@@ -32,22 +36,42 @@ const registerAdminSchema = Joi.object({
   password: adminPasswordSchema.required(),
 }).label("RegisterAdminSchema")
 
+const adminSchema = Joi.object({
+  id: idSchema,
+  firstName: adminFirstNameSchema.required(),
+  lastName: adminLastNameSchema.required(),
+  email: adminEmailSchema.required(),
+  adminRole: adminRoleSchema.required(),
+}).label('AdminSchema')
+
 const registerAdminWithSecretSchema = Joi.object({
-  data: {
-    id: idSchema,
-    firstName: adminFirstNameSchema.required(),
-    lastName: adminLastNameSchema.required(),
-    email: adminEmailSchema.required(),
-    adminRole: adminRoleSchema.required(),
-  },
+  data: { adminSchema },
   secret: secretSchema.required(),
-})
+}).label('RegisterAdminWithSecretSchema')
+
 
 const accountIdParams = Joi.object({
   userId: idSchema.required()
 })
 
 export default[{
+  method: "GET",
+  path: "/v1/settings/adminsList",
+  handler: getAdminsList(Role.main),
+  options: {
+    id: "v1.auth.adminsList",
+    tags: ["api", "settings"],
+    description: "Get admins list",
+    validate: {
+      query: Joi.object({
+        ...paginationFields
+      }).label('GetAdminListQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('adminsList', adminSchema). label('GetAdminsListResponse')
+    }
+  }
+}, {
   method: "POST",
   path: "/v1/settings/register/sub-admin",
   handler: registerAdminAccount(Role.main),

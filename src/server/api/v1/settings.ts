@@ -2,9 +2,24 @@ import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
 import {Admin, AdminSession, Role} from "@workquest/database-models/lib/models"
 import * as speakeasy from "speakeasy"
+import { paginate } from "../operations/paginate";
+
+export function getAdminsList(role: Role) {
+  return async function(r) {
+    r.auth.credentials.checkAdminRole(role)
+    
+    const admins = await Admin.findAndCountAll({
+      attributes: ['id', 'firstName', 'lastName', 'email', 'adminRole'],
+      ...paginate(r),
+      order: [['createdAt', 'DESC']]
+    })
+    return output({ data: admins.rows, count: admins.count })
+  }
+}
+
 
 export function registerAdminAccount(role: Role) {
-  return async function(r){
+  return async function(r) {
     r.auth.credentials.checkAdminRole(role)
   
     if(await Admin.isEmailExist(r.payload.email)) {
@@ -37,7 +52,7 @@ export function registerAdminAccount(role: Role) {
 }
 
 export function deleteAdminAccount(role: Role) {
-  return async function(r){
+  return async function(r) {
     r.auth.credentials.checkAdminRole(role)
   
     if(r.params.userId === r.auth.credentials.id) {
@@ -58,7 +73,7 @@ export function deleteAdminAccount(role: Role) {
 }
 
 export function activateAdminAccount(role: Role) {
-  return async function(r){
+  return async function(r) {
     r.auth.credentials.checkAdminRole(role)
   
     if(r.params.userId === r.auth.credentials.id) {
