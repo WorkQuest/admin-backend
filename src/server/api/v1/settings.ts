@@ -28,7 +28,7 @@ export async function registerAdminAccount(r) {
     firstName: r.payload.firstName,
     lastName: r.payload.lastName,
     email: r.payload.email,
-    adminRole: r.payload.adminRole,
+    role: r.payload.adminRole,
     password: r.payload.password,
     isActive: true,
     settings: {

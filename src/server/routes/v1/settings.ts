@@ -29,7 +29,7 @@ const adminSchema = Joi.object({
   firstName: adminFirstNameSchema.required(),
   lastName: adminLastNameSchema.required(),
   email: adminEmailSchema.required(),
-  adminRole: adminRoleSchema.required(),
+  role: adminRoleSchema.required(),
 }).label('AdminSchema')
 
 const registerAdminWithSecretSchema = Joi.object({
