@@ -1,9 +1,9 @@
-
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
 import { Admin,
   AdminSession,
+  AdminRole,
 } from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
 
@@ -41,4 +41,21 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     }
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
+}
+
+export function getRbacSettings(...allowedGroups: AdminRole[]) {
+  return {
+    rbac: {
+      apply: "permit-overrides",
+      rules: [
+        ...allowedGroups.map(role => ({
+          target: {'credentials:role': role},
+          effect: 'permit'
+        })),
+        {
+          effect: "deny"
+        }
+      ]
+    }
+  }
 }

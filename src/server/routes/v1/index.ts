@@ -1,7 +1,7 @@
 import auth from './auth'
-import questsInfo from "./questsInfo";
+import settings from './admin';
 
 export default [
   ...auth,
-  ...questsInfo,
+  ...settings,
 ];

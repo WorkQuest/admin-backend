@@ -30,6 +30,8 @@ build/
 # lol macs
 .DS_Store/
 
+.idea
+
 package-lock.json
 
 

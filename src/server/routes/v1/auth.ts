@@ -41,5 +41,4 @@ export default[{
       schema: outputOkSchema(jwtTokens).label("TokensResponse")
     }
   }
-},]
-
+}]
