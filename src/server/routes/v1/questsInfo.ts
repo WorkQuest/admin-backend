@@ -4,7 +4,13 @@ import {
   outputOkSchema,
   questSchema,
   adminQuerySchema,
-  idSchema
+  idSchema,
+  questTitleSchema,
+  questDescriptionSchema,
+  questPrioritySchema,
+  locationSchema,
+  questPriceSchema,
+  mediaIdsSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -51,6 +57,14 @@ export default[{
       params: Joi.object({
         questId: idSchema.required(),
       }).label("EditQuestParams"),
+      payload: Joi.object({
+        title: questTitleSchema,
+        description: questDescriptionSchema,
+        medias: mediaIdsSchema.unique().label('MediaIds'),
+        location: locationSchema,
+        priority: questPrioritySchema,
+        price: questPriceSchema,
+      }).label('EditQuestSchema')
     },
     response: {
       schema: outputOkSchema(questSchema).label('QuestInfoResponse')
