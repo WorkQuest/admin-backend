@@ -1,4 +1,5 @@
 import * as Joi from "joi";
+import {getRbacSettings} from "../../utils/auth";
 import {
   activateAdminAccount, changeLogin,
   changePassword,
@@ -6,7 +7,7 @@ import {
   deleteAdminAccount,
   registerAdminAccount,
   getAdmins,
-} from "../../api/v1/settings";
+} from "../../api/v1/admin";
 import {
   adminRoleSchema,
   adminEmailSchema,
@@ -20,7 +21,7 @@ import {
   outputPaginationSchema,
   adminQuerySchema,
 } from "@workquest/database-models/lib/schemes";
-
+import {AdminRole} from "@workquest/database-models/lib/models";
 
 const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 
@@ -49,12 +50,13 @@ export default[{
   options: {
     id: "v1.auth.adminsList",
     tags: ["api", "settings"],
-    description: "Get admins list",
+    description: "Get admins list. Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       query: adminQuerySchema,
     },
     response: {
-      schema: outputPaginationSchema('admins', adminSchema). label('GetAdminsListResponse')
+      schema: outputPaginationSchema('admins', adminSchema).label('GetAdminsListResponse')
     }
   }
 }, {
@@ -62,9 +64,10 @@ export default[{
   path: "v1/admin/create",
   handler: registerAdminAccount,
   options: {
-    id: "v1.auth.register.subAdmin",
-    tags: ["api", "settings"],
-    description: "Register new sub-admin account",
+    id: "v1.admin.registerAdmin",
+    tags: ["api", "admin"],
+    description: "Register new admin account (not main admin). Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       payload: Joi.object({
         firstName: adminFirstNameSchema.required(),
@@ -83,9 +86,10 @@ export default[{
   path: "v1/admin/{adminId}/activate",
   handler: activateAdminAccount,
   options: {
-    id: "v1.auth.activate.subAdmin",
-    tags: ["api", "settings"],
-    description: "Activate sub-admin account",
+    id: "v1.auth.activateAdmin",
+    tags: ["api", "admin"],
+    description: "Activate admin account (forbidden activate main admin). Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: adminIdParams.label('ActivateAccountParams')
     },
@@ -98,9 +102,10 @@ export default[{
   path: "v1/admin/{adminId}/deactivate",
   handler: deactivateAdminAccount,
   options: {
-    id: "v1.auth.deactivate.subAdmin",
-    tags: ["api", "settings"],
-    description: "Deactivate sub-admin account",
+    id: "v1.admin.deactivateAdmin",
+    tags: ["api", "admin"],
+    description: "Deactivate admin account (forbidden deactivate main admin). Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: adminIdParams.label('DeactivateAccountParams')
     },
@@ -113,9 +118,10 @@ export default[{
   path: "v1/admin/{adminId}/change/login",
   handler: changeLogin,
   options: {
-    id: "v1.auth.changeLogin",
-    tags: ["api", "settings",],
-    description: "Change sub-admin login",
+    id: "v1.admin.change.login",
+    tags: ["api", "admin"],
+    description: "Change admin login (forbidden to change main admin). Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
@@ -132,9 +138,10 @@ export default[{
   path: "v1/admin/{adminId}/change/password",
   handler: changePassword,
   options: {
-    id: "v1.auth.changePassword",
-    tags: ["api", "settings",],
-    description: "Change sub-admin password",
+    id: "v1.admin.change.password",
+    tags: ["api", "admin"],
+    description: "Change admin password (forbidden to change main admin). Allow admins: main.",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
@@ -143,22 +150,23 @@ export default[{
       })
     },
     response: {
-      schema: emptyOkSchema.label('DeactivateAccountEmptyOutputSchema')
+      schema: emptyOkSchema
     }
   }
 }, {
-    method: "DELETE",
-    path: "v1/admin/{adminId}",
-    handler: deleteAdminAccount,
-    options: {
-      id: "v1.auth.delete.subAdminAccount",
-      tags: ["api", "settings",],
-      description: "Delete sub-admin account",
-      validate: {
-        params: adminIdParams.label('DeleteAccountParams')
-      },
-      response: {
-        schema: emptyOkSchema.label('DeleteAccountEmptyOutputSchema')
-      }
+  method: "DELETE",
+  path: "v1/admin/{adminId}",
+  handler: deleteAdminAccount,
+  options: {
+    id: "v1.admin.deleteAdmin",
+    tags: ["api", "admin"],
+    description: "Delete admin account (forbidden delete main admin). Allow admins: main",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: adminIdParams.label('DeleteAccountParams')
+    },
+    response: {
+      schema: emptyOkSchema
     }
-  },]
+  }
+}]

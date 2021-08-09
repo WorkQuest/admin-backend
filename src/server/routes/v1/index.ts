@@ -1,5 +1,5 @@
 import auth from './auth'
-import settings from './settings';
+import settings from './admin';
 
 export default [
   ...auth,

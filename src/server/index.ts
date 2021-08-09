@@ -1,4 +1,3 @@
-
 import * as Hapi from '@hapi/hapi';
 import * as Nes from '@hapi/nes';
 import * as Inert from '@hapi/inert';
@@ -52,7 +51,8 @@ const init = async () => {
     Vision,
     HapiBearer,
     { plugin: Pino, options: pinoConfig(false), },
-    { plugin: HapiSwagger, options: SwaggerOptions, }
+    { plugin: HapiSwagger, options: SwaggerOptions, },
+    { plugin: require('hapi-rbac'), options: { } }
   ]);
   server.app.db = initDatabase(config.dbLink, false, true);
   server.app.scheduler = await run({
