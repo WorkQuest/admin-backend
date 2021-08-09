@@ -1,9 +1,10 @@
 import * as Joi from "joi";
-import { getQuestsList } from "../../api/v1/questsInfo";
+import { getQuestsList, questInfo } from "../../api/v1/questsInfo";
 import {
   outputOkSchema,
   questSchema,
-  adminQuerySchema
+  adminQuerySchema,
+  idSchema
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -19,6 +20,23 @@ export default[{
     },
     response: {
       schema: outputOkSchema(questSchema).label('QuestsListResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/quest/{questId}",
+  handler: questInfo,
+  options: {
+    id: "v1.quest.info",
+    tags: ["api", "quests"],
+    description: "Get info about quest",
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("QuestResponseParams"),
+    },
+    response: {
+      schema: outputOkSchema(questSchema).label('QuestInfoResponse')
     }
   }
 },]

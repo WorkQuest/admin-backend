@@ -1,10 +1,11 @@
+
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Session } from "database-models/lib/models/Session";
+import { Admin,
+  AdminSession,
+} from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
-import { Admin, } from "database-models/lib/models/Admin"
-import {AdminSession} from "@workquest/database-models/lib/models";
 
 
 export const generateJwt = (data: object) => {
@@ -26,7 +27,6 @@ export const decodeJwt = async (token: string, secret: string) => {
 };
 
 export type validateFunc = (r, token: string) => Promise<any>;
-
 // Fabric which returns token validate function depending on token type
 export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
   return async function (r, token: string) {
@@ -41,16 +41,4 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     }
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
-}
-
-export async function checkExisting(email: string) {
-  const checkEmail = await Admin.findOne({
-    where: {
-      email: email,
-    }
-  })
-  if(checkEmail){
-    return true
-  }
-  return false
 }

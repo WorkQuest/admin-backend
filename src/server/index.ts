@@ -1,4 +1,3 @@
-
 import * as Hapi from '@hapi/hapi';
 import * as Nes from '@hapi/nes';
 import * as Inert from '@hapi/inert';
@@ -15,7 +14,7 @@ import { handleValidationError, responseHandler, } from './utils';
 import { tokenValidate, } from './utils/auth';
 import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
-import { initDatabase } from "database-models/lib/models";
+import { initDatabase } from "@workquest/database-models/lib/models";
 import { run } from "graphile-worker";
 
 const HapiSwagger = require('hapi-swagger');
