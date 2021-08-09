@@ -1,5 +1,5 @@
 import * as Joi from "joi";
-import { getQuestsList, questInfo } from "../../api/v1/questsInfo";
+import {getQuestsList, moderateQuest, questInfo} from "../../api/v1/questsInfo";
 import {
   outputOkSchema,
   questSchema,
@@ -33,7 +33,24 @@ export default[{
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
-      }).label("QuestResponseParams"),
+      }).label("GetQuestParams"),
+    },
+    response: {
+      schema: outputOkSchema(questSchema).label('QuestInfoResponse')
+    }
+  }
+}, {
+  method: "PUT",
+  path: "/v1/quest/{questId}",
+  handler: moderateQuest,
+  options: {
+    id: "v1.quest.moderateQuest",
+    tags: ["api", "quests"],
+    description: "Moderate quest",
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("EditQuestParams"),
     },
     response: {
       schema: outputOkSchema(questSchema).label('QuestInfoResponse')

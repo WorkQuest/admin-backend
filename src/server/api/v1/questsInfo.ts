@@ -24,4 +24,5 @@ export async function questInfo(r){
 
 export async function moderateQuest(r){
   r.auth.credentials.MustHaveAdminRole(AdminRole.main);
+
 }
