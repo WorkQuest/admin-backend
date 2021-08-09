@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="401f136d-6098-4b73-8838-825e6520ca3e" name="Changes" comment="">
+    <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/questsInfo.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/config/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/config/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/routes/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/questsInfo.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/utils/errors.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/utils/errors.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,7 +19,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1wTJVh5tKxtOItFNxCv4qkAQ2QN" />
+  <component name="ProjectId" id="1wU1xgqowdwnaJF1He2FqVFN5hl" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -23,7 +28,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../database-models" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../backend-development" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -38,7 +43,6 @@
         <script value="start" />
       </scripts>
       <node-interpreter value="$USER_HOME$/.nvm/versions/node/v12.22.4/bin/node" />
-      <package-manager value="$USER_HOME$/.nvm/versions/node/v12.22.4/lib/node_modules/npm" />
       <envs />
       <method v="2" />
     </configuration>
@@ -46,27 +50,16 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="401f136d-6098-4b73-8838-825e6520ca3e" name="Changes" comment="" />
-      <created>1628476670205</created>
+      <changelist id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="" />
+      <created>1628498600968</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1628476670205</updated>
-      <workItem from="1628476671399" duration="11626000" />
+      <updated>1628498600968</updated>
+      <workItem from="1628498602172" duration="7118000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
 </project>

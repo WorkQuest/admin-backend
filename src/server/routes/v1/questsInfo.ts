@@ -1,5 +1,5 @@
 import * as Joi from "joi";
-import {getQuestsList, moderateQuest, questInfo} from "../../api/v1/questsInfo";
+import {getQuestsList, editQuest, questInfo, deleteQuest} from "../../api/v1/questsInfo";
 import {
   outputOkSchema,
   questSchema,
@@ -11,7 +11,10 @@ import {
   locationSchema,
   questPriceSchema,
   mediaIdsSchema,
+  emptyOkSchema,
 } from "@workquest/database-models/lib/schemes";
+import {getRbacSettings} from "../../utils/auth";
+import {AdminRole} from "@workquest/database-models/lib/models";
 
 export default[{
   method: "GET",
@@ -21,6 +24,7 @@ export default[{
     id: "v1.quests.list",
     tags: ["api", "quests"],
     description: "Get list of quests",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       query: adminQuerySchema.label('QuerySchema')
     },
@@ -36,6 +40,7 @@ export default[{
     id: "v1.quest.info",
     tags: ["api", "quests"],
     description: "Get info about quest",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -48,11 +53,12 @@ export default[{
 }, {
   method: "PUT",
   path: "/v1/quest/{questId}",
-  handler: moderateQuest,
+  handler: editQuest,
   options: {
-    id: "v1.quest.moderateQuest",
+    id: "v1.quest.editQuest",
     tags: ["api", "quests"],
-    description: "Moderate quest",
+    description: "Edit quest",
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -70,5 +76,23 @@ export default[{
       schema: outputOkSchema(questSchema).label('QuestInfoResponse')
     }
   }
-},]
+}, {
+  method: "DELETE",
+  path: "v1/quest/{questId}",
+  handler: deleteQuest,
+  options: {
+    id: "v1.quest.deleteQuest",
+    tags: ["api", "quests"],
+    description: "Delete quest",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("DeleteQuestParams"),
+    },
+    response: {
+      schema: emptyOkSchema
+    }
+  }
+}]
 

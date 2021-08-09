@@ -1,11 +1,11 @@
-import {AdminRole, Quest, QuestStatus} from "@workquest/database-models/lib/models";
+import { AdminRole,
+  Quest,
+  QuestStatus,
+  QuestsResponse,
+} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {
-  locationSchema,
-  questPriceSchema,
-  questPrioritySchema,
-} from "@workquest/database-models/lib/schemes";
+import { getMedias } from "../../utils/medias";
 
 export async function getQuestsList(r){
   r.auth.credentials.MustHaveAdminRole(AdminRole.main);
@@ -27,21 +27,47 @@ export async function questInfo(r){
   return(quest);
 }
 
-export async function moderateQuest(r){
+export async function editQuest(r){
   r.auth.credentials.MustHaveAdminRole(AdminRole.main);
-
-  const quest = await Quest.findByPk(r.params.id)
+  const quest = await Quest.findByPk(r.params.questId);
+  const transaction = await r.server.app.db.transaction();
 
   if(!quest) {
     error(Errors.NotFound, 'Quest not found',{});
   }
   quest.mustHaveStatus(QuestStatus.Created);
 
-  await quest.update({
-    title: r.payload.title,
-    description: r.payload.description,
-    location: locationSchema,
-    priority: questPrioritySchema,
-    price: questPriceSchema,
-  })
+  if(r.payload.medias) {
+    const medias = await getMedias(r.payload.medias);
+
+    await quest.$set('medias', medias, { transaction });
+  }
+  quest.updateFieldLocationPostGIS();
+
+  await quest.update(r.payload, { transaction });
+  await transaction.commit();
+
+  return output(
+    await Quest.findByPk(quest.id)
+  )
+}
+
+export async function deleteQuest(r){
+  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
+  const quest = await Quest.findByPk(r.params.questId);
+  const transaction = await r.server.app.db.transaction();
+  if (!quest) {
+    return error(Errors.NotFound, "Quest not found", {});
+  }
+
+  if (quest.status !== QuestStatus.Created && quest.status !== QuestStatus.Closed) {
+    return error(Errors.InvalidStatus, "Quest cannot be deleted at current stage", {});
+  }
+
+  await QuestsResponse.destroy({ where: { questId: quest.id }, transaction })
+  await quest.destroy({ force: true, transaction });
+
+  await transaction.commit();
+
+  return output();
 }
