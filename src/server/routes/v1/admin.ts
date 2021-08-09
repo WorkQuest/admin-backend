@@ -20,18 +20,11 @@ import {
   emptyOkSchema,
   outputPaginationSchema,
   adminQuerySchema,
+  adminSchema
 } from "@workquest/database-models/lib/schemes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 
 const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
-
-const adminSchema = Joi.object({
-  id: idSchema,
-  firstName: adminFirstNameSchema.required(),
-  lastName: adminLastNameSchema.required(),
-  email: adminEmailSchema.required(),
-  role: adminRoleSchema.required(),
-}).label('AdminSchema')
 
 const registerAdminWithSecretSchema = Joi.object({
   data: { adminSchema },
@@ -48,8 +41,8 @@ export default[{
   path: "v1/admins",
   handler: getAdmins,
   options: {
-    id: "v1.auth.adminsList",
-    tags: ["api", "settings"],
+    id: "v1.admin.adminsList",
+    tags: ["api", "admin"],
     description: "Get admins list. Allow admins: main",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -126,7 +119,6 @@ export default[{
       params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
         newLogin: adminEmailSchema,
-        totp: totpSchema,
       })
     },
     response: {
@@ -146,7 +138,6 @@ export default[{
       params: adminIdParams.label('DeactivateAccountParams'),
       payload: Joi.object({
         newPassword: adminPasswordSchema,
-        totp: totpSchema,
       })
     },
     response: {

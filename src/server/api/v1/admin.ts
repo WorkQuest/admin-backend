@@ -32,9 +32,8 @@ export async function registerAdminAccount(r) {
       }
     }
   });
-
   return output({
-    admin: await Admin.findByPk(newAdmin.id), // TODO: проверь плиз newAdmin возвращает default scope, если да, передай сюда newAdmin
+    admin: await Admin.findByPk(newAdmin.id),
     secret: base32,
   });
 }
@@ -46,7 +45,7 @@ export async function deleteAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    // TODO error, думаю лучше так, если главный админ что-то хочет исправить у себя, он сделает это в базе
+    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   await admin.destroy();
@@ -61,7 +60,7 @@ export async function activateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    // TODO error, думаю лучше так, если главный админ что-то хочет исправить у себя, он сделает это в базе
+    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   await admin.update({
@@ -78,7 +77,7 @@ export async function deactivateAdminAccount(r) {
     return error(Errors.InvalidUserId, 'Can not activate your own account', {});
   }
   if (admin.role === AdminRole.main) {
-    // TODO error, думаю лучше так, если главный админ что-то хочет исправить у себя, он сделает это в базе
+    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   await admin.update({
@@ -95,7 +94,7 @@ export async function changeLogin(r) {
     return error(Errors.NotFound, 'Account not found', {});
   }
   if (admin.role === AdminRole.main) {
-    // TODO error, думаю лучше так, если главный админ что-то хочет исправить у себя, он сделает это в базе
+    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   if (await Admin.isEmailExist(r.payload.newLogin)) {
@@ -116,7 +115,7 @@ export async function changePassword(r) {
     return error(Errors.NotFound, 'Account not found', {});
   }
   if (admin.role === AdminRole.main) {
-    // TODO error, думаю лучше так, если главный админ что-то хочет исправить у себя, он сделает это в базе
+    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
   if(await admin.passwordCompare(r.payload.newPassword)) {
     return error(Errors.AlreadyExist, "New password is the same with the old one", {});
