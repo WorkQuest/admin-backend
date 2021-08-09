@@ -4,6 +4,7 @@ import { error, } from './index';
 import { Session } from "database-models/lib/models/Session";
 import { Errors, } from './errors';
 import { Admin, } from "database-models/lib/models/Admin"
+import {AdminSession} from "@workquest/database-models/lib/models";
 
 
 export const generateJwt = (data: object) => {
@@ -31,12 +32,12 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
   return async function (r, token: string) {
     const data = await decodeJwt(token, config.auth.jwt[tokenType].secret);
 
-    const { user } = await Session.findByPk(data.id, {
+    const { admin } = await AdminSession.findByPk(data.id, {
       include: [{ model: Admin}],
     });
 
-    if (user) {
-      return { isValid: true, credentials: user, artifacts: { token, type: tokenType, }, };
+    if (admin) {
+      return { isValid: true, credentials: admin, artifacts: { token, type: tokenType, }, };
     }
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
