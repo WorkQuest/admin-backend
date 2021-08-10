@@ -64,7 +64,7 @@ export async function activateAdminAccount(r) {
   }
 
   await admin.update({
-    isActive: true
+    isActivated: true
   });
 
   return output();
@@ -81,7 +81,7 @@ export async function deactivateAdminAccount(r) {
   }
 
   await admin.update({
-    isActive: false
+    isActivated: false
   });
 
   return output();

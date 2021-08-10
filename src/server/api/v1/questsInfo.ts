@@ -6,9 +6,9 @@ import { AdminRole,
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import { getMedias } from "../../utils/medias";
+import {Disputes} from "@workquest/database-models/lib/models/Disputes";
 
 export async function getQuestsList(r){
-  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
   const {rows, count} = await Quest.findAndCountAll({
     limit: r.query.limit,
     offset: r.query.offset,
@@ -17,7 +17,6 @@ export async function getQuestsList(r){
 }
 
 export async function questInfo(r){
-  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
 
   const quest = await Quest.findByPk(r.params.questId);
   if(!quest) {
@@ -28,7 +27,6 @@ export async function questInfo(r){
 }
 
 export async function editQuest(r){
-  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
   const quest = await Quest.findByPk(r.params.questId);
   const transaction = await r.server.app.db.transaction();
 
@@ -53,7 +51,6 @@ export async function editQuest(r){
 }
 
 export async function deleteQuest(r){
-  r.auth.credentials.MustHaveAdminRole(AdminRole.main);
   const quest = await Quest.findByPk(r.params.questId);
   const transaction = await r.server.app.db.transaction();
   if (!quest) {
@@ -70,4 +67,14 @@ export async function deleteQuest(r){
   await transaction.commit();
 
   return output();
+}
+
+export async function getDispute(r){
+  const dispute = await Disputes.findOne({
+    where: {
+      questId: r.params.questId,
+    },
+  });
+
+  return output(dispute);
 }

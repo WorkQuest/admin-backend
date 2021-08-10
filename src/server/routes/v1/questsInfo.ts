@@ -1,5 +1,5 @@
 import * as Joi from "joi";
-import {getQuestsList, editQuest, questInfo, deleteQuest} from "../../api/v1/questsInfo";
+import {getQuestsList, editQuest, questInfo, deleteQuest, getDispute} from "../../api/v1/questsInfo";
 import {
   outputOkSchema,
   questSchema,
@@ -11,10 +11,11 @@ import {
   locationSchema,
   questPriceSchema,
   mediaIdsSchema,
-  emptyOkSchema,
+  emptyOkSchema, outputPaginationSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
+import {disputeSchema} from "@workquest/database-models/lib/schemes/disputes";
 
 export default[{
   method: "GET",
@@ -29,7 +30,7 @@ export default[{
       query: adminQuerySchema.label('QuerySchema')
     },
     response: {
-      schema: outputOkSchema(questSchema).label('QuestsListResponse')
+      schema: outputPaginationSchema('questsList',questSchema).label('QuestsListResponse')
     }
   }
 }, {
@@ -94,5 +95,23 @@ export default[{
       schema: emptyOkSchema
     }
   }
-}]
+}, {
+  method: "GET",
+  path: "/v1/quest/disputes/{questId}",
+  handler: getDispute,
+  options: {
+    id: "v1.disputes.info",
+    tags: ["api", "disputes"],
+    description: "Get info about disputes",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("GetQuestParams"),
+    },
+    response: {
+      schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
+    }
+  }
+}, ]
 
