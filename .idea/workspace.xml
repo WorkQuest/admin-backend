@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/admin.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/questsInfo.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/routes/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/questsInfo.ts" afterDir="false" />
     </list>
@@ -53,7 +50,7 @@
       <option name="presentableId" value="Default" />
       <updated>1628498600968</updated>
       <workItem from="1628498602172" duration="7468000" />
-      <workItem from="1628506187272" duration="11626000" />
+      <workItem from="1628506187272" duration="11917000" />
     </task>
     <servers />
   </component>

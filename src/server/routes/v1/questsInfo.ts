@@ -113,5 +113,23 @@ export default[{
       schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
     }
   }
-}, ]
+}, {
+  method: "GET",
+  path: "/v1/quest/disputes/{questId}",
+  handler: getDispute,
+  options: {
+    id: "v1.disputes.info",
+    tags: ["api", "disputes"],
+    description: "Get info about disputes",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("GetQuestParams"),
+    },
+    response: {
+      schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
+    }
+  }
+},]
 

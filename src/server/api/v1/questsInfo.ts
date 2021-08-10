@@ -16,7 +16,7 @@ export async function getQuestsList(r){
   return output({ count, quests: rows });
 }
 
-export async function questInfo(r){
+export async function questInfo(r) {
 
   const quest = await Quest.findByPk(r.params.questId);
   if(!quest) {
@@ -26,7 +26,7 @@ export async function questInfo(r){
   return(quest);
 }
 
-export async function editQuest(r){
+export async function editQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
   const transaction = await r.server.app.db.transaction();
 
@@ -50,7 +50,7 @@ export async function editQuest(r){
   )
 }
 
-export async function deleteQuest(r){
+export async function deleteQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
   const transaction = await r.server.app.db.transaction();
   if (!quest) {
@@ -69,7 +69,7 @@ export async function deleteQuest(r){
   return output();
 }
 
-export async function getDispute(r){
+export async function getDispute(r) {
   const dispute = await Disputes.findOne({
     where: {
       questId: r.params.questId,
