@@ -1,0 +1,76 @@
+name: Node-CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, '[update]')"
+
+    steps:
+      - name: Copy code files to container
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - name: Environment preparation
+        run: |
+          mkdir -p ~/.ssh/
+          touch ~/.ssh/id_rsa
+          chmod -R go= ~/.ssh
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.DEV_SERVER_SSH_KEY }}" >> ~/.ssh/id_rsa
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run build task
+        run: npm run build
+
+  deploy-dev:
+
+    runs-on: ubuntu-18.04
+    needs: [build]
+
+    steps:
+      - name: Copy code files to container
+        uses: actions/checkout@v2
+
+      - name: Environment preparation
+        run: |
+          mkdir -p ~/.ssh/
+          touch ~/.ssh/id_rsa
+          chmod -R go= ~/.ssh
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.DEV_SERVER_SSH_KEY }}" >> ~/.ssh/id_rsa
+          sudo apt-add-repository -y -u ppa:ansible/ansible
+          sudo apt-get install -y rsync
+          sudo apt-get install -y ansible
+
+      - name: Deploy to Server
+        run: |
+          chmod 700 ci-scripts
+          cd ci-scripts
+          ansible-playbook -i "${{ secrets.DEV_REMOTE_HOST }}" -e "ansible_user=${{ secrets.DEV_REMOTE_USER }} \
+            SERVER_HOST=${{ secrets.DEV_SERVER_HOST }} \
+            SERVER_PORT=${{ secrets.DEV_SERVER_PORT }} \
+            DB_LINK=${{ secrets.DEV_DB_LINK }} \
+            JWT_ACCESS_SECRET=${{ secrets.DEV_JWT_ACCESS_SECRET }} \
+            JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET }} \
+
+            SMTP_HOST=${{ secrets.DEV_SMTP_HOST }} \
+            SMTP_PORT=${{ secrets.DEV_SMTP_PORT }} \
+            SMTP_SECURE=${{ secrets.DEV_SMTP_SECURE }} \
+            SMTP_USER=${{ secrets.DEV_SMTP_USER }} \
+            SMTP_PASSWORD=${{ secrets.DEV_SMTP_PASSWORD }} \
+            SMTP_SENDER=${{ secrets.DEV_SMTP_SENDER }} \
+
+            BASE_URL=${{ secrets.DEV_BASE_URL }} \
+
+            SRC_DIR=${{ github.workspace }}/" backend-update.yml;
