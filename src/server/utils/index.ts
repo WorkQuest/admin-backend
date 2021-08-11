@@ -2,6 +2,7 @@ import { v4 as uuidv4, } from 'uuid';
 import { Boom, } from '@hapi/boom';
 import * as speakeasy from 'speakeasy';
 import * as crypto from "crypto"
+var geoip = require('geoip-lite');
 
 export function getUUID(): string {
   return uuidv4();
@@ -11,6 +12,17 @@ export function getRealIp(request): string {
   return request.headers['cf-connecting-ip']
     ? request.headers['cf-connecting-ip']
     : request.info.remoteAddress;
+}
+
+export function getGeo(request): string {
+  let ip = getRealIp(request);
+  console.log(geoip.lookup("176.59.150.96"))
+  let geo = geoip.lookup("176.59.150.96");
+  return geo.city
+}
+
+export function getDevice(request): string {
+  return request.headers['user-agent'];
 }
 
 export function output(res?: object | null): object {

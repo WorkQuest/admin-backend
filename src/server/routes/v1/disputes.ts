@@ -11,10 +11,10 @@ import {
   outputOkSchema,
   outputPaginationSchema,
   disputesQuerySchema,
+  disputeSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
-import {AdminRole} from "@workquest/database-models/lib/models";
-import {disputeSchema} from "@workquest/database-models/lib/schemes/disputes";
+import {AdminRole, QuestDispute , DisputeStatus} from "@workquest/database-models/lib/models";
 
 export default[{
   method: "GET",

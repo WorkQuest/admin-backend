@@ -1,11 +1,10 @@
-import {Dispute, DisputeStatus} from "@workquest/database-models/lib/models/Disputes";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {QuestsResponse} from "@workquest/database-models/lib/models";
+import {QuestsResponse, QuestDispute , DisputeStatus} from "@workquest/database-models/lib/models";
 import { Op } from 'sequelize'
 
 export async function getDisputeInfo(r) {
-  const dispute = await Dispute.findOne({
+  const dispute = await QuestDispute.findOne({
     where: {
       questId: r.params.questId,
     },
@@ -19,7 +18,7 @@ export async function getDisputeInfo(r) {
 }
 
 export async function getActiveDisputesInfo(r) {
-  const disputes = await Dispute.findAndCountAll({
+  const disputes = await QuestDispute.findAndCountAll({
     where: {
       [Op.or]: [ {status: DisputeStatus.pending}, {status: DisputeStatus.inProgress}]
     },
@@ -35,7 +34,7 @@ export async function getActiveDisputesInfo(r) {
 }
 
 export async function takeDispute(r) {
-  const dispute = await Dispute.findByPk(r.params.disputeId);
+  const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if(!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
@@ -50,7 +49,7 @@ export async function takeDispute(r) {
 }
 
 export async function disputeDecision(r) {
-  const dispute = await Dispute.findByPk(r.params.disputeId);
+  const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if(!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
@@ -67,7 +66,7 @@ export async function disputeDecision(r) {
 }
 
 export async function deleteDispute(r) {
-  const dispute  = await Dispute.findByPk(r.params.disputeId);
+  const dispute  = await QuestDispute.findByPk(r.params.disputeId);
   if (!dispute) {
     return error(Errors.NotFound, "Dispute not found", {});
   }
