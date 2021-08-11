@@ -80,7 +80,8 @@ export async function blockQuest(r) {
 
   //TODO добавить проверку на статус квеста, чтобы блокировать квесты определённого статуса
   await quest.update({
-    isBlocked: true
+    isBlocked: true,
+    blockReason: r.payload.blockReason,
   })
 
   return output();

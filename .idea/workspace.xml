@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/server/api/v1/disputes.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/server/api/v1/users.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/server/routes/v1/disputes.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/server/routes/v1/users.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/quests.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/questsInfo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/api/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/quests.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +52,7 @@
       <workItem from="1628498602172" duration="7468000" />
       <workItem from="1628506187272" duration="17790000" />
       <workItem from="1628648442517" duration="427000" />
-      <workItem from="1628648878759" duration="11606000" />
+      <workItem from="1628648878759" duration="11854000" />
     </task>
     <servers />
   </component>
