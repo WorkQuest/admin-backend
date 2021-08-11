@@ -1,9 +1,13 @@
 import auth from './auth'
-import settings from './admin';
-import questsInfo from "./questsInfo";
+import admin from './admin';
+import quests from "./quests";
+import users from "./users";
+import disputes from "./disputes";
 
 export default [
   ...auth,
-  ...settings,
-  ...questsInfo,
+  ...admin,
+  ...quests,
+  ...disputes,
+  ...users,
 ];

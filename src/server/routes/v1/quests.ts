@@ -1,21 +1,30 @@
 import * as Joi from "joi";
-import {getQuestsList, editQuest, questInfo, deleteQuest, getDispute} from "../../api/v1/questsInfo";
 import {
-  outputOkSchema,
-  questSchema,
+  blockQuest,
+  deleteQuest,
+  editQuest,
+  getQuestsList,
+  questInfo
+} from "../../api/v1/quests";
+import {
   adminQuerySchema,
+  emptyOkSchema,
   idSchema,
-  questTitleSchema,
-  questDescriptionSchema,
-  questPrioritySchema,
   locationSchema,
-  questPriceSchema,
   mediaIdsSchema,
-  emptyOkSchema, outputPaginationSchema,
+  outputOkSchema,
+  outputPaginationSchema,
+  questDescriptionSchema,
+  questPriceSchema,
+  questPrioritySchema,
+  questSchema,
+  questTitleSchema,
+  userSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-import {disputeSchema} from "@workquest/database-models/lib/schemes/disputes";
+
+const questBlockReasonSchema = Joi.string().example('Block reason....').label('BlockReasonSchema');
 
 export default[{
   method: "GET",
@@ -96,39 +105,24 @@ export default[{
     }
   }
 }, {
-  method: "GET",
-  path: "/v1/quest/disputes/{questId}",
-  handler: getDispute,
+  method: "POST",
+  path: "/v1/quest/{questId}",
+  handler: blockQuest,
   options: {
-    id: "v1.disputes.info",
-    tags: ["api", "disputes"],
-    description: "Get info about disputes",
+    id: "v1.quest.blockQuest",
+    tags: ["api", "quests"],
+    description: "Block quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
-      }).label("GetQuestParams"),
+      }).label("EditQuestParams"),
+      payload: Joi.object({
+        blockReason: questBlockReasonSchema,
+      }).label('EditQuestSchema')
     },
     response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/quest/disputes/{questId}",
-  handler: getDispute,
-  options: {
-    id: "v1.disputes.info",
-    tags: ["api", "disputes"],
-    description: "Get info about disputes",
-    plugins: getRbacSettings(AdminRole.main),
-    validate: {
-      params: Joi.object({
-        questId: idSchema.required(),
-      }).label("GetQuestParams"),
-    },
-    response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
+      schema: emptyOkSchema
     }
   }
 },]

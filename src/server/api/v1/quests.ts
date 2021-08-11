@@ -6,7 +6,6 @@ import { AdminRole,
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import { getMedias } from "../../utils/medias";
-import {Disputes} from "@workquest/database-models/lib/models/Disputes";
 
 export async function getQuestsList(r){
   const {rows, count} = await Quest.findAndCountAll({
@@ -23,7 +22,7 @@ export async function questInfo(r) {
     error(Errors.NotFound, 'Quest not found',{});
   }
 
-  return(quest);
+  return output(quest);
 }
 
 export async function editQuest(r) {
@@ -69,12 +68,25 @@ export async function deleteQuest(r) {
   return output();
 }
 
-export async function getDispute(r) {
-  const dispute = await Disputes.findOne({
-    where: {
-      questId: r.params.questId,
-    },
-  });
+export async function blockQuest(r) {
+  const quest = await Quest.findByPk(r.params.questId);
+  if (!quest) {
+    return error(Errors.NotFound, "Quest not found", {});
+  }
 
-  return output(dispute);
+  if (quest.status !== QuestStatus.Created && quest.status !== QuestStatus.Closed) {
+    return error(Errors.InvalidStatus, "Quest cannot be deleted at current stage", {});
+  }
+
+  //TODO добавить проверку на статус квеста, чтобы блокировать квесты определённого статуса
+  await quest.update({
+    isBlocked: true
+  })
+
+  return output();
 }
+
+//TODO добавить разблокировку квеста
+//TODO узнать, может ли пользователь узнать о причинах блокировки и надо ли будет выводить ему это
+
+
