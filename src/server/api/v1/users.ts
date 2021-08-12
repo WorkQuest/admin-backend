@@ -16,9 +16,7 @@ export async function getUsers(r) {
   const {rows, count} = await User.findAndCountAll({
     where: {
       status: {
-        [Op.not]: {
-          [Op.iLike]: UserStatus.isBlocked,
-        }
+        [Op.not]: UserStatus.isBlocked,
       }
     },
     limit: r.query.limit,
