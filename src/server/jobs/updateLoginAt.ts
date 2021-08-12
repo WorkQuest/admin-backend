@@ -5,13 +5,13 @@ export interface id{
   id: string
 }
 
-export default async function updateLogoutAt(payload: id) {
+export default async function updateLoginAt(payload: id) {
   const admin = await Admin.findByPk(payload.id);
   await admin.update({
-    logoutAt: Date.now(),
+    loginAt: Date.now(),
   });
 }
 
-export async function updateLogoutAtJob(payload: id) {
-  return addJob('updateLogoutAt', payload)
+export async function updateLoginAtJob(payload: id) {
+  return addJob('updateLoginAt', payload)
 }

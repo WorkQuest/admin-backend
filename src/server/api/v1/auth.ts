@@ -1,9 +1,11 @@
 import { Errors } from "../../utils/errors";
-import {output, error, getRealIp, getDevice, getGeo} from "../../utils";
-import { Admin, } from "@workquest/database-models/lib/models"
+import {output, error, getDevice, getGeo } from "../../utils";
+import { Admin, AdminSession, } from "@workquest/database-models/lib/models"
 import { Op } from "sequelize";
-import updateDevicePlaceLoginAtJob from "../../jobs/updateDevicePlaceLoginAt";
 import updateLogoutAtJob from "../../jobs/updateLogoutAt";
+import {generateJwt} from "../../utils/auth";
+import {updateLoginAtJob} from "../../jobs/updateLoginAt";
+import {updateLastSessionJob} from "../../jobs/updateLastSession";
 
 export async function login(r) {
   const admin = await Admin.scope("withPassword").findOne({
@@ -20,25 +22,28 @@ export async function login(r) {
   if (!await admin.passwordCompare(r.payload.password)) {
     return error(Errors.NotFound, "Invalid password", {});
   }
-  // if(!await admin.validateTOTP(r.payload.totp)) {
-  //   throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
-  // }
+  if(!await admin.validateTOTP(r.payload.totp)) {
+    throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
+  }
 
-  await updateDevicePlaceLoginAtJob({
-    admin: admin,
+  await updateLoginAtJob({
+    id: admin.id
+  });
+
+  const session = await AdminSession.create({
+    adminId: admin.id,
     device: getDevice(r),
     place: getGeo(r),
   });
-  console.log(getGeo(r))
 
+  await updateLastSessionJob({
+    adminId: admin.id,
+    sessionId: session.id
+  });
 
-  // const session = await AdminSession.create({
-  //   adminId: account.id
-  // });
-  //
-  // return output({
-  //   ...generateJwt({ id: session.id })
-  // });
+ return output({
+    ...generateJwt({ id: session.id })
+  });
 }
 
 export async function logout(r) {
@@ -47,7 +52,9 @@ export async function logout(r) {
   if(!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  await updateLogoutAtJob(admin);
+  await updateLogoutAtJob({
+    id: admin.id
+  });
 
   return output();
 }

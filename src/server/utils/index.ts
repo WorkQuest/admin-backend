@@ -2,6 +2,7 @@ import { v4 as uuidv4, } from 'uuid';
 import { Boom, } from '@hapi/boom';
 import * as speakeasy from 'speakeasy';
 import * as crypto from "crypto"
+import config from "../config/config";
 var geoip = require('geoip-lite');
 
 export function getUUID(): string {
@@ -9,15 +10,18 @@ export function getUUID(): string {
 }
 
 export function getRealIp(request): string {
-  return request.headers['cf-connecting-ip']
-    ? request.headers['cf-connecting-ip']
+  return request.headers['X-Forwarded-For']
+    ? request.headers['X-Forwarded-For']
     : request.info.remoteAddress;
 }
 
+//DO NOT WORK WITH LOCAL IP
 export function getGeo(request): string {
+  if (config.debug) {
+    return "localhost";
+  }
   let ip = getRealIp(request);
-  console.log(geoip.lookup("176.59.150.96"))
-  let geo = geoip.lookup("176.59.150.96");
+  let geo = geoip.lookup(ip);
   return geo.city
 }
 

@@ -4,6 +4,7 @@ config();
 
 export default {
   dbLink: process.env.DB_LINK,
+  baseUrl: process.env.BASE_URL,
   auth: {
     emailConfirmCodeLifetime: Number(process.env.EMAIL_CONFIRM_CODE_LIFETIME),
     captcha: {
