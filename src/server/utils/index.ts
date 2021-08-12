@@ -16,13 +16,20 @@ export function getRealIp(request): string {
 }
 
 //DO NOT WORK WITH LOCAL IP
-export function getGeo(request): string {
+export function getGeo(request) {
   if (config.debug) {
-    return "localhost";
+    return {
+      country: "localhost",
+      city: "localhost",
+    }
   }
   let ip = getRealIp(request);
   let geo = geoip.lookup(ip);
-  return geo.city
+  let place = {
+    country: geo.country,
+    city: geo.city
+  }
+  return place
 }
 
 export function getDevice(request): string {
