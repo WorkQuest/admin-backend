@@ -1,9 +1,11 @@
 import * as Joi from "joi";
 import {
   disputeDecision,
-  getDisputeInfo,
+  getQuestDisputeInfo,
   takeDispute,
-  deleteDispute, getActiveDisputesInfo,
+  deleteDispute,
+  getActiveDisputesInfo,
+  getUserDisputeInfo
 } from "../../api/v1/disputes";
 import {
   adminDecisionSchema,
@@ -19,11 +21,11 @@ import {AdminRole, QuestDispute , DisputeStatus} from "@workquest/database-model
 export default[{
   method: "GET",
   path: "/v1/quest/{questId}/dispute", //Получаем диспут какого-то квеста, поэтому id квеста
-  handler: getDisputeInfo,
+  handler: getQuestDisputeInfo,
   options: {
-    id: "v1.dispute.info",
+    id: "v1.quest.dispute.info",
     tags: ["api", "disputes"],
-    description: "Get info about dispute",
+    description: "Get info about dispute of the quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
@@ -32,6 +34,41 @@ export default[{
     },
     response: {
       schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/user/{userId}/disputes", //Получаем диспут какого-то юзера, поэтому id юзера
+  handler: getUserDisputeInfo,
+  options: {
+    id: "v1.user.disputes.info",
+    tags: ["api", "disputes"],
+    description: "Get info about disputes of the user",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      query: disputesQuerySchema.label('QuerySchema'),
+      params: Joi.object({
+        userId: idSchema.required(),
+      }).label("GetUserParams"),
+    },
+    response: {
+      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputeInfoResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/activeDisputes",
+  handler: getActiveDisputesInfo,
+  options: {
+    id: "v1.disputes.info",
+    tags: ["api", "disputes"],
+    description: "Get info about active disputes",
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    validate: {
+      query: disputesQuerySchema.label('QuerySchema')
+    },
+    response: {
+      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
     }
   }
 }, {
@@ -91,21 +128,5 @@ export default[{
       schema: outputOkSchema(disputeSchema).label('DisputeDecisionResponse')
     }
   }
-}, {
-  method: "GET",
-  path: "/v1/activeDisputes",
-  handler: getActiveDisputesInfo,
-  options: {
-    id: "v1.disputes.info",
-    tags: ["api", "disputes"],
-    description: "Get info about active disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema')
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-},]
+}, ]
 

@@ -3,7 +3,7 @@ import {Errors} from "../../utils/errors";
 import {QuestsResponse, QuestDispute , DisputeStatus} from "@workquest/database-models/lib/models";
 import { Op } from 'sequelize'
 
-export async function getDisputeInfo(r) {
+export async function getQuestDisputeInfo(r) {
   const dispute = await QuestDispute.findOne({
     where: {
       questId: r.params.questId,
@@ -15,6 +15,22 @@ export async function getDisputeInfo(r) {
   }
 
   return output(dispute);
+}
+
+export async function getUserDisputeInfo(r) {
+  const disputes = await QuestDispute.findAndCountAll({
+    where: {
+      userId: r.params.userId,
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!disputes) {
+    return error(Errors.NotFound, "Disputes are not found", {});
+  }
+
+  return output({ count: disputes.count, disputes: disputes.rows });
 }
 
 export async function getActiveDisputesInfo(r) {

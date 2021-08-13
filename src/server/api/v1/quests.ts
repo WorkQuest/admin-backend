@@ -1,7 +1,7 @@
 import {
   Quest,
   QuestStatus,
-  QuestsResponse,
+  QuestsResponse, QuestDispute,
 } from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
@@ -23,6 +23,22 @@ export async function questInfo(r) {
   }
 
   return output(quest);
+}
+
+export async function getUserQuestsInfo(r) {
+  const quests = await Quest.findAndCountAll({
+    where: {
+      userId: r.params.userId,
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!quests) {
+    return error(Errors.NotFound, "Disputes are not found", {});
+  }
+
+  return output({ count: quests.count, disputes: quests.rows });
 }
 
 export async function editQuest(r) {

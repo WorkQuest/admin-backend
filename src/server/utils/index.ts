@@ -66,6 +66,10 @@ export function totpValidate(totp: string, secret: string): boolean {
   });
 }
 
+export function getRandomHexToken(): string {
+  return crypto.randomBytes(20).toString("hex");
+}
+
 export function responseHandler(r, h) {
   // Handle default hapi errors (like not found, etc.)
   if (r.response.isBoom && r.response.data === null) {

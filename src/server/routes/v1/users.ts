@@ -4,16 +4,23 @@ import {
   getUserInfo,
   getUsers,
   blackListInfo,
+  unblockUser,
+  changeUserRole
 } from "../../api/v1/users";
 import {
   emptyOkSchema,
   idSchema,
-  outputOkSchema, outputPaginationSchema, paginationFields,
+  outputOkSchema,
+  outputPaginationSchema,
+  userRoleSchema,
   userSchema,
   usersQuerySchema,
+  userFullSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
+
+const userBlockedReasonsSchema = Joi.string().example('You are blocked...').label('UserBlockReasons');
 
 export default[{
   method: "GET",
@@ -30,7 +37,7 @@ export default[{
       }).label("GetUserParams"),
     },
     response: {
-      schema: outputOkSchema(userSchema).label('UserInfoResponse')
+      schema: outputOkSchema(userFullSchema).label('UserInfoResponse')
     }
   }
 }, {
@@ -46,7 +53,7 @@ export default[{
       query: usersQuerySchema.label('QuerySchema')
     },
     response: {
-      schema: outputPaginationSchema('users', userSchema).label('UsersInfoResponse')
+      schema: outputPaginationSchema('users', userFullSchema).label('UsersInfoResponse')
     }
   }
 }, {
@@ -62,7 +69,28 @@ export default[{
       query: usersQuerySchema.label('QuerySchema')
     },
     response: {
-      schema: outputPaginationSchema('users', userSchema).label('BlackListInfoResponse')
+      schema: outputPaginationSchema('users', userFullSchema).label('BlackListInfoResponse')
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/change-role/{userId}",
+  handler: changeUserRole,
+  options: {
+    id: "v1.user.change.role",
+    tags: ["api", "users"],
+    description: "Change role of the user",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        userId: idSchema.required(),
+      }).label("UserParams"),
+      payload: Joi.object({
+        role: userRoleSchema,
+      }).label('ChangeUserRoleSchema')
+    },
+    response: {
+      schema: outputOkSchema(userFullSchema).label('QuestInfoResponse')
     }
   }
 }, {
@@ -77,7 +105,28 @@ export default[{
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
-      }).label("GetUserParams"),
+      }).label("UserParams"),
+      payload: Joi.object({
+        userBlockReasons: userBlockedReasonsSchema,
+      })
+    },
+    response: {
+      schema: emptyOkSchema,
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/unblock/{userId}/user",
+  handler: unblockUser,
+  options: {
+    id: "v1.unblock.user",
+    tags: ["api", "users"],
+    description: "Unblock user",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        userId: idSchema.required(),
+      }).label("UserParams"),
     },
     response: {
       schema: emptyOkSchema,

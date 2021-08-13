@@ -16,7 +16,6 @@ import {
   adminPasswordSchema,
   idSchema,
   outputOkSchema,
-  totpSchema,
   emptyOkSchema,
   outputPaginationSchema,
   adminQuerySchema,
