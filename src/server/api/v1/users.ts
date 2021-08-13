@@ -1,8 +1,9 @@
 import {User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Op} from "sequelize";
+import {BIGINT, Op} from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/UserBlockReason";
+import BigNumber from "bignumber.js";
 
 
 export async function getUserInfo(r) {
@@ -34,8 +35,16 @@ export async function changeUserRole(r) {
     return error(Errors.NotFound, 'User is not found', {})
   }
 
+  let date = new Date();
+  date.setDate(user.changeRoleAt.getDate() + 31);
+  const canChangeRole = date <= user.changeRoleAt
+
+  if(!canChangeRole){
+    return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
+  }
   await user.update({
-    role: r.payload.role
+    role: r.payload.role,
+    changeRoleAt: Date.now(),
   })
 
   return output();
