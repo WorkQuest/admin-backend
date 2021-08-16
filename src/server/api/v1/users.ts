@@ -1,9 +1,8 @@
-import {User, UserStatus} from "@workquest/database-models/lib/models";
+import {Session, User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {BIGINT, Op} from "sequelize";
+import { Op } from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/UserBlockReason";
-import BigNumber from "bignumber.js";
 
 
 export async function getUserInfo(r) {
@@ -15,11 +14,16 @@ export async function getUserInfo(r) {
   return output(user);
 }
 
+//TODO обычная или не обычная активность
 export async function getUsers(r) {
-  const {rows, count} = await User.findAndCountAll({
+  const {rows, count} = await User.scope('withPassword').findAndCountAll({
+    include: [{
+      model: Session,
+      as: 'lastSession',
+    },],
     where: {
       status: {
-        [Op.not]: UserStatus.isBlocked,
+        [Op.not]: UserStatus.Blocked,
       }
     },
     limit: r.query.limit,
@@ -58,7 +62,7 @@ export async function blockUser(r) {
   }
 
   //Это нужно для того, чтобы статус не менялся по таблице UserBlockReason, иначе статус перезапишется на isBlocked навсегда
-  if(user.status === UserStatus.isBlocked) {
+  if(user.status === UserStatus.Blocked) {
     return error(Errors.AlreadyBlocked, 'User is already blocked', {});
   }
 
@@ -74,7 +78,7 @@ export async function blockUser(r) {
       previousStatus: user.status,
     })
     await user.update({
-      status: UserStatus.isBlocked,
+      status: UserStatus.Blocked,
     });
 
     return output();
@@ -87,7 +91,7 @@ export async function blockUser(r) {
   })
 
   await user.update({
-    status: UserStatus.isBlocked,
+    status: UserStatus.Blocked,
   });
 
   return output();
@@ -101,7 +105,7 @@ export async function unblockUser(r) {
   }
 
   //Это нужно для того, чтобы статус не менялся по таблице UserBlockReason, иначе статус будет некорректный
-  if(user.status !== UserStatus.isBlocked) {
+  if(user.status !== UserStatus.Blocked) {
     return error(Errors.AlreadyUnblocked, 'User is already unblocked', {});
   }
 
@@ -122,7 +126,7 @@ export async function blackListInfo(r) {
   const {rows, count} = await User.findAndCountAll({
     include: UserBlockReason,
     where: {
-      status: UserStatus.isBlocked
+      status: UserStatus.Blocked
     },
     limit: r.query.limit,
     offset: r.query.offset,

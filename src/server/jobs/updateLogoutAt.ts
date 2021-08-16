@@ -1,15 +1,16 @@
 import { addJob } from "../utils/scheduler";
-import {Admin} from "@workquest/database-models/lib/models";
+import {AdminSession} from "@workquest/database-models/lib/models";
 
 export interface id{
-  id: string
+  lastSessionId: string,
 }
 
 export default async function updateLogoutAt(payload: id) {
-  const admin = await Admin.findByPk(payload.id);
-  await admin.update({
-    logoutAt: Date.now(),
-  });
+  const session = await AdminSession.findByPk(payload.lastSessionId);
+  await session.update({
+    isActive: false,
+    logoutAt: Date.now()
+  })
 }
 
 export async function updateLogoutAtJob(payload: id) {

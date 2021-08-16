@@ -39,6 +39,15 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     if (admin) {
       return { isValid: true, credentials: admin, artifacts: { token, type: tokenType, }, };
     }
+
+    const session = await AdminSession.findByPk(admin.lastSessionId);
+    if(!session.isActive) {
+      throw error(Errors.SessionNotFound, 'Session is not active', {});
+    }
+    await session.update({
+      lastActionTime: Date.now(),
+    });
+
     throw error(Errors.SessionNotFound, 'User not found', {});
   };
 }

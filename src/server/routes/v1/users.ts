@@ -13,9 +13,9 @@ import {
   outputOkSchema,
   outputPaginationSchema,
   userRoleSchema,
-  userSchema,
   usersQuerySchema,
   userFullSchema,
+  userWithSettingsFullSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
@@ -53,7 +53,7 @@ export default[{
       query: usersQuerySchema.label('QuerySchema')
     },
     response: {
-      schema: outputPaginationSchema('users', userFullSchema).label('UsersInfoResponse')
+      schema: outputPaginationSchema('users', userWithSettingsFullSchema).label('UsersInfoResponse')
     }
   }
 }, {
@@ -73,7 +73,7 @@ export default[{
     }
   }
 }, {
-  method: "POST",
+  method: "PUT",
   path: "/v1/change-role/{userId}",
   handler: changeUserRole,
   options: {
@@ -94,7 +94,7 @@ export default[{
     }
   }
 }, {
-  method: "POST",
+  method: "PUT",
   path: "/v1/block/{userId}/user",
   handler: blockUser,
   options: {
@@ -115,7 +115,7 @@ export default[{
     }
   }
 }, {
-  method: "POST",
+  method: "PUT",
   path: "/v1/unblock/{userId}/user",
   handler: unblockUser,
   options: {

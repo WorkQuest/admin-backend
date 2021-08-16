@@ -4,8 +4,6 @@ import { Admin, AdminSession, } from "@workquest/database-models/lib/models"
 import { Op } from "sequelize";
 import updateLogoutAtJob from "../../jobs/updateLogoutAt";
 import {generateJwt} from "../../utils/auth";
-import {updateLoginAtJob} from "../../jobs/updateLoginAt";
-import {updateLastSessionJob} from "../../jobs/updateLastSession";
 
 export async function login(r) {
   const admin = await Admin.scope("withPassword").findOne({
@@ -26,34 +24,49 @@ export async function login(r) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 
-  await updateLoginAtJob({
-    id: admin.id
-  });
+  if(!admin.lastSessionId) {
+    const session = await AdminSession.create({
+      adminId: admin.id,
+      place: getGeo(r),
+      device: getDevice(r),
+      isActive: true,
+    });
+    await admin.update({
+      lastSessionId: session.id
+    })
+    return output({
+      ...generateJwt({ id: session.id })
+    });
+  }
 
-  const session = await AdminSession.create({
-    adminId: admin.id,
-    device: getDevice(r),
-    place: getGeo(r),
-  });
+  const session = await AdminSession.findByPk(admin.lastSessionId)
+  if(!session.isActive) {
+    const session = await AdminSession.create({
+      adminId: admin.id,
+      place: getGeo(r),
+      device: getDevice(r),
+      isActive: true,
+    });
 
-  await updateLastSessionJob({
-    adminId: admin.id,
-    sessionId: session.id
-  });
+    return output({
+      ...generateJwt({ id: session.id })
+    });
+  }
 
- return output({
+  return output({
     ...generateJwt({ id: session.id })
   });
+
 }
 
 export async function logout(r) {
-  // TODO
+  // TODO!!!!
   const admin = await Admin.findByPk(r.auth.credentials.id);
   if(!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   await updateLogoutAtJob({
-    id: admin.id
+    lastSessionId: admin.lastSessionId,
   });
 
   return output();
