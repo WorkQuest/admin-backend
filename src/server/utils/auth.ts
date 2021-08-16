@@ -40,6 +40,10 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
       return { isValid: true, credentials: admin, artifacts: { token, type: tokenType, }, };
     }
 
+    if(!admin.isActivated) {
+      throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
+    }
+
     const session = await AdminSession.findByPk(admin.lastSessionId);
     if(!session.isActive) {
       throw error(Errors.SessionNotFound, 'Session is not active', {});

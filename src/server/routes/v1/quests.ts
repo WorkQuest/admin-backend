@@ -126,7 +126,7 @@ export default[{
   }
 }, {
   method: "DELETE",
-  path: "v1/quest/{questId}",
+  path: "/v1/quest/{questId}",
   handler: deleteQuest,
   options: {
     id: "v1.quest.deleteQuest",

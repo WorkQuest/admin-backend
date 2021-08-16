@@ -49,7 +49,7 @@ export async function deleteAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not delete your own account', {})
   }
 
   await admin.destroy();
@@ -64,7 +64,7 @@ export async function activateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not activate your own account', {})
   }
 
   await admin.update({
@@ -78,10 +78,10 @@ export async function deactivateAdminAccount(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
   if (!admin) {
-    return error(Errors.InvalidUserId, 'Can not activate your own account', {});
+    return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not deactivate your own account', {})
   }
 
   await admin.update({
@@ -96,9 +96,6 @@ export async function changeLogin(r) {
 
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
-  }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   if (await Admin.isEmailExist(r.payload.newLogin)) {
@@ -118,9 +115,7 @@ export async function changePassword(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
-  }
+
   if(await admin.passwordCompare(r.payload.newPassword)) {
     return error(Errors.AlreadyExist, "New password is the same with the old one", {});
   }

@@ -81,6 +81,7 @@ export async function disputeDecision(r) {
   return output(dispute);
 }
 
+//TODO принять или отклонить диспут
 export async function deleteDispute(r) {
   const dispute  = await QuestDispute.findByPk(r.params.disputeId);
   if (!dispute) {

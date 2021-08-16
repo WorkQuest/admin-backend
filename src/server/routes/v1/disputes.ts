@@ -73,7 +73,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/dispute/{disputeId}/takeDispute",
+  path: "/v1/dispute/{disputeId}/takeDispute",
   handler: takeDispute,
   options: {
     id: "v1.disputes.takeDispute",
@@ -91,7 +91,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/dispute/{disputeId}/decision",
+  path: "/v1/dispute/{disputeId}/decision",
   handler: disputeDecision,
   options: {
     id: "v1.disputes.decision",
@@ -112,7 +112,7 @@ export default[{
   }
 }, {
   method: "DELETE",
-  path: "v1/dispute/{disputeId}/delete",
+  path: "/v1/dispute/{disputeId}/delete",
   handler: deleteDispute,
   options: {
     id: "v1.disputes.delete",
