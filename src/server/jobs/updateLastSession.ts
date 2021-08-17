@@ -8,6 +8,10 @@ export interface id {
   sessionId: string,
 }
 
+export async function updateLastSessionJob(payload: id) {
+  return addJob('updateLastSession', payload)
+}
+
 export default async function updateLastSession(payload: id) {
   const admin = await Admin.findByPk(payload.adminId);
   if(!admin) {
@@ -18,6 +22,3 @@ export default async function updateLastSession(payload: id) {
   });
 }
 
-export async function updateLastSessionJob(payload: id) {
-  return addJob('updateLastSession', payload)
-}

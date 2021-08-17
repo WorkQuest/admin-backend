@@ -4,7 +4,7 @@ import { Admin, AdminSession, } from "@workquest/database-models/lib/models"
 import { Op } from "sequelize";
 import updateLogoutAtJob from "../../jobs/updateLogoutAt";
 import {generateJwt} from "../../utils/auth";
-import {updateLastSessionJob} from "../../jobs/updateLastSessionJob";
+import {updateLastSessionJob} from "../../jobs/updateLastSession";
 
 export async function login(r) {
   const admin = await Admin.scope("withPassword").findOne({
