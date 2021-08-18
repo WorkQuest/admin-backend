@@ -5,6 +5,10 @@ export interface id {
   sessionId: string,
 }
 
+export async function updateLogoutAtJob(payload: id) {
+  return addJob("updateLogoutAt", payload)
+}
+
 export default async function updateLogoutAt(payload: id) {
   const session = await AdminSession.findByPk(payload.sessionId);
   await session.update({
@@ -13,6 +17,4 @@ export default async function updateLogoutAt(payload: id) {
   })
 }
 
-export async function updateLogoutAtJob(payload: id) {
-  return addJob('updateLogoutAt', payload)
-}
+

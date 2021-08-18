@@ -9,7 +9,7 @@ export interface id {
 }
 
 export async function updateLastSessionJob(payload: id) {
-  return addJob('updateLastSession', payload)
+  return addJob("updateLastSession", payload)
 }
 
 export default async function updateLastSession(payload: id) {
