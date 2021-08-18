@@ -70,7 +70,7 @@ const init = async () => {
     schedules: [
       {
         name: 'deactivateSessions',
-        pattern: '* 12 * * *', //every day in 12 pm
+        pattern: '* * * * *', //every day in 12:00 am
         timeZone: 'Europe/Moscow',
         task: deactivateSessionsJob,
       },

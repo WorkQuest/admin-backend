@@ -23,7 +23,7 @@ export async function getUsers(r) {
     },],
     where: {
       status: {
-        [Op.not]: UserStatus.Blocked,
+        [Op.not]: UserStatus.Blocked, //TODO for op: NE or NOT?
       }
     },
     limit: r.query.limit,
@@ -39,8 +39,11 @@ export async function changeUserRole(r) {
     return error(Errors.NotFound, 'User is not found', {})
   }
 
+  //can change role once per month
+  const month = 31;
+
   let date = new Date();
-  date.setDate(user.changeRoleAt.getDate() + 31);
+  date.setDate(user.changeRoleAt.getDate() + month);
   const canChangeRole = date <= user.changeRoleAt
 
   if(!canChangeRole){
