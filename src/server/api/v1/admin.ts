@@ -1,7 +1,8 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, AdminRole, AdminSession} from "@workquest/database-models/lib/models"
+import {Admin, AdminRole, AdminSession, DisputeStatus, QuestDispute} from "@workquest/database-models/lib/models"
+import {Op} from "sequelize";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
@@ -14,6 +15,38 @@ export async function getAdmins(r) {
   });
 
   return output({ count, admins: rows });
+}
+
+export async function getAdmin(r){
+  const admin = await Admin.findAndCountAll({
+    where: {
+      id: r.params.adminId
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!admin) {
+    return error(Errors.NotFound, "Admin is not found", {});
+  }
+
+  return output(admin);
+}
+
+export async function getAdminDisputes(r){
+  const disputes = await QuestDispute.findAndCountAll({
+    where: {
+      resolvedByAdminId: r.params.adminId
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!disputes) {
+    return error(Errors.NotFound, "Disputes are not found", {});
+  }
+
+  return output({ count: disputes.count, disputes: disputes.rows });
 }
 
 export async function registerAdminAccount(r) {

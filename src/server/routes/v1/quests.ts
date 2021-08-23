@@ -79,7 +79,7 @@ export default[{
   }
 }, {
   method: "PUT",
-  path: "/v1/quest/{questId}",
+  path: "/v1/edit/quest/{questId}",
   handler: editQuest,
   options: {
     id: "v1.quest.editQuest",
@@ -104,8 +104,8 @@ export default[{
     }
   }
 }, {
-  method: "POST",
-  path: "/v1/quest/{questId}",
+  method: "PUT",
+  path: "/v1/block/quest/{questId}",
   handler: blockQuest,
   options: {
     id: "v1.quest.blockQuest",

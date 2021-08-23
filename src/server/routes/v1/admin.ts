@@ -6,7 +6,7 @@ import {
   deactivateAdminAccount,
   deleteAdminAccount,
   registerAdminAccount,
-  getAdmins,
+  getAdmins, getAdmin, getAdminDisputes,
 } from "../../api/v1/admin";
 import {
   adminRoleSchema,
@@ -19,7 +19,7 @@ import {
   emptyOkSchema,
   outputPaginationSchema,
   adminQuerySchema,
-  adminSchema
+  adminSchema, disputesQuerySchema, disputeSchema
 } from "@workquest/database-models/lib/schemes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 
@@ -49,6 +49,39 @@ export default[{
     },
     response: {
       schema: outputPaginationSchema('admins', adminSchema).label('GetAdminsListResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/admin/{adminId}",
+  handler: getAdmin,
+  options: {
+    id: "v1.get.admin",
+    tags: ["api", "admin"],
+    description: "Get info about admin",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: adminIdParams.label('AdminAccountParams'),
+    },
+    response: {
+      schema: outputOkSchema(adminSchema).label('AdminInfoResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/admin/{adminId}/disputes",
+  handler: getAdminDisputes,
+  options: {
+    id: "v1.admin.completed.disputes",
+    tags: ["api", "admin"],
+    description: "Get info about completed disputes of admin",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: adminIdParams.label('AdminAccountParams'),
+      query: disputesQuerySchema.label('QuerySchema'),
+    },
+    response: {
+      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
     }
   }
 }, {

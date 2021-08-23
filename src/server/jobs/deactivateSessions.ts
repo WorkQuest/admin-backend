@@ -1,16 +1,13 @@
 import { addJob } from "../utils/scheduler";
-import { Session } from "@workquest/database-models/lib/models";
-import {literal, Op} from "sequelize";
-import {now} from "moment";
+import {AdminSession} from "@workquest/database-models/lib/models";
 import config from "../config/config";
-import {create} from "domain";
 
 export async function deactivateSessionsJob() {
   return addJob("deactivateSessions");
 }
 
 export default async function deactivateSessions() {
-  const sessions = await Session.findAndCountAll({
+  const sessions = await AdminSession.findAndCountAll({
     where: {
       isActive: true,
     }
