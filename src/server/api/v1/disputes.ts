@@ -101,7 +101,7 @@ export async function disputeDecision(r) {
   }, transaction);
 
   const admin = await Admin.findByPk(r.auth.credentials.id);
-  const resolvedDisputes = admin.resolvedDisputes + 1;
+  const resolvedDisputes = admin.additionalInfo['resolvedDisputes'] + 1;
   await admin.update({
     resolvedDisputes: resolvedDisputes
   }, transaction)
