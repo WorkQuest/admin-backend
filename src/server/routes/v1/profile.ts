@@ -56,6 +56,10 @@ export default[{
         age: adminAgeSchema,
         about: adminAboutSchema,
         languages: adminLanguagesSchema,
+        additionalInfo: {
+          age: adminAgeSchema,
+          about: adminAboutSchema,
+        }
       }).label('EditAdminPayload')
     },
     response: {
