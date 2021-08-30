@@ -67,6 +67,9 @@ export async function registerAdminAccount(r) {
       security: {
         TOTP: { secret: base32 }
       }
+    },
+    additionalInfo: {
+
     }
   });
   return output({

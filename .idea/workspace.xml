@@ -5,13 +5,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/admin.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/api/v1/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/auth.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/disputes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/disputes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/jobs/deactivateSessions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/jobs/deactivateSessions.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/routes/v1/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/admin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/disputes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/disputes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

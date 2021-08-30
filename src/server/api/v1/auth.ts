@@ -29,7 +29,6 @@ export async function login(r) {
     return error(Errors.InvalidStatus, 'Admin is deactivated', {});
   }
 
-  //TODO job которая обновляет статус истёкших сессий
   const session = await AdminSession.create({
     adminId: admin.id,
     place: getGeo(r),
