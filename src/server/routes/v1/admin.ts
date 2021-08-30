@@ -72,7 +72,7 @@ export default[{
   path: "/v1/admin/{adminId}/disputes",
   handler: getAdminDisputes,
   options: {
-    id: "v1.admin.completed.disputes",
+    id: "v1.admin.completed.disputesByAdmin",
     tags: ["api", "admin"],
     description: "Get info about completed disputes of admin",
     plugins: getRbacSettings(AdminRole.main),

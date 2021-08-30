@@ -1,15 +1,24 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, AdminRole, AdminSession, DisputeStatus, QuestDispute} from "@workquest/database-models/lib/models"
-import {Op} from "sequelize";
+import {
+  Admin,
+  AdminRole,
+  AdminSession,
+  DisputeStatus,
+  Language,
+  QuestDispute
+} from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
     include: [{
       model: AdminSession,
       as: 'lastSession',
-    },],
+    }, {
+      model: Language,
+      as: 'languages',
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -22,6 +31,10 @@ export async function getAdmin(r){
     where: {
       id: r.params.adminId
     },
+    include: [{
+      model: Language,
+      as: 'languages',
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
   })
