@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/admin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/disputes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/disputes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/admin.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,6 +10,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="questsList" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1wU1xgqowdwnaJF1He2FqVFN5hl" />
@@ -71,6 +71,8 @@
       <workItem from="1629252778825" duration="24093000" />
       <workItem from="1629339520816" duration="11759000" />
       <workItem from="1629368066127" duration="3626000" />
+      <workItem from="1632364878885" duration="735000" />
+      <workItem from="1632996717677" duration="1296000" />
     </task>
     <servers />
   </component>
