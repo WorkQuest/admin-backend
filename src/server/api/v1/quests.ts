@@ -103,6 +103,11 @@ export async function blockQuest(r) {
   return output();
 }
 
+export async function prolongQuest(r) {
+//TODO function
+  return output();
+}
+
 //TODO добавить разблокировку квеста
 //TODO узнать, может ли пользователь узнать о причинах блокировки и надо ли будет выводить ему это
 

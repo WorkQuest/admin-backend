@@ -3,7 +3,7 @@ import {
   blockQuest,
   deleteQuest,
   editQuest,
-  getQuestsList, getUserQuestsInfo,
+  getQuestsList, getUserQuestsInfo, prolongQuest,
   questInfo
 } from "../../api/v1/quests";
 import {
@@ -117,6 +117,27 @@ export default[{
         questId: idSchema.required(),
       }).label("EditQuestParams"),
       payload: Joi.object({
+        blockReason: questBlockReasonSchema,
+      }).label('EditQuestSchema')
+    },
+    response: {
+      schema: emptyOkSchema
+    }
+  }
+},  {
+  method: "PUT",
+  path: "/v1/prolong/quest/{questId}",
+  handler: prolongQuest,
+  options: {
+    id: "v1.quest.prolongQuest",
+    tags: ["api", "quests"],
+    description: "Prolong quest",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("EditQuestParams"),
+      payload: Joi.object({ //что передавать?
         blockReason: questBlockReasonSchema,
       }).label('EditQuestSchema')
     },
