@@ -10,14 +10,14 @@ import {
   emptyOkSchema,
   idSchema,
   locationSchema,
-  mediaIdsSchema,
+  idsSchema,
   outputOkSchema,
   outputPaginationSchema,
   questDescriptionSchema,
   questPriceSchema,
   questPrioritySchema,
   questSchema, questsQuerySchema,
-  questTitleSchema,
+  questTitleSchema, isoDateSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
@@ -93,7 +93,7 @@ export default[{
       payload: Joi.object({
         title: questTitleSchema,
         description: questDescriptionSchema,
-        medias: mediaIdsSchema.unique().label('MediaIds'),
+        medias: idsSchema.unique().label('MediaIds'),
         location: locationSchema,
         priority: questPrioritySchema,
         price: questPriceSchema,
@@ -137,8 +137,8 @@ export default[{
       params: Joi.object({
         questId: idSchema.required(),
       }).label("EditQuestParams"),
-      payload: Joi.object({ //что передавать?
-        blockReason: questBlockReasonSchema,
+      payload: Joi.object({
+        prolongedTill: isoDateSchema.required(),
       }).label('EditQuestSchema')
     },
     response: {

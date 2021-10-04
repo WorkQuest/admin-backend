@@ -20,6 +20,7 @@ import * as grScheduler from 'graphile-scheduler';
 import { deactivateSessionsJob } from "./jobs/deactivateSessions";
 const HapiSwagger = require('hapi-swagger');
 const Package = require('../../package.json');
+const schedule = require('node-schedule')
 
 
 SwaggerOptions.info.version = Package.version;
@@ -63,18 +64,6 @@ const init = async () => {
     concurrency: 5,
     pollInterval: 1000,
     taskDirectory: `${__dirname}/jobs` // Папка с исполняемыми тасками.
-  });
- //TODO check if it right
-  server.app.grScheduler = await grScheduler.run({
-    connectionString: config.dbLink,
-    schedules: [
-      {
-        name: 'deactivateSessions',
-        pattern: '00 00 * * *', //every day in 12:00 am
-        timeZone: 'Europe/Moscow',
-        task: deactivateSessionsJob,
-      },
-    ]
   });
 
   // JWT Auth

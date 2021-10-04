@@ -1,11 +1,12 @@
 import {
   Quest,
   QuestStatus,
-  QuestsResponse, QuestDispute,
+  QuestsResponse, ProlongedQuest,
 } from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import { getMedias } from "../../utils/medias";
+import {updateQuestStatusJob} from "../../jobs/updateQuestStatus";
 
 export async function getQuestsList(r){
   const {rows, count} = await Quest.findAndCountAll({
@@ -105,6 +106,41 @@ export async function blockQuest(r) {
 
 export async function prolongQuest(r) {
 //TODO function
+  const transaction = await r.server.app.db.transaction();
+
+  const [prolong, isAlreadyProlonged] = await ProlongedQuest.findOrCreate({
+    where: {
+      questId: r.params.questId,
+    }, transaction,
+  });
+
+  if(!isAlreadyProlonged) {
+    return error(Errors.AlreadyExist, 'Quest may be prolonged just once', {});
+  }
+
+  const minDate = new Date(Date.now() + 259200000).getDate(); //Date.now() + 3 days in timestamp
+  const maxDate = new Date(Date.now() + 432000000).getDate(); //Date.now() + 5 days in timestamp
+  const prolongedTill = new Date(r.payload.prolongedTill).getDate();
+  const a = Date.now()
+  console.log(a)
+
+  const isRightDate = prolongedTill === minDate ? true : (prolongedTill === maxDate);
+
+  if(!isRightDate) {
+    return error(Errors.InvalidDate, 'Quest may be prolonged for 3 or 5 days', {});
+  }
+
+  await prolong.update({
+    prolongedTill: r.payload.prolongedTill
+  }, {transaction});
+
+  await updateQuestStatusJob({
+    questId: r.params.questId,
+    prolongedTill: r.payload.prolongedTill
+  });
+
+  await transaction.commit();
+
   return output();
 }
 
