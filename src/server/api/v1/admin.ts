@@ -14,17 +14,11 @@ export async function getAdmins(r) {
     offset: r.query.offset,
   });
 
-  return output({ count, admins: rows });
+  return output({ count: count, admins: rows });
 }
 
-export async function getAdmin(r){
-  const admin = await Admin.findAndCountAll({
-    where: {
-      id: r.params.adminId
-    },
-    limit: r.query.limit,
-    offset: r.query.offset,
-  })
+export async function getAdmin(r) {
+  const admin = await Admin.findByPk(r.params.adminId);
 
   if(!admin) {
     return error(Errors.NotFound, "Admin is not found", {});
@@ -40,11 +34,7 @@ export async function getAdminDisputes(r){
     },
     limit: r.query.limit,
     offset: r.query.offset,
-  })
-
-  if(!disputes) {
-    return error(Errors.NotFound, "Disputes are not found", {});
-  }
+  });
 
   return output({ count: disputes.count, disputes: disputes.rows });
 }
@@ -68,9 +58,6 @@ export async function registerAdminAccount(r) {
         TOTP: { secret: base32 }
       }
     },
-    additionalInfo: {
-
-    }
   });
   return output({
     admin: await Admin.findByPk(newAdmin.id),
@@ -85,7 +72,7 @@ export async function deleteAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not delete your own account', {})
+    return error(Errors.InvalidAdminType, 'Can not delete your own account', {});
   }
 
   await admin.destroy();
@@ -100,12 +87,10 @@ export async function activateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not activate your own account', {})
+    return error(Errors.InvalidAdminType, 'Can not activate your own account', {});
   }
 
-  await admin.update({
-    isActivated: true
-  });
+  await admin.update({ isActivated: true });
 
   return output();
 }
@@ -117,7 +102,7 @@ export async function deactivateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not deactivate your own account', {})
+    return error(Errors.InvalidAdminType, 'Can not deactivate your own account', {});
   }
 
   await admin.update({
@@ -138,9 +123,7 @@ export async function changeLogin(r) {
     return error(Errors.AlreadyExist, 'Email already exist', {});
   }
 
-  await admin.update({
-    email: r.payload.newLogin
-  });
+  await admin.update({ email: r.payload.newLogin });
 
   return output();
 }

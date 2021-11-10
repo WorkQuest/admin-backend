@@ -9,8 +9,8 @@ import {
 import {
   emptyOkSchema,
   idSchema,
+  idsSchema,
   locationSchema,
-  mediaIdsSchema,
   outputOkSchema,
   outputPaginationSchema,
   questDescriptionSchema,
@@ -93,7 +93,7 @@ export default[{
       payload: Joi.object({
         title: questTitleSchema,
         description: questDescriptionSchema,
-        medias: mediaIdsSchema.unique().label('MediaIds'),
+        medias: idsSchema.unique().label('MediaIds'),
         location: locationSchema,
         priority: questPrioritySchema,
         price: questPriceSchema,
