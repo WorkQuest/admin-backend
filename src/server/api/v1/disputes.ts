@@ -107,3 +107,28 @@ export async function deleteDispute(r) {
 
   return output();
 }
+
+export async function getAdminDisputes(r){
+  const disputes = await QuestDispute.findAndCountAll({
+    where: {
+      resolvedByAdminId: r.params.adminId
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count: disputes.count, disputes: disputes.rows });
+}
+
+export async function adminResolvedDisputes(r){
+  const disputes = await QuestDispute.findAndCountAll({
+    where: {
+      status: DisputeStatus.completed,
+      resolvedByAdminId: r.auth.credentials.id,
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count: disputes.count, disputes: disputes.rows });
+}

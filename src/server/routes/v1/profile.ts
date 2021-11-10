@@ -1,5 +1,5 @@
 import * as Joi from "joi";
-import {getMe, editProfile, adminResolvedDisputes} from "../../api/v1/profile";
+import {getMe, editProfile} from "../../api/v1/profile";
 import {
   adminAgeSchema,
   adminFirstNameSchema,
@@ -22,22 +22,6 @@ export default[{
     description: "Get admin own profile",
     response: {
       schema: outputOkSchema(adminSchema).label('GetAdminProfileResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/admin/{adminId}/completed-disputes",
-  handler: adminResolvedDisputes,
-  options: {
-    id: "v1.admin.completed.disputes",
-    tags: ["api", "profile"],
-    description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema'),
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
     }
   }
 }, {

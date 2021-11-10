@@ -7,9 +7,12 @@ import {
   getActiveDisputes,
   getUserDisputes,
   getDisputesByStatus,
+  getAdminDisputes,
+  adminResolvedDisputes
 } from "../../api/v1/disputes";
 import {
   adminDecisionSchema,
+  adminIdParams,
   idSchema,
   outputOkSchema,
   outputPaginationSchema,
@@ -177,5 +180,38 @@ export default[{
       schema: outputOkSchema(disputeSchema).label('DisputeDecisionResponse')
     }
   }
-}, ]
+}, {
+  method: "GET",
+  path: "/v1/admin/{adminId}/disputes",
+  handler: getAdminDisputes,
+  options: {
+    id: "v1.admin.completed.disputesByAdmin",
+    tags: ["api", "admin"],
+    description: "Get info about completed disputes of admin",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: adminIdParams.label('AdminAccountParams'),
+      query: disputesQuerySchema.label('QuerySchema'),
+    },
+    response: {
+      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/admin/{adminId}/completed-disputes",
+  handler: adminResolvedDisputes,
+  options: {
+    id: "v1.admin.completed.disputes",
+    tags: ["api", "profile"],
+    description: "Get info about completed disputes of admin",
+    plugins: getRbacSettings(AdminRole.dispute),
+    validate: {
+      query: disputesQuerySchema.label('QuerySchema'),
+    },
+    response: {
+      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
+    }
+  }
+},]
 

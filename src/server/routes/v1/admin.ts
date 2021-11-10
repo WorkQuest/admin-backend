@@ -6,7 +6,7 @@ import {
   deactivateAdminAccount,
   deleteAdminAccount,
   registerAdminAccount,
-  getAdmins, getAdmin, getAdminDisputes,
+  getAdmins, getAdmin,
 } from "../../api/v1/admin";
 import {
   adminRoleSchema,
@@ -14,12 +14,12 @@ import {
   adminFirstNameSchema,
   adminLastNameSchema,
   adminPasswordSchema,
-  idSchema,
   outputOkSchema,
   emptyOkSchema,
   outputPaginationSchema,
   adminQuerySchema,
-  adminSchema, disputesQuerySchema, disputeSchema
+  adminSchema,
+  adminIdParams,
 } from "@workquest/database-models/lib/schemes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 
@@ -28,12 +28,7 @@ const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 const registerAdminWithSecretSchema = Joi.object({
   data: { adminSchema },
   secret: secretSchema.required(),
-}).label('RegisterAdminWithSecretSchema')
-
-
-const adminIdParams = Joi.object({
-  adminId: idSchema.required()
-});
+}).label('RegisterAdminWithSecretSchema');
 
 export default[{
   method: "GET",
@@ -65,23 +60,6 @@ export default[{
     },
     response: {
       schema: outputOkSchema(adminSchema).label('AdminInfoResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/admin/{adminId}/disputes",
-  handler: getAdminDisputes,
-  options: {
-    id: "v1.admin.completed.disputesByAdmin",
-    tags: ["api", "admin"],
-    description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.main),
-    validate: {
-      params: adminIdParams.label('AdminAccountParams'),
-      query: disputesQuerySchema.label('QuerySchema'),
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
     }
   }
 }, {
