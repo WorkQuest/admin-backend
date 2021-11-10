@@ -24,11 +24,7 @@ export async function getUserDisputes(r) {
     },
     limit: r.query.limit,
     offset: r.query.offset,
-  })
-
-  if(!disputes) {
-    return error(Errors.NotFound, "Disputes are not found", {});
-  }
+  });
 
   return output({ count: disputes.count, disputes: disputes.rows });
 }
@@ -36,16 +32,10 @@ export async function getUserDisputes(r) {
 //Statuses: inProgress && Created
 export async function getActiveDisputes(r) {
   const disputes = await QuestDispute.findAndCountAll({
-    where: {
-      [Op.or]: [ {status: DisputeStatus.pending}, {status: DisputeStatus.inProgress}]
-    },
+    where: { status: { [Op.or]: [DisputeStatus.pending, DisputeStatus.inProgress] } },
     limit: r.query.limit,
     offset: r.query.offset,
-  })
-
-  if(!disputes) {
-    return error(Errors.NotFound, "Disputes are not found", {});
-  }
+  });
 
   return output({ count: disputes.count, disputes: disputes.rows });
 }
@@ -53,16 +43,10 @@ export async function getActiveDisputes(r) {
 export function getDisputesByStatus(status: DisputeStatus) {
   return async function(r){
     const disputes = await QuestDispute.findAndCountAll({
-      where: {
-        [Op.or]: [{status: status}]
-      },
+      where: { status: status },
       limit: r.query.limit,
       offset: r.query.offset,
-    })
-
-    if(!disputes) {
-      return error(Errors.NotFound, "Disputes are not found", {});
-    }
+    });
 
     return output({ count: disputes.count, disputes: disputes.rows });
   }
@@ -77,9 +61,8 @@ export async function takeDisputeToResolve(r) {
 
   dispute.mustHaveStatus(DisputeStatus.pending);
 
-  await dispute.update({
-    status: DisputeStatus.inProgress
-  });
+  await dispute.update({ status: DisputeStatus.inProgress });
+
   return output(dispute);
 }
 
@@ -91,20 +74,17 @@ export async function disputeDecision(r) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
 
-  dispute.mustHaveStatus(DisputeStatus.inProgress)
+  dispute.mustHaveStatus(DisputeStatus.inProgress);
 
   await dispute.update({
     decision: r.payload.decision,
     status: DisputeStatus.completed,
     resolvedByAdminId: r.auth.credentials.id,
     resolveAt: Date.now(),
-  }, transaction);
+  }, {transaction});
 
   const admin = await Admin.findByPk(r.auth.credentials.id);
-  const resolvedDisputes = admin.resolvedDisputes + 1;
-  await admin.update({
-    resolvedDisputes: resolvedDisputes,
-  }, transaction)
+  await admin.increment('resolvedDisputes', {transaction});
 
   transaction.commit();
   return output(dispute);
@@ -113,6 +93,7 @@ export async function disputeDecision(r) {
 //TODO принять или отклонить диспут
 export async function deleteDispute(r) {
   const dispute  = await QuestDispute.findByPk(r.params.disputeId);
+
   if (!dispute) {
     return error(Errors.NotFound, "Dispute not found", {});
   }
@@ -121,7 +102,7 @@ export async function deleteDispute(r) {
     return error(Errors.InvalidStatus, "Dispute cannot be deleted at current stage", {});
   }
 
-  await QuestsResponse.destroy({ where: { questId: dispute.id } })
+  await QuestsResponse.destroy({ where: { questId: dispute.id } });
   await dispute.destroy();
 
   return output();
