@@ -1,6 +1,11 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Admin, QuestsResponse, QuestDispute , DisputeStatus} from "@workquest/database-models/lib/models";
+import {
+  Admin,
+  QuestsResponse,
+  QuestDispute ,
+  DisputeStatus,
+} from "@workquest/database-models/lib/models";
 import { Op } from 'sequelize'
 
 export async function getQuestDispute(r) {

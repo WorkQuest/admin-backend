@@ -7,6 +7,7 @@ import {UserBlockReason} from "@workquest/database-models/lib/models/UserBlockRe
 
 export async function getUserInfo(r) {
   const user = await User.findByPk(r.params.userId)
+
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {});
   }
@@ -17,6 +18,7 @@ export async function getUserInfo(r) {
 //TODO обычная или не обычная активность
 export async function getUsers(r) {
   const {rows, count} = await User.scope('withPassword').findAndCountAll({
+    attributes: {exclude: ['password']},
     include: [{
       model: Session,
       as: 'lastSession',
@@ -29,7 +31,7 @@ export async function getUsers(r) {
     limit: r.query.limit,
     offset: r.query.offset,
   });
-  return output({ count, users: rows });
+  return output({ count: count, users: rows });
 }
 
 export async function changeUserRole(r) {

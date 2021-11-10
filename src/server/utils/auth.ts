@@ -44,7 +44,7 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
       throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
     }
 
-    const session = await AdminSession.findByPk(admin.lastSessionId);
+    const session = await AdminSession.findByPk(r.auth.artifacts.sessionId);
     if(!session.isActive) {
       throw error(Errors.SessionNotFound, 'Session is not active', {});
     }

@@ -1,7 +1,8 @@
 import {
   Quest,
   QuestStatus,
-  QuestsResponse, QuestMedia,
+  QuestsResponse,
+  QuestMedia,
 } from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";

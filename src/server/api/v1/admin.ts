@@ -1,7 +1,11 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, AdminRole, AdminSession, QuestDispute} from "@workquest/database-models/lib/models"
+import {
+  Admin,
+  AdminRole,
+  AdminSession,
+} from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
