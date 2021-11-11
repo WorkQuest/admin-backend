@@ -3,7 +3,7 @@ import { Boom, } from '@hapi/boom';
 import * as speakeasy from 'speakeasy';
 import * as crypto from "crypto"
 import config from "../config/config";
-var geoip = require('geoip-lite');
+import geoip = require('geoip-lite');
 
 export function getUUID(): string {
   return uuidv4();
