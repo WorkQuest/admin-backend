@@ -29,11 +29,21 @@ export async function getUsers(r) {
   return output({ count: count, users: rows });
 }
 
+//TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
 export async function changeUserRole(r) {
   const user = await User.findByPk(r.params.userId)
 
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {})
+  }
+
+  if(!user.changeRoleAt){
+    await user.update({
+      role: r.payload.role,
+      changeRoleAt: Date.now(),
+    });
+
+    return output();
   }
 
   //can change role once per month
@@ -49,7 +59,7 @@ export async function changeUserRole(r) {
   await user.update({
     role: r.payload.role,
     changeRoleAt: Date.now(),
-  })
+  });
 
   return output();
 }
