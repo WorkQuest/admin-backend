@@ -1,7 +1,7 @@
 import {Session, User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import { Op } from "sequelize";
+import { Op, fn, col } from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/UserBlockReason";
 
 
@@ -71,6 +71,7 @@ export async function blockUser(r) {
     userId: user.id,
     blockReason: r.payload.userBlockReasons,
     previousStatus: user.status,
+    isLast: true,
   });
 
   await user.update({
@@ -99,9 +100,11 @@ export async function unblockUser(r) {
     order:[ ['createdAt', 'DESC'] ],
   });
 
-  await user.update({
-    status: wasBlocked.previousStatus,
-  });
+  await user.update({ status: wasBlocked.previousStatus });
+
+  await wasBlocked.update({ isLast: false });
+
+
 
   return output();
 }
@@ -119,13 +122,20 @@ export async function userBlockedStory(r) {
 }
 
 export async function blackListInfo(r) {
-  const {rows, count} = await User.findAndCountAll({
-    include: UserBlockReason,
+  const {rows, count} = await User.scope('short').findAndCountAll({
+    include: [{
+      model: UserBlockReason,
+      as: 'lastBlockReason',
+      where: {
+        isLast: true
+      },
+      required: true,
+    }],
     where: {
-      status: UserStatus.Blocked
+      status: UserStatus.Blocked,
     },
     limit: r.query.limit,
     offset: r.query.offset,
   });
-  return output({ count, users: rows });
+  return output({ count: count, users: rows });
 }
