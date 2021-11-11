@@ -1,9 +1,8 @@
-import {Session, User, UserStatus} from "@workquest/database-models/lib/models";
+import {User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import { Op, fn, col } from "sequelize";
+import {Op} from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/UserBlockReason";
-
 
 export async function getUserInfo(r) {
   const user = await User.findByPk(r.params.userId)
@@ -103,8 +102,6 @@ export async function unblockUser(r) {
   await user.update({ status: wasBlocked.previousStatus });
 
   await wasBlocked.update({ isLast: false });
-
-
 
   return output();
 }
