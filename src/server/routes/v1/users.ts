@@ -5,19 +5,18 @@ import {
   getUsers,
   blackListInfo,
   unblockUser,
-  changeUserRole
+  changeUserRole, userBlockedStory
 } from "../../api/v1/users";
 import {
+  blockReasonSchema,
   emptyOkSchema,
   idSchema, limitSchema, offsetSchema,
   outputOkSchema,
-  outputPaginationSchema,
+  outputPaginationSchema, userBlockReasonSchema,
   userRoleSchema, userSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-
-const userBlockedReasonsSchema = Joi.string().example('You are blocked...').label('UserBlockReasons');
 
 export default[{
   method: "GET",
@@ -69,10 +68,32 @@ export default[{
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
-      }).label('QuestQuery'),
+      }).label('BlackListQuery'),
     },
     response: {
       schema: outputPaginationSchema('users', userSchema).label('BlackListInfoResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/blockStory/{userId}",
+  handler: userBlockedStory,
+  options: {
+    id: "v1.blockStory",
+    tags: ["api", "users"],
+    description: "Show user block story",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        userId: idSchema.required()
+      }).label('UserBlockStoryParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('BlockReasonsQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('blockReasons', userBlockReasonSchema).label('UserBlockStoryResponse')
     }
   }
 }, {
@@ -110,7 +131,7 @@ export default[{
         userId: idSchema.required(),
       }).label("UserParams"),
       payload: Joi.object({
-        userBlockReasons: userBlockedReasonsSchema,
+        userBlockReasons: blockReasonSchema,
       })
     },
     response: {

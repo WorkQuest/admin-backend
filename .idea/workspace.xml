@@ -3,16 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210729035625-delete-Session-field-userId.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210729043109-delete-table-UserAvatar.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210729052010-delete-table-User.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210729060638-create-Session-userId-field.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210730071822-delete-Admin-adminStatus-field.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20210730073330-delete-Admin-settings-field.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/quests.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/users.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/users.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/routes/v1/users.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/users.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,7 +37,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js.linters.configure.manually.selectedeslint" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../backend-development" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -89,7 +81,7 @@
       <workItem from="1629252778825" duration="24093000" />
       <workItem from="1629339520816" duration="11759000" />
       <workItem from="1629368066127" duration="3626000" />
-      <workItem from="1636601949888" duration="5659000" />
+      <workItem from="1636601949888" duration="10651000" />
     </task>
     <servers />
   </component>

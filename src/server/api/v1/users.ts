@@ -17,7 +17,7 @@ export async function getUserInfo(r) {
 
 //TODO обычная или не обычная активность
 export async function getUsers(r) {
-  const {rows, count} = await User.scope('withPassword').findAndCountAll({
+  const {rows, count} = await User.findAndCountAll({
     attributes: {exclude: ['password']},
     where: {
       status: {
@@ -67,29 +67,11 @@ export async function blockUser(r) {
     return error(Errors.AlreadyBlocked, 'User is already blocked', {});
   }
 
-  const wasBlocked = await UserBlockReason.findOne({
-    where: {
-      userId: user.id,
-    }
-  })
-
-  if(wasBlocked) {
-    await wasBlocked.update({
-      blockReason: r.payload.userBlockReasons,
-      previousStatus: user.status,
-    })
-    await user.update({
-      status: UserStatus.Blocked,
-    });
-
-    return output();
-  }
-
   await UserBlockReason.create({
     userId: user.id,
     blockReason: r.payload.userBlockReasons,
     previousStatus: user.status,
-  })
+  });
 
   await user.update({
     status: UserStatus.Blocked,
@@ -113,14 +95,27 @@ export async function unblockUser(r) {
   const wasBlocked = await UserBlockReason.findOne({
     where: {
       userId: user.id,
-    }
-  })
+    },
+    order:[ ['createdAt', 'DESC'] ],
+  });
 
   await user.update({
     status: wasBlocked.previousStatus,
   });
 
   return output();
+}
+
+export async function userBlockedStory(r) {
+  const blockReasons = await UserBlockReason.findAndCountAll({
+    where: {
+      userId: r.params.userId,
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output(blockReasons);
 }
 
 export async function blackListInfo(r) {
