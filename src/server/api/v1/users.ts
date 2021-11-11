@@ -19,10 +19,6 @@ export async function getUserInfo(r) {
 export async function getUsers(r) {
   const {rows, count} = await User.scope('withPassword').findAndCountAll({
     attributes: {exclude: ['password']},
-    include: [{
-      model: Session,
-      as: 'lastSession',
-    },],
     where: {
       status: {
         [Op.not]: UserStatus.Blocked, //TODO for op: NE or NOT?

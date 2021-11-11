@@ -9,14 +9,14 @@ import {
 import {
   emptyOkSchema,
   idSchema,
-  idsSchema,
-  locationSchema,
+  idsSchema, limitSchema,
+  locationSchema, offsetSchema,
   outputOkSchema,
   outputPaginationSchema,
   questDescriptionSchema,
   questPriceSchema,
   questPrioritySchema,
-  questSchema, questsQuerySchema,
+  questSchema,
   questTitleSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
@@ -34,7 +34,10 @@ export default[{
     description: "Get list of quests",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
-      query: questsQuerySchema.label('QuerySchema')
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('QuestQuery'),
     },
     response: {
       schema: outputPaginationSchema('questsList',questSchema).label('QuestsListResponse')
@@ -71,7 +74,10 @@ export default[{
       params: Joi.object({
         userId: idSchema.required(),
       }).label("GetUserParams"),
-      query: questsQuerySchema.label('QuerySchema'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('QuestQuery'),
     },
     response: {
       schema: outputPaginationSchema('questsList', questSchema).label('QuestInfoResponse')

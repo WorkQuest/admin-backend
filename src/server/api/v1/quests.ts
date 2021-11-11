@@ -39,6 +39,7 @@ export async function getUserQuestsInfo(r) {
   return output({ count: quests.count, quests: quests.rows });
 }
 
+//TODO change logic
 export async function editQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
   const transaction = await r.server.app.db.transaction();
@@ -53,7 +54,6 @@ export async function editQuest(r) {
 
     await quest.$set('medias', medias, { transaction });
   }
-  quest.updateFieldLocationPostGIS();
 
   await quest.update(r.payload, { transaction });
   await transaction.commit();

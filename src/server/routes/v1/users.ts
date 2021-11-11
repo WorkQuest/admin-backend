@@ -9,13 +9,10 @@ import {
 } from "../../api/v1/users";
 import {
   emptyOkSchema,
-  idSchema,
+  idSchema, limitSchema, offsetSchema,
   outputOkSchema,
   outputPaginationSchema,
-  userRoleSchema,
-  usersQuerySchema,
-  userFullSchema,
-  userWithSettingsFullSchema,
+  userRoleSchema, userSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
@@ -37,7 +34,7 @@ export default[{
       }).label("GetUserParams"),
     },
     response: {
-      schema: outputOkSchema(userFullSchema).label('UserInfoResponse')
+      schema: outputOkSchema(userSchema).label('UserInfoResponse')
     }
   }
 }, {
@@ -50,10 +47,13 @@ export default[{
     description: "Get info about users",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
-      query: usersQuerySchema.label('QuerySchema')
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('UserQuery'),
     },
     response: {
-      schema: outputPaginationSchema('users', userWithSettingsFullSchema).label('UsersInfoResponse')
+      schema: outputPaginationSchema('users', userSchema).label('UsersInfoResponse')
     }
   }
 }, {
@@ -66,10 +66,13 @@ export default[{
     description: "Show black list",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
-      query: usersQuerySchema.label('QuerySchema')
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('QuestQuery'),
     },
     response: {
-      schema: outputPaginationSchema('users', userFullSchema).label('BlackListInfoResponse')
+      schema: outputPaginationSchema('users', userSchema).label('BlackListInfoResponse')
     }
   }
 }, {
@@ -90,7 +93,7 @@ export default[{
       }).label('ChangeUserRoleSchema')
     },
     response: {
-      schema: outputOkSchema(userFullSchema).label('QuestInfoResponse')
+      schema: outputOkSchema(userSchema).label('QuestInfoResponse')
     }
   }
 }, {
