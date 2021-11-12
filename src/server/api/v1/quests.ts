@@ -2,11 +2,12 @@ import {
   Quest,
   QuestStatus,
   QuestsResponse,
-  QuestMedia,
+  QuestMedia, User,
 } from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import { getMedias } from "../../utils/medias";
+import {Op} from "sequelize";
 
 export async function getQuestsList(r) {
   const {rows, count} = await Quest.findAndCountAll({
@@ -30,7 +31,7 @@ export async function questInfo(r) {
 export async function getUserQuestsInfo(r) {
   const quests = await Quest.findAndCountAll({
     where: {
-      userId: r.params.userId,
+      [Op.or]: [{userId: r.params.userId}, {assignedWorkerId: r.params.userId}],
     },
     limit: r.query.limit,
     offset: r.query.offset,
