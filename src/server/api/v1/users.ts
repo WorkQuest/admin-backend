@@ -5,7 +5,12 @@ import {Op} from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/user/UserBlockReason";
 
 export async function getUserInfo(r) {
-  const user = await User.findByPk(r.params.userId)
+  const user = await User.findByPk(r.params.userId, {
+    include: [{
+      model: UserBlockReason,
+      as: 'blockReasons'
+    }]
+  });
 
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {});
