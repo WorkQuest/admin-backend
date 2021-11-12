@@ -106,14 +106,20 @@ export async function unblockUser(r) {
     return error(Errors.AlreadyUnblocked, 'User is already unblocked', {});
   }
 
-  const wasBlocked = await UserBlockReason.findOne({
+  const wasBlocked = await UserBlockReason.findAndCountAll({
     where: {
       userId: user.id,
     },
-    order:[ ['createdAt', 'DESC'] ],
+    order:[ ['createdAt', 'DESC'] ], //the last status
   });
 
-  await user.update({ status: wasBlocked.previousStatus });
+  const maxUnblockedCount = 3;
+
+  if(wasBlocked.count === maxUnblockedCount) {
+    return error(Errors.TooMuchBlocked, 'Unblock limit is expired', {});
+  }
+
+  await user.update({ status: wasBlocked.rows[0].previousStatus });
 
   return output();
 }

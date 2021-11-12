@@ -11,6 +11,7 @@ export enum Errors {
   AlreadyBlocked = 400008,
   AlreadyUnblocked = 400009,
   InvalidDate = 400010,
+  TooMuchBlocked = 400011,
   // Authorization errors (401)
   TokenExpired = 401001,
   TokenInvalid = 401002,
