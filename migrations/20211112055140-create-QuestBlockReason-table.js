@@ -29,6 +29,12 @@ module.exports = {
       isLast: {
         type: Sequelize.DataTypes.BOOLEAN,
       },
+      createdAt: {
+        type: Sequelize.DataTypes.DATE
+      },
+      updatedAt: {
+        type: Sequelize.DataTypes.DATE
+      }
     });
   },
   

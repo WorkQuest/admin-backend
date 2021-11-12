@@ -1,12 +1,7 @@
-import {
-  Quest,
-  QuestStatus,
-  QuestsResponse,
-  QuestMedia, User,
-} from "@workquest/database-models/lib/models";
+import {Quest, QuestMedia, QuestsResponse, QuestStatus, QuestBlockReason} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import { getMedias } from "../../utils/medias";
+import {getMedias} from "../../utils/medias";
 import {Op} from "sequelize";
 
 export async function getQuestsList(r) {
@@ -86,21 +81,51 @@ export async function deleteQuest(r) {
 export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
   if (!quest) {
-    return error(Errors.NotFound, "Quest not found", {});
+    return error(Errors.NotFound, "Quest is not found", {});
   }
 
-  if (quest.status !== QuestStatus.Created && quest.status !== QuestStatus.Closed) {
-    return error(Errors.InvalidStatus, "Quest cannot be deleted at current stage", {});
+  //TODO: check statuses for blocking!
+  if (quest.status === QuestStatus.Closed) {
+    return error(Errors.InvalidStatus, "Quest cannot be blocked at current stage", {});
   }
 
-  //TODO добавить проверку на статус квеста, чтобы блокировать квесты определённого статуса
-  await quest.update({
-    isBlocked: true,
+  if(quest.status === QuestStatus.isBlocked) {
+    return error(Errors.AlreadyBlocked, "Quest is already blocked", {});
+  }
+
+  const blockedQuest = QuestBlockReason.create({
+    questId: quest.id,
     blockReason: r.payload.blockReason,
-  })
+    previousStatus: quest.status,
+    isLast: true,
+  });
 
-  return output();
+  return output(blockedQuest);
 }
+
+export async function unblockQuest(r) {
+  const quest = await Quest.findByPk(r.params.questId);
+  if (!quest) {
+    return error(Errors.NotFound, "Quest is not found", {});
+  }
+
+  if(quest.status !== QuestStatus.isBlocked) {
+    return error(Errors.InvalidStatus, "Quest is unblocked", {});
+  }
+
+  const blockedQuest = await QuestBlockReason.findOne({
+    where: {
+      questId: quest.id,
+    },
+    order:[ ['createdAt', 'DESC'] ],
+  });
+
+  await Quest.update({
+    status: blockedQuest.previousStatus
+  }, { where: { id: quest.id } });
+  return output(blockedQuest);
+}
+
 
 //TODO добавить разблокировку квеста
 //TODO узнать, может ли пользователь узнать о причинах блокировки и надо ли будет выводить ему это

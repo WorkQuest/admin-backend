@@ -3,9 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20210729052311-create-table-Admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20210729052311-create-table-Admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20211112055140-create-QuestBlockReason-table.js" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20211112055140-create-QuestBlockReason-table.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/api/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/quests.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/users.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/users.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/routes/v1/quests.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +84,7 @@
       <workItem from="1629339520816" duration="11759000" />
       <workItem from="1629368066127" duration="3626000" />
       <workItem from="1636601949888" duration="20383000" />
-      <workItem from="1636689329911" duration="5256000" />
+      <workItem from="1636689329911" duration="10483000" />
     </task>
     <servers />
   </component>

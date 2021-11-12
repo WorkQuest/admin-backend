@@ -7,12 +7,13 @@ import {
   questInfo
 } from "../../api/v1/quests";
 import {
+  blockReasonSchema,
   emptyOkSchema,
   idSchema,
   idsSchema, limitSchema,
   locationSchema, offsetSchema,
   outputOkSchema,
-  outputPaginationSchema,
+  outputPaginationSchema, questBlockReasonSchema,
   questDescriptionSchema,
   questPriceSchema,
   questPrioritySchema,
@@ -21,8 +22,6 @@ import {
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-
-const questBlockReasonSchema = Joi.string().example('Block reason....').label('BlockReasonSchema');
 
 export default[{
   method: "GET",
@@ -121,13 +120,13 @@ export default[{
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
-      }).label("EditQuestParams"),
+      }).label("BlockQuestParams"),
       payload: Joi.object({
-        blockReason: questBlockReasonSchema,
-      }).label('EditQuestSchema')
+        blockReason: blockReasonSchema,
+      }).label('BlockQuestSchema')
     },
     response: {
-      schema: emptyOkSchema
+      schema: questBlockReasonSchema
     }
   }
 }, {
