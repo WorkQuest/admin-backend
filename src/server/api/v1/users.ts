@@ -80,7 +80,6 @@ export async function blockUser(r) {
     userId: user.id,
     blockReason: r.payload.userBlockReasons,
     previousStatus: user.status,
-    isLast: true,
   });
 
   await user.update({
@@ -111,8 +110,6 @@ export async function unblockUser(r) {
 
   await user.update({ status: wasBlocked.previousStatus });
 
-  await wasBlocked.update({ isLast: false });
-
   return output();
 }
 
@@ -132,10 +129,8 @@ export async function blackListInfo(r) {
   const {rows, count} = await User.scope('short').findAndCountAll({
     include: [{
       model: UserBlockReason,
-      as: 'lastBlockReason',
-      where: {
-        isLast: true
-      },
+      as: 'blockReasons',
+      order: [ ['createdAt', 'DESC'] ],
       required: true,
     }],
     where: {

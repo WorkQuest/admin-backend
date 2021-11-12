@@ -14,7 +14,13 @@ export async function getQuestsList(r) {
 }
 
 export async function questInfo(r) {
-  const quest = await Quest.findByPk(r.params.questId);
+  const quest = await Quest.findByPk(r.params.questId, {
+    include: [{
+      model: QuestBlockReason,
+      as: 'blockReasons',
+      required: false
+    }]
+  });
 
   if(!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
@@ -93,11 +99,14 @@ export async function blockQuest(r) {
     return error(Errors.AlreadyBlocked, "Quest is already blocked", {});
   }
 
-  const blockedQuest = QuestBlockReason.create({
+  const blockedQuest = await QuestBlockReason.create({
     questId: quest.id,
     blockReason: r.payload.blockReason,
     previousStatus: quest.status,
-    isLast: true,
+  });
+
+  await quest.update({
+    status: QuestStatus.isBlocked,
   });
 
   return output(blockedQuest);
@@ -120,10 +129,9 @@ export async function unblockQuest(r) {
     order:[ ['createdAt', 'DESC'] ],
   });
 
-  await Quest.update({
-    status: blockedQuest.previousStatus
-  }, { where: { id: quest.id } });
-  return output(blockedQuest);
+  await quest.update({ status: blockedQuest.previousStatus });
+
+  return output();
 }
 
 

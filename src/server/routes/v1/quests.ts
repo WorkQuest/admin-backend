@@ -4,7 +4,7 @@ import {
   deleteQuest,
   editQuest,
   getQuestsList, getUserQuestsInfo,
-  questInfo
+  questInfo, unblockQuest
 } from "../../api/v1/quests";
 import {
   blockReasonSchema,
@@ -127,6 +127,24 @@ export default[{
     },
     response: {
       schema: questBlockReasonSchema
+    }
+  }
+}, {
+  method: "PUT",
+  path: "/v1/unblock/quest/{questId}",
+  handler: unblockQuest,
+  options: {
+    id: "v1.quest.unblockQuest",
+    tags: ["api", "quests"],
+    description: "Unblock quest",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("UnblockQuestParams"),
+    },
+    response: {
+      schema: emptyOkSchema
     }
   }
 }, {
