@@ -42,7 +42,7 @@ export async function changeUserRole(r) {
     return error(Errors.NotFound, 'User is not found', {})
   }
 
-  if(!user.changeRoleAt){
+  if(!user.changeRoleAt) {
     await user.update({
       role: r.payload.role,
       changeRoleAt: Date.now(),
@@ -58,7 +58,7 @@ export async function changeUserRole(r) {
   date.setDate(user.changeRoleAt.getDate() + month);
   const canChangeRole = date <= user.changeRoleAt
 
-  if(!canChangeRole){
+  if(!canChangeRole) {
     return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
   }
   await user.update({
