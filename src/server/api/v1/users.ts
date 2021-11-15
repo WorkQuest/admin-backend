@@ -1,4 +1,4 @@
-import {User, UserStatus} from "@workquest/database-models/lib/models";
+import {ChangeRole, User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {Op} from "sequelize";
@@ -36,16 +36,15 @@ export async function getUsers(r) {
 
 //TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
 export async function changeUserRole(r) {
-  const user = await User.findByPk(r.params.userId)
+/*  const user = await User.findByPk(r.params.userId)
 
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {})
   }
 
   if(!user.changeRoleAt) {
-    await user.update({
-      role: r.payload.role,
-      changeRoleAt: Date.now(),
+    await ChangeRole.create({
+
     });
 
     return output();
@@ -56,15 +55,15 @@ export async function changeUserRole(r) {
 
   let date = new Date();
   date.setDate(user.changeRoleAt.getDate() + month);
-  const canChangeRole = date <= user.changeRoleAt
+  const canChangeRole = date <= user.changeRoleAt*/
 
-  if(!canChangeRole) {
+  /*if(!canChangeRole) {
     return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
   }
   await user.update({
     role: r.payload.role,
     changeRoleAt: Date.now(),
-  });
+  });*/
 
   return output();
 }
