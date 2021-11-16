@@ -1,4 +1,4 @@
-import {ChangeRole, User, UserStatus} from "@workquest/database-models/lib/models";
+import {ChangeRole, Quest, QuestStatus, User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {Op} from "sequelize";
@@ -35,13 +35,25 @@ export async function getUsers(r) {
   return output({ count: count, users: rows });
 }
 
-//TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
+//TODO: продумать рейтинг
 export async function changeUserRole(r) {
+  const transaction = await r.server.app.db.transaction();
+  const quests = await Quest.findAll({
+    where: {
+      [Op.or]: [{userId: r.params.userId}, {assignedWorkerId: r.params.userId}],
+      status: {[Op.and]: [{[Op.ne]: QuestStatus.Closed}, {[Op.ne]: QuestStatus.isBlocked}]},
+    },
+  });
+
+  if(quests.length) {
+    return error(Errors.InvalidStatus, 'You can not change role while you have not closed quests', {quests});
+  }
+
   const alreadyChangedRole = await ChangeRole.findOne({
     where: {
       userId: r.params.userId
     },
-    order: [ ['createdAt', 'DESC'] ]
+    order: [ ['createdAt', 'DESC'] ],
   });
 
   if(!alreadyChangedRole) {
@@ -51,12 +63,14 @@ export async function changeUserRole(r) {
       previousAdditionalInfo: user.additionalInfo,
       previousRole: user.role,
       changeRoleAt: Date.now(),
-    });
+    }, {transaction});
 
     await user.update({
       role: r.payload.role,
       additionalInfo: getDefaultAdditionalInfo(r.payload.role),
-    });
+    }, {transaction});
+
+    await transaction.commit();
 
     return output(user);
   }
@@ -64,20 +78,28 @@ export async function changeUserRole(r) {
   const user = await User.findByPk(r.params.userId);
 
   //can change role once per month
-  const month = 31;
+  const month = 1;
 
-  let date = new Date();
-  date.setDate(alreadyChangedRole.changeRoleAt.getDate() + month);
-  const canChangeRole = date <= alreadyChangedRole.changeRoleAt
-
+  let date = new Date(alreadyChangedRole.changeRoleAt);
+  date.setMonth(date.getMonth() + month);
+  let canChangeRole = date <= new Date()
   if(!canChangeRole){
-    return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
+    return error(Errors.InvalidDate, 'User can change role once per month', {})
   }
 
+  await ChangeRole.create({
+    userId: user.id,
+    previousAdditionalInfo: user.additionalInfo,
+    previousRole: user.role,
+    changeRoleAt: Date.now(),
+  }, {transaction});
+
   await user.update({
-    role: r.payload.role,
-    additionalInfo: getDefaultAdditionalInfo(r.payload.role),
-  });
+    role: alreadyChangedRole.previousRole,
+    additionalInfo: alreadyChangedRole.previousAdditionalInfo,
+  }, {transaction});
+
+  await transaction.commit();
 
   return output(user);
 }
