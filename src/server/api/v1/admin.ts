@@ -17,7 +17,7 @@ export async function getAdmins(r) {
     offset: r.query.offset,
   });
 
-  return output({ count: count, admins: rows });
+  return output({ count, admins: rows });
 }
 
 export async function getAdmin(r) {

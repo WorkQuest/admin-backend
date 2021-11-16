@@ -129,6 +129,7 @@ export async function userBlockedStory(r) {
     where: {
       userId: r.params.userId,
     },
+    order:[ ['createdAt', 'DESC'] ],
     limit: r.query.limit,
     offset: r.query.offset,
   });

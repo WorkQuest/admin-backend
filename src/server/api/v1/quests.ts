@@ -76,7 +76,7 @@ export async function deleteQuest(r) {
 
   //TODO maybe made quest and response paranoid?
   await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
-  await QuestMedia.destroy({ where: { questId: quest.id } });
+  await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
   await quest.destroy({ force: true, transaction });
 
   await transaction.commit();
