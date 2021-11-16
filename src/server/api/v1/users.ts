@@ -36,34 +36,23 @@ export async function getUsers(r) {
 
 //TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
 export async function changeUserRole(r) {
-/*  const user = await User.findByPk(r.params.userId)
+  const alreadyChangedRole = await ChangeRole.findOne({
+    where: {
+      userId: r.params.userId
+    },
+    order: [ ['createdAt', 'DESC'] ]
+  });
 
-  if(!user) {
-    return error(Errors.NotFound, 'User is not found', {})
-  }
-
-  if(!user.changeRoleAt) {
+  if(!alreadyChangedRole) {
     await ChangeRole.create({
 
     });
-
-    return output();
   }
 
   //can change role once per month
   const month = 31;
 
-  let date = new Date();
-  date.setDate(user.changeRoleAt.getDate() + month);
-  const canChangeRole = date <= user.changeRoleAt*/
 
-  /*if(!canChangeRole) {
-    return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
-  }
-  await user.update({
-    role: r.payload.role,
-    changeRoleAt: Date.now(),
-  });*/
 
   return output();
 }
