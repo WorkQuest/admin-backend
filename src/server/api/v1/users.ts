@@ -44,14 +44,17 @@ export async function changeUserRole(r) {
   });
 
   if(!alreadyChangedRole) {
-    await ChangeRole.create({
+    const user = await User.findByPk(r.params.userId);
 
+    await ChangeRole.create({
+      userId: user.id,
+      previousAdditionalInfo: user.additionalInfo,
+      changeRoleAt: Date.now(),
     });
   }
 
   //can change role once per month
   const month = 31;
-
 
 
   return output();

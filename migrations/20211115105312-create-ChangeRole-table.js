@@ -27,10 +27,6 @@ module.exports = {
         type: Sequelize.DataTypes.STRING,
         defaultValue: null,
       },
-      previousStatus: {
-        type: Sequelize.DataTypes.INTEGER,
-        defaultValue: 0,
-      },
       changeRoleAt: {
         type: Sequelize.DataTypes.DATE
       },
