@@ -15,5 +15,5 @@ export async function editProfile(r){
 
   await admin.update(r.payload);
 
-  return output(await Admin.findByPk(r.auth.credentials.id));
+  return output(admin);
 }

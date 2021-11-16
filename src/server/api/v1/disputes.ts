@@ -88,8 +88,7 @@ export async function disputeDecision(r) {
     resolveAt: Date.now(),
   }, {transaction});
 
-  const admin = await Admin.findByPk(r.auth.credentials.id);
-  await admin.increment('resolvedDisputes', {transaction});
+  await Admin.increment('resolvedDisputes', {where: {id: r.auth.credentials.id}, transaction});
 
   transaction.commit();
   return output(dispute);
