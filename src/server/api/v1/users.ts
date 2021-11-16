@@ -3,6 +3,7 @@ import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {Op} from "sequelize";
 import {UserBlockReason} from "@workquest/database-models/lib/models/user/UserBlockReason";
+import {getDefaultAdditionalInfo} from "../../utils/common";
 
 export async function getUserInfo(r) {
   const user = await User.findByPk(r.params.userId, {
@@ -45,19 +46,40 @@ export async function changeUserRole(r) {
 
   if(!alreadyChangedRole) {
     const user = await User.findByPk(r.params.userId);
-
     await ChangeRole.create({
       userId: user.id,
       previousAdditionalInfo: user.additionalInfo,
+      previousRole: user.role,
       changeRoleAt: Date.now(),
     });
+
+    await user.update({
+      role: r.payload.role,
+      additionalInfo: getDefaultAdditionalInfo(r.payload.role),
+    });
+
+    return output(user);
   }
+
+  const user = await User.findByPk(r.params.userId);
 
   //can change role once per month
   const month = 31;
 
+  let date = new Date();
+  date.setDate(alreadyChangedRole.changeRoleAt.getDate() + month);
+  const canChangeRole = date <= alreadyChangedRole.changeRoleAt
 
-  return output();
+  if(!canChangeRole){
+    return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
+  }
+
+  await user.update({
+    role: r.payload.role,
+    additionalInfo: getDefaultAdditionalInfo(r.payload.role),
+  });
+
+  return output(user);
 }
 
 export async function blockUser(r) {

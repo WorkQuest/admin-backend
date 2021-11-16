@@ -13,7 +13,7 @@ import {
   idSchema, limitSchema, offsetSchema,
   outputOkSchema,
   outputPaginationSchema, userBlockReasonSchema,
-  userRoleSchema, userSchema,
+  userRoleSchema, userSchema, userShortSchema,
 } from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
@@ -114,7 +114,7 @@ export default[{
       }).label('ChangeUserRoleSchema')
     },
     response: {
-      schema: outputOkSchema(userSchema).label('QuestInfoResponse')
+      schema: outputOkSchema(userShortSchema).label('QuestInfoResponse')
     }
   }
 }, {
