@@ -1,15 +1,65 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, AdminRole} from "@workquest/database-models/lib/models"
+import {
+  Admin,
+  AdminRole,
+  AdminSession,
+  DisputeStatus,
+  Language,
+  QuestDispute
+} from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
+    include: [{
+      model: AdminSession,
+      as: 'lastSession',
+    }, {
+      model: Language,
+      as: 'languages',
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
   });
 
   return output({ count, admins: rows });
+}
+
+export async function getAdmin(r){
+  const admin = await Admin.findAndCountAll({
+    where: {
+      id: r.params.adminId
+    },
+    include: [{
+      model: Language,
+      as: 'languages',
+    }],
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!admin) {
+    return error(Errors.NotFound, "Admin is not found", {});
+  }
+
+  return output(admin);
+}
+
+export async function getAdminDisputes(r){
+  const disputes = await QuestDispute.findAndCountAll({
+    where: {
+      resolvedByAdminId: r.params.adminId
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  })
+
+  if(!disputes) {
+    return error(Errors.NotFound, "Disputes are not found", {});
+  }
+
+  return output({ count: disputes.count, disputes: disputes.rows });
 }
 
 export async function registerAdminAccount(r) {
@@ -45,7 +95,7 @@ export async function deleteAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not delete your own account', {})
   }
 
   await admin.destroy();
@@ -60,11 +110,11 @@ export async function activateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not activate your own account', {})
   }
 
   await admin.update({
-    isActive: true
+    isActivated: true
   });
 
   return output();
@@ -74,14 +124,14 @@ export async function deactivateAdminAccount(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
   if (!admin) {
-    return error(Errors.InvalidUserId, 'Can not activate your own account', {});
+    return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+    return error(Errors.InvalidAdminType, 'Can not deactivate your own account', {})
   }
 
   await admin.update({
-    isActive: false
+    isActivated: false
   });
 
   return output();
@@ -92,9 +142,6 @@ export async function changeLogin(r) {
 
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
-  }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
   }
 
   if (await Admin.isEmailExist(r.payload.newLogin)) {
@@ -114,9 +161,7 @@ export async function changePassword(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
-  }
+
   if(await admin.passwordCompare(r.payload.newPassword)) {
     return error(Errors.AlreadyExist, "New password is the same with the old one", {});
   }
