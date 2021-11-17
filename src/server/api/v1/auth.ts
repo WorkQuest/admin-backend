@@ -1,39 +1,52 @@
-import { Errors } from "../../utils/errors";
-import { output, error} from "../../utils";
-import { Admin, AdminSession} from "@workquest/database-models/lib/models"
-import { generateJwt, } from "../../utils/auth";
-import { Op } from "sequelize";
+import {Errors} from "../../utils/errors";
+import {output, error, getDevice, getGeo } from "../../utils";
+import {Admin, AdminSession} from "@workquest/database-models/lib/models"
+import {Op} from "sequelize";
+import {generateJwt} from "../../utils/auth";
 
 export async function login(r) {
-  const account = await Admin.scope("withPassword").findOne({
-    where: {
-      email: {
-        [Op.iLike]: r.payload.email
-      }
-    }
-  });
+  const admin = await Admin.scope("withPassword").findOne({ where: { email: { [Op.iLike]: r.payload.email } } });
 
-  if (!account) {
+  if (!admin) {
     return error(Errors.NotFound, "Account not found", {});
   }
-  if (!await account.passwordCompare(r.payload.password)) {
+
+  if (!await admin.passwordCompare(r.payload.password)) {
     return error(Errors.NotFound, "Invalid password", {});
   }
-  if(!await account.validateTOTP(r.payload.totp)) {
+
+  if(!await admin.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 
+  if (!admin.isActivated) {
+    return error(Errors.InvalidStatus, 'Admin is deactivated', {});
+  }
+
   const session = await AdminSession.create({
-    adminId: account.id
+    adminId: admin.id,
+    place: getGeo(r),
+    device: getDevice(r),
+    isActive: true,
   });
 
   return output({
     ...generateJwt({ id: session.id })
   });
+
 }
 
 export async function logout(r) {
-  // TODO
+  // TODO!!!!
+  const admin = await Admin.findByPk(r.auth.credentials.id);
+  if(!admin) {
+    return error(Errors.NotFound, 'Account is not found', {});
+  }
+  await AdminSession.update({
+    logoutAt: Date.now(),
+  }, {
+    where: { id: r.auth.artifacts.sessionId }
+  });
 
   return output();
 }

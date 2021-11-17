@@ -4,6 +4,8 @@ config();
 
 export default {
   dbLink: process.env.DB_LINK,
+  baseUrl: process.env.BASE_URL,
+  baseURLMainBackend: process.env.BASE_URL_MAIN_BACKEND,
   auth: {
     emailConfirmCodeLifetime: Number(process.env.EMAIL_CONFIRM_CODE_LIFETIME),
     captcha: {
@@ -51,6 +53,7 @@ export default {
       : ['content-type', 'content-length'],
   },
   smtp: {
+    sender: process.env.SMTP_SENDER,
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
     secure: process.env.SMTP_SECURE === "true",
@@ -58,5 +61,13 @@ export default {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD
     }
+  },
+  cdn: {
+    accessKeyId: process.env.CDN_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CDN_SECRET_ACCESS_KEY,
+    endpoint: process.env.CDN_END_POINT,
+    bucket: process.env.CDN_BUCKET,
+    pubUrl: process.env.CDN_PUB_END_POINT,
+    expiresIn: parseInt(process.env.CDN_EXPIRES_IN),
   },
 };

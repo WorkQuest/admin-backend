@@ -6,7 +6,7 @@ import {
   deactivateAdminAccount,
   deleteAdminAccount,
   registerAdminAccount,
-  getAdmins,
+  getAdmins, getAdmin,
 } from "../../api/v1/admin";
 import {
   adminRoleSchema,
@@ -14,13 +14,12 @@ import {
   adminFirstNameSchema,
   adminLastNameSchema,
   adminPasswordSchema,
-  idSchema,
   outputOkSchema,
-  totpSchema,
   emptyOkSchema,
   outputPaginationSchema,
   adminQuerySchema,
-  adminSchema
+  adminSchema,
+  adminIdParams,
 } from "@workquest/database-models/lib/schemes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 
@@ -29,16 +28,11 @@ const secretSchema = Joi.string().max(255).example('HJRT4QCSGNHGSYLF')
 const registerAdminWithSecretSchema = Joi.object({
   data: { adminSchema },
   secret: secretSchema.required(),
-}).label('RegisterAdminWithSecretSchema')
-
-
-const adminIdParams = Joi.object({
-  adminId: idSchema.required()
-});
+}).label('RegisterAdminWithSecretSchema');
 
 export default[{
   method: "GET",
-  path: "v1/admins",
+  path: "/v1/admins",
   handler: getAdmins,
   options: {
     id: "v1.admin.adminsList",
@@ -53,8 +47,24 @@ export default[{
     }
   }
 }, {
+  method: "GET",
+  path: "/v1/admin/{adminId}",
+  handler: getAdmin,
+  options: {
+    id: "v1.get.admin",
+    tags: ["api", "admin"],
+    description: "Get info about admin",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: adminIdParams.label('AdminAccountParams'),
+    },
+    response: {
+      schema: outputOkSchema(adminSchema).label('AdminInfoResponse')
+    }
+  }
+}, {
   method: "POST",
-  path: "v1/admin/create",
+  path: "/v1/admin/create",
   handler: registerAdminAccount,
   options: {
     id: "v1.admin.registerAdmin",
@@ -76,7 +86,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/admin/{adminId}/activate",
+  path: "/v1/admin/{adminId}/activate",
   handler: activateAdminAccount,
   options: {
     id: "v1.auth.activateAdmin",
@@ -92,7 +102,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/admin/{adminId}/deactivate",
+  path: "/v1/admin/{adminId}/deactivate",
   handler: deactivateAdminAccount,
   options: {
     id: "v1.admin.deactivateAdmin",
@@ -108,7 +118,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/admin/{adminId}/change/login",
+  path: "/v1/admin/{adminId}/change/login",
   handler: changeLogin,
   options: {
     id: "v1.admin.change.login",
@@ -127,7 +137,7 @@ export default[{
   }
 }, {
   method: "POST",
-  path: "v1/admin/{adminId}/change/password",
+  path: "/v1/admin/{adminId}/change/password",
   handler: changePassword,
   options: {
     id: "v1.admin.change.password",
@@ -146,7 +156,7 @@ export default[{
   }
 }, {
   method: "DELETE",
-  path: "v1/admin/{adminId}",
+  path: "/v1/admin/{adminId}",
   handler: deleteAdminAccount,
   options: {
     id: "v1.admin.deleteAdmin",

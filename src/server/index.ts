@@ -16,9 +16,9 @@ import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
 import { initDatabase } from "@workquest/database-models/lib/models";
 import { run } from "graphile-worker";
-
 const HapiSwagger = require('hapi-swagger');
 const Package = require('../../package.json');
+
 
 SwaggerOptions.info.version = Package.version;
 
@@ -54,7 +54,8 @@ const init = async () => {
     { plugin: HapiSwagger, options: SwaggerOptions, },
     { plugin: require('hapi-rbac'), options: { } }
   ]);
-  server.app.db = initDatabase(config.dbLink, false, true);
+
+  server.app.db = await initDatabase(config.dbLink, false, true);
   server.app.scheduler = await run({
     connectionString: config.dbLink,
     concurrency: 5,
@@ -82,11 +83,13 @@ const init = async () => {
       signals: ['SIGINT'],
     },
   });
+
   // Enable CORS (Do it last required!)
   await server.register({
     plugin: HapiCors,
     options: config.cors,
   });
+
   // Запускаем сервер
   try {
     await server.start();

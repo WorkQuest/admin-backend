@@ -2,15 +2,38 @@ import { v4 as uuidv4, } from 'uuid';
 import { Boom, } from '@hapi/boom';
 import * as speakeasy from 'speakeasy';
 import * as crypto from "crypto"
+import config from "../config/config";
+import geoip = require('geoip-lite');
 
 export function getUUID(): string {
   return uuidv4();
 }
 
 export function getRealIp(request): string {
-  return request.headers['cf-connecting-ip']
-    ? request.headers['cf-connecting-ip']
+  return request.headers['X-Forwarded-For']
+    ? request.headers['X-Forwarded-For']
     : request.info.remoteAddress;
+}
+
+//DO NOT WORK WITH LOCAL IP
+export function getGeo(request) {
+  if (config.debug) {
+    return {
+      country: "localhost",
+      city: "localhost",
+    }
+  }
+  let ip = getRealIp(request);
+  let geo = geoip.lookup(ip);
+  let place = {
+    country: geo.country,
+    city: geo.city
+  }
+  return place
+}
+
+export function getDevice(request): string {
+  return request.headers['user-agent'];
 }
 
 export function output(res?: object | null): object {
@@ -41,6 +64,10 @@ export function totpValidate(totp: string, secret: string): boolean {
     encoding: 'base32',
     token: Number(totp),
   });
+}
+
+export function getRandomHexToken(): string {
+  return crypto.randomBytes(20).toString("hex");
 }
 
 export function responseHandler(r, h) {

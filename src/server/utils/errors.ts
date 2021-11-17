@@ -7,6 +7,11 @@ export enum Errors {
   InvalidCaptcha = 400004,
   InvalidTOTP = 400005,
   InvalidUserId = 400006,
+  InvalidStatus = 400007,
+  AlreadyBlocked = 400008,
+  AlreadyUnblocked = 400009,
+  InvalidDate = 400010,
+  TooMuchBlocked = 400011,
   // Authorization errors (401)
   TokenExpired = 401001,
   TokenInvalid = 401002,
