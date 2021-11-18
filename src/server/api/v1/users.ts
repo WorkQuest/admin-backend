@@ -37,15 +37,14 @@ export async function getUsers(r) {
 
 //TODO: продумать рейтинг
 export async function changeUserRole(r) {
-  const transaction = await r.server.app.db.transaction();
-  const quests = await Quest.findAll({
+  const quests = await Quest.findAndCountAll({
     where: {
       [Op.or]: [{userId: r.params.userId}, {assignedWorkerId: r.params.userId}],
       status: {[Op.and]: [{[Op.ne]: QuestStatus.Closed}, {[Op.ne]: QuestStatus.isBlocked}]},
     },
   });
 
-  if(quests.length) {
+  if(quests.count !== 0) {
     return error(Errors.InvalidStatus, 'You can not change role while you have not closed quests', {quests});
   }
 
@@ -55,6 +54,8 @@ export async function changeUserRole(r) {
     },
     order: [ ['createdAt', 'DESC'] ],
   });
+
+  const transaction = await r.server.app.db.transaction();
 
   if(!alreadyChangedRole) {
     const user = await User.findByPk(r.params.userId);
@@ -84,6 +85,7 @@ export async function changeUserRole(r) {
   date.setMonth(date.getMonth() + month);
   let canChangeRole = date <= new Date()
   if(!canChangeRole){
+    transaction.rollback
     return error(Errors.InvalidDate, 'User can change role once per month', {})
   }
 
