@@ -26,9 +26,6 @@ module.exports = {
       previousStatus: {
         type: Sequelize.DataTypes.INTEGER,
       },
-      isLast: {
-        type: Sequelize.DataTypes.BOOLEAN,
-      },
       createdAt: {
         type: Sequelize.DataTypes.DATE
       },

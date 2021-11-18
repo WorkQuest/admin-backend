@@ -3,12 +3,22 @@
   <component name="ChangeListManager">
     <list default="true" id="c7cd0b39-9a30-446c-a303-df9a9f4b241d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/api/v1/users.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/api/v1/users.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20210729035625-delete-Session-field-userId.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20210729043109-delete-table-UserAvatar.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20210729060638-create-Session-userId-field.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20210804110717-delete-Session-adminId-FK-field.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20211111092403-add-UserBlockReason-isLast-field.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20211112055140-create-QuestBlockReason-table.js" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20211112055140-create-QuestBlockReason-table.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20211112084525-remove-UserBlockReason-isLast-column.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20211112084534-remove-QuestBlockReason-isLast-column.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="origin/questsList" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -48,7 +58,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js.linters.configure.manually.selectedeslint" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../backend-development" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -96,6 +106,9 @@
       <workItem from="1636689329911" duration="19488000" />
       <workItem from="1636952810080" duration="3085000" />
       <workItem from="1637033612366" duration="14719000" />
+      <workItem from="1637121713046" duration="389000" />
+      <workItem from="1637123697120" duration="65000" />
+      <workItem from="1637142029139" duration="983000" />
     </task>
     <servers />
   </component>
