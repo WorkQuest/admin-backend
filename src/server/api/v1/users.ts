@@ -85,7 +85,7 @@ export async function changeUserRole(r) {
   date.setMonth(date.getMonth() + month);
   let canChangeRole = date <= new Date()
   if(!canChangeRole){
-    transaction.rollback
+    await transaction.rollback
     return error(Errors.InvalidDate, 'User can change role once per month', {})
   }
 
