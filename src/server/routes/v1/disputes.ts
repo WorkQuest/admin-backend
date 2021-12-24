@@ -186,7 +186,7 @@ export default[{
   handler: getAdminDisputes,
   options: {
     id: "v1.admin.completed.disputesByAdmin",
-    tags: ["api", "admin"],
+    tags: ["api", "disputes"],
     description: "Get info about completed disputes of admin",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -203,7 +203,7 @@ export default[{
   handler: adminResolvedDisputes,
   options: {
     id: "v1.admin.completed.disputes",
-    tags: ["api", "profile"],
+    tags: ["api", "disputes"],
     description: "Get info about completed disputes of admin",
     plugins: getRbacSettings(AdminRole.dispute),
     validate: {

@@ -7,10 +7,8 @@ import {
   adminEmailSchema,
   adminSchema,
   outputOkSchema,
-  adminAboutSchema, adminLanguagesSchema, disputesQuerySchema, outputPaginationSchema, disputeSchema, idSchema
+  adminAboutSchema, adminLanguagesSchema,
 } from "@workquest/database-models/lib/schemes";
-import {getRbacSettings} from "../../utils/auth";
-import {AdminRole} from "@workquest/database-models/lib/models";
 
 export default[{
   method: "GET",
