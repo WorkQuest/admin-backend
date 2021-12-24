@@ -188,7 +188,7 @@ export default[{
     id: "v1.admin.completed.disputesByAdmin",
     tags: ["api", "disputes"],
     description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: adminIdParams.label('AdminAccountParams'),
       query: disputesQuerySchema.label('QuerySchema'),
@@ -205,7 +205,7 @@ export default[{
     id: "v1.admin.completed.disputes",
     tags: ["api", "disputes"],
     description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       query: disputesQuerySchema.label('QuerySchema'),
     },

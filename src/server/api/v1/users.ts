@@ -45,7 +45,7 @@ export async function changeUserRole(r) {
   });
 
   if(quests.count !== 0) {
-    return error(Errors.InvalidStatus, 'You can not change role while you have not closed quests', {quests});
+    return error(Errors.InvalidStatus, 'You can not change role while you have not closed quests', {quests: quests.rows});
   }
 
   const alreadyChangedRole = await ChangeRole.findOne({
