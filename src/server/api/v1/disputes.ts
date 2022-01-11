@@ -15,7 +15,7 @@ export async function getQuestDispute(r) {
     },
   });
 
-  if(!dispute) {
+  if (!dispute) {
     return error(Errors.NotFound, 'Dispute not found', {});
   }
 
@@ -23,44 +23,47 @@ export async function getQuestDispute(r) {
 }
 
 export async function getUserDisputes(r) {
-  const disputes = await QuestDispute.findAndCountAll({
+  const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
-      userId: r.params.userId,
+      [Op.or]: {
+        openDisputeUserId: r.auth.credentials.id,
+        opponentUserId: r.auth.credentials.id,
+      },
     },
     limit: r.query.limit,
     offset: r.query.offset,
   });
 
-  return output({ count: disputes.count, disputes: disputes.rows });
+  return output({ count, disputes: rows });
 }
 
-//Statuses: inProgress && Created
+// statuses: inProgress && Created
 export async function getActiveDisputes(r) {
-  const disputes = await QuestDispute.findAndCountAll({
+  const { count, rows } = await QuestDispute.findAndCountAll({
     where: { status: { [Op.or]: [DisputeStatus.pending, DisputeStatus.inProgress] } },
     limit: r.query.limit,
     offset: r.query.offset,
   });
 
-  return output({ count: disputes.count, disputes: disputes.rows });
+  return output({ count, disputes: rows });
 }
 
 export function getDisputesByStatus(status: DisputeStatus) {
   return async function(r){
-    const disputes = await QuestDispute.findAndCountAll({
-      where: { status: status },
+    const { count, rows } = await QuestDispute.findAndCountAll({
+      where: { status },
       limit: r.query.limit,
       offset: r.query.offset,
     });
 
-    return output({ count: disputes.count, disputes: disputes.rows });
+    return output({ count: count, disputes: rows });
   }
 }
 
 export async function takeDisputeToResolve(r) {
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
-  if(!dispute) {
+  if (!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
 
@@ -75,7 +78,8 @@ export async function disputeDecision(r) {
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
   const transaction = await r.server.app.db.transaction();
 
-  if(!dispute) {
+  if (!dispute) {
+    await transaction.rollback();
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
 
@@ -83,18 +87,21 @@ export async function disputeDecision(r) {
 
   await dispute.update({
     decision: r.payload.decision,
-    status: DisputeStatus.completed,
+    status: DisputeStatus.closed,
     resolvedByAdminId: r.auth.credentials.id,
     resolveAt: Date.now(),
-  }, {transaction});
+  }, { transaction });
 
-  await Admin.increment('resolvedDisputes', {where: {id: r.auth.credentials.id}, transaction});
+  await Admin.increment('resolvedDisputes', {
+    where: { id: r.auth.credentials.id },
+    transaction
+  });
 
-  transaction.commit();
+  await transaction.commit();
   return output(dispute);
 }
 
-//TODO принять или отклонить диспут
+// TODO принять или отклонить диспут
 export async function deleteDispute(r) {
   const dispute  = await QuestDispute.findByPk(r.params.disputeId);
 
@@ -102,18 +109,18 @@ export async function deleteDispute(r) {
     return error(Errors.NotFound, "Dispute not found", {});
   }
 
-  if (dispute.status !== DisputeStatus.completed) {
+  if (dispute.status !== DisputeStatus.closed) {
     return error(Errors.InvalidStatus, "Dispute cannot be deleted at current stage", {});
   }
 
-  await QuestsResponse.destroy({ where: { questId: dispute.id } });
+  await QuestsResponse.destroy({ where: { questId: dispute.questId } });
   await dispute.destroy();
 
   return output();
 }
 
 export async function getAdminDisputes(r){
-  const disputes = await QuestDispute.findAndCountAll({
+  const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
       resolvedByAdminId: r.params.adminId
     },
@@ -121,18 +128,18 @@ export async function getAdminDisputes(r){
     offset: r.query.offset,
   });
 
-  return output({ count: disputes.count, disputes: disputes.rows });
+  return output({ count, disputes: rows });
 }
 
 export async function adminResolvedDisputes(r){
-  const disputes = await QuestDispute.findAndCountAll({
+  const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
-      status: DisputeStatus.completed,
+      status: DisputeStatus.closed,
       resolvedByAdminId: r.auth.credentials.id,
     },
     limit: r.query.limit,
     offset: r.query.offset,
   });
 
-  return output({ count: disputes.count, disputes: disputes.rows });
+  return output({ count, disputes: rows });
 }
