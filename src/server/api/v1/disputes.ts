@@ -87,7 +87,7 @@ export async function disputeDecision(r) {
 
   await dispute.update({
     decision: r.payload.decision,
-    status: DisputeStatus.closed,
+    status: DisputeStatus.completed,
     resolvedByAdminId: r.auth.credentials.id,
     resolveAt: Date.now(),
   }, { transaction });
@@ -109,7 +109,7 @@ export async function deleteDispute(r) {
     return error(Errors.NotFound, "Dispute not found", {});
   }
 
-  if (dispute.status !== DisputeStatus.closed) {
+  if (dispute.status !== DisputeStatus.completed) {
     return error(Errors.InvalidStatus, "Dispute cannot be deleted at current stage", {});
   }
 
@@ -134,7 +134,7 @@ export async function getAdminDisputes(r){
 export async function adminResolvedDisputes(r){
   const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
-      status: DisputeStatus.closed,
+      status: DisputeStatus.completed,
       resolvedByAdminId: r.auth.credentials.id,
     },
     limit: r.query.limit,

@@ -18,7 +18,7 @@ export async function addSendEmailJob(payload: SendEmailPayload) {
 
 export default async function(p: SendEmailPayload) {
   await transporter.sendMail({
-    from: config.smtp.sender,
+    from: config.smtp.auth.user,
     to: p.email,
     subject: p.subject,
     text: p.text,

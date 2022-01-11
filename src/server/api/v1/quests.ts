@@ -14,13 +14,7 @@ export async function getQuestsList(r) {
 }
 
 export async function questInfo(r) {
-  const quest = await Quest.findByPk(r.params.questId, {
-    include: [{
-      model: QuestBlockReason,
-      as: 'blockReasons',
-      required: false
-    }]
-  });
+  const quest = await Quest.findByPk(r.params.questId);
 
   if(!quest) {
     return error(Errors.NotFound, 'Quest not found',{});

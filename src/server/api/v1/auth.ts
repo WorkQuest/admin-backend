@@ -19,10 +19,6 @@ export async function login(r) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 
-  if (!admin.isActivated) {
-    return error(Errors.InvalidStatus, 'Admin is deactivated', {});
-  }
-
   const session = await AdminSession.create({
     adminId: admin.id,
     place: getGeo(r),
