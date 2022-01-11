@@ -21,8 +21,6 @@ export async function login(r) {
 
   const session = await AdminSession.create({
     adminId: admin.id,
-    place: getGeo(r),
-    device: getDevice(r),
     isActive: true,
   });
 
