@@ -35,7 +35,7 @@ export async function registerAdminAccount(r) {
     return error(Errors.AlreadyExist, "Account with this email already exist", {});
   }
 
-  const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWokQuest'});
+  const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWorkQuest'});
 
   const newAdmin = await Admin.create({
     firstName: r.payload.firstName,
