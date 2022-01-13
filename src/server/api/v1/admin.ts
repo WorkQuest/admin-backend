@@ -9,10 +9,6 @@ import {
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
-    include: [{
-      model: AdminSession,
-      as: 'lastSession',
-    },],
     limit: r.query.limit,
     offset: r.query.offset,
   });
