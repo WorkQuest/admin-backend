@@ -3,8 +3,8 @@ import {Errors} from "../../utils/errors";
 import {
   Admin,
   QuestsResponse,
-  QuestDispute ,
-  DisputeStatus,
+  QuestDispute,
+  DisputeStatus, Quest,
 } from "@workquest/database-models/lib/models";
 import { Op } from 'sequelize'
 
@@ -71,7 +71,7 @@ export async function takeDisputeToResolve(r) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
-  await dispute.update({ status: DisputeStatus.inProgress });
+  await dispute.update({ status: DisputeStatus.inProgress, assignedAdminId: r.auth.credentials.id });
 
   return output(dispute);
 }
@@ -90,11 +90,12 @@ export async function disputeDecision(r) {
   }
 
   await dispute.update({
-    decision: r.payload.decision,
+    decisionDescription: r.payload.decision,
     status: DisputeStatus.closed,
-    resolvedByAdminId: r.auth.credentials.id,
-    resolveAt: Date.now(),
+    resolvedAt: Date.now(),
   }, { transaction });
+
+  await Quest.update({status: dispute.openOnQuestStatus}, { where: { id: dispute.questId }, transaction});
 
   await Admin.increment('resolvedDisputes', {
     where: { id: r.auth.credentials.id },
@@ -126,7 +127,7 @@ export async function deleteDispute(r) {
 export async function getAdminDisputes(r){
   const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
-      resolvedByAdminId: r.params.adminId
+      assignedAdminId: r.params.adminId
     },
     limit: r.query.limit,
     offset: r.query.offset,
@@ -139,7 +140,7 @@ export async function adminResolvedDisputes(r){
   const { count, rows } = await QuestDispute.findAndCountAll({
     where: {
       status: DisputeStatus.closed,
-      resolvedByAdminId: r.auth.credentials.id,
+      assignedAdminId: r.auth.credentials.id,
     },
     limit: r.query.limit,
     offset: r.query.offset,
