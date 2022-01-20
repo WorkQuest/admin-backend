@@ -110,7 +110,7 @@ export default[{
 }, {
   method: "GET",
   path: "/v1/completed/disputes",
-  handler: getDisputesByStatus(DisputeStatus.completed),
+  handler: getDisputesByStatus(DisputeStatus.closed),
   options: {
     id: "v1.disputes.completed",
     tags: ["api", "disputes"],

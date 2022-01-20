@@ -36,7 +36,7 @@ export async function getUsers(r) {
 
 //TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
 export async function changeUserRole(r) {
-  const user = await User.findByPk(r.params.userId)
+/*  const user = await User.findByPk(r.params.userId)
 
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {})
@@ -64,7 +64,7 @@ export async function changeUserRole(r) {
   await user.update({
     role: r.payload.role,
     changeRoleAt: Date.now(),
-  });
+  });*/
 
   return output();
 }
