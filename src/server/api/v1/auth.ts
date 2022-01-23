@@ -31,12 +31,8 @@ export async function login(r) {
 }
 
 export async function logout(r) {
-  // TODO!!!!
-  const admin = await Admin.findByPk(r.auth.credentials.id);
-  if(!admin) {
-    return error(Errors.NotFound, 'Account is not found', {});
-  }
   await AdminSession.update({
+    invalidating: true,
     logoutAt: Date.now(),
   }, {
     where: { id: r.auth.artifacts.sessionId }
