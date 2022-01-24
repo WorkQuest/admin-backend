@@ -1,30 +1,30 @@
 import * as Joi from "joi";
-import { login, logout } from "../../api/v1/auth";
+import * as handlers from "../../api/v1/auth";
 import {
+  jwtTokens,
+  totpSchema,
+  emptyOkSchema,
+  outputOkSchema,
   adminEmailSchema,
   adminPasswordSchema,
-  jwtTokens,
-  outputOkSchema,
-  emptyOkSchema,
-  totpSchema
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
   method: "GET",
   path: "/v1/auth/logout",
-  handler: logout,
+  handler: handlers.logout,
   options: {
     id: "v1.auth.logout",
     tags: ["api", "auth"],
     description: "Logout from account",
     response: {
-      schema: emptyOkSchema.label("LogoutResponse")
+      schema: emptyOkSchema
     }
   }
 }, {
   method: "POST",
   path: "/v1/auth/login",
-  handler: login,
+  handler: handlers.login,
   options: {
     auth: false,
     id: "v1.auth.login",

@@ -1,11 +1,35 @@
-import {Quest, QuestMedia, QuestsResponse, QuestStatus, QuestBlockReason} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {getMedias} from "../../utils/medias";
-import {Op} from "sequelize";
+import {transformToGeoPostGIS} from "../../utils/postGIS";
+import {QuestController} from "../../controllers/controller.quest";
+import {MediaController} from "../../controllers/controller.media";
+import {
+  User,
+  Quest,
+  Media,
+  QuestStatus,
+} from "@workquest/database-models/lib/models";
 
-export async function getQuestsList(r) {
-  const {rows, count} = await Quest.findAndCountAll({
+export async function getQuests(r) {
+  const where = {
+    ...(r.params.userId && { userId: r.params.userId }),
+    ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
+  };
+
+  const include = [{
+    model: Media.scope('urlOnly'),
+    as: 'medias',
+    through: { attributes: [] }
+  }, {
+    model: User.scope('short'),
+    as: 'user'
+  }, {
+    model: User.scope('short'),
+    as: 'assignedWorker'
+  }];
+
+  const { rows, count } = await Quest.unscoped().findAndCountAll({
+    include, where,
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -13,123 +37,105 @@ export async function getQuestsList(r) {
   return output({ count, quests: rows });
 }
 
-export async function questInfo(r) {
+export async function getQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
 
-  if(!quest) {
+  if (!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
   }
 
   return output(quest);
 }
 
-export async function getUserQuestsInfo(r) {
-  const quests = await Quest.findAndCountAll({
-    where: {
-      [Op.or]: [{userId: r.params.userId}, {assignedWorkerId: r.params.userId}],
-    },
-    limit: r.query.limit,
-    offset: r.query.offset,
-  });
-
-  return output({ count: quests.count, quests: quests.rows });
-}
-
-//TODO change logic
 export async function editQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
+  const questController = new QuestController(await Quest.findByPk(r.params.questId));
+
+  const medias = await MediaController.getMedias(r.payload.medias);
+
+  questController
+    .questMustHaveStatus(QuestStatus.Created)
+
   const transaction = await r.server.app.db.transaction();
 
-  if(!quest) {
-    return error(Errors.NotFound, 'Quest not found',{});
-  }
-  quest.mustHaveStatus(QuestStatus.Created);
+  await questController.setMedias(medias, transaction);
+  await questController.setQuestSpecializations(r.payload.specializationKeys, false, transaction);
 
-  if(r.payload.medias) {
-    const medias = await getMedias(r.payload.medias);
+  questController.quest = await questController.quest.update({
+    price: r.payload.price,
+    title: r.payload.title,
+    adType: r.payload.adType,
+    priority: r.payload.priority,
+    category: r.payload.category,
+    workplace: r.payload.workplace,
+    employment: r.payload.employment,
+    description: r.payload.description,
+    location: r.payload.location,
+    locationPlaceName: r.payload.locationPlaceName,
+    locationPostGIS: transformToGeoPostGIS(r.payload.location),
+  }, { transaction });
 
-    await quest.$set('medias', medias, { transaction });
-  }
-
-  await quest.update(r.payload, { transaction });
   await transaction.commit();
 
-  return output(quest);
+  return output(questController.quest);
 }
 
 export async function deleteQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  const transaction = await r.server.app.db.transaction();
-  if (!quest) {
-    return error(Errors.NotFound, "Quest not found", {});
-  }
+  const questController = new QuestController(quest);
 
-  if (quest.status !== QuestStatus.Created && quest.status !== QuestStatus.Closed) {
-    return error(Errors.InvalidStatus, "Quest cannot be deleted at current stage", {});
-  }
+  questController
+    .questMustHaveStatus(QuestStatus.Created, QuestStatus.Closed)
 
-  //TODO maybe made quest and response paranoid?
-  await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
-  await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
-  await quest.destroy({ force: true, transaction });
 
-  await transaction.commit();
+  // TODO: добавить удаления чатов и прочее
+  // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
+  // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
+  await quest.destroy();
 
   return output();
 }
 
 export async function blockQuest(r) {
+  throw new Error('Not implemented');
+
   const quest = await Quest.findByPk(r.params.questId);
-  if (!quest) {
-    return error(Errors.NotFound, "Quest is not found", {});
-  }
+  const questController = new QuestController(quest);
 
-  //TODO: check statuses for blocking!
-  if (quest.status === QuestStatus.Closed) {
-    return error(Errors.InvalidStatus, "Quest cannot be blocked at current stage", {});
-  }
+  questController
+    .questMustHaveStatus()
 
-  if(quest.status === QuestStatus.isBlocked) {
-    return error(Errors.AlreadyBlocked, "Quest is already blocked", {});
-  }
+  // const blockedQuest = await QuestBlockReason.create({
+  //   questId: quest.id,
+  //   blockReason: r.payload.blockReason,
+  //   previousStatus: quest.status,
+  // });
 
-  const blockedQuest = await QuestBlockReason.create({
-    questId: quest.id,
-    blockReason: r.payload.blockReason,
-    previousStatus: quest.status,
-  });
+  // await quest.update({ status: });
 
-  await quest.update({
-    status: QuestStatus.isBlocked,
-  });
-
-  return output(blockedQuest);
+  // return output();
 }
 
 export async function unblockQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
-  if (!quest) {
-    return error(Errors.NotFound, "Quest is not found", {});
-  }
+  throw new Error('Not implemented');
 
-  if(quest.status !== QuestStatus.isBlocked) {
-    return error(Errors.InvalidStatus, "Quest is unblocked", {});
-  }
-
-  const blockedQuest = await QuestBlockReason.findOne({
-    where: {
-      questId: quest.id,
-    },
-    order:[ ['createdAt', 'DESC'] ],
-  });
-
-  await quest.update({ status: blockedQuest.previousStatus });
-
-  return output();
+  // const quest = await Quest.findByPk(r.params.questId);
+  //
+  // if (!quest) {
+  //   return error(Errors.NotFound, "Quest is not found", {});
+  // }
+  //
+  // if(quest.status !== QuestStatus.isBlocked) {
+  //   return error(Errors.InvalidStatus, "Quest is unblocked", {});
+  // }
+  //
+  // const blockedQuest = await QuestBlockReason.findOne({
+  //   where: {
+  //     questId: quest.id,
+  //   },
+  //   order:[ ['createdAt', 'DESC'] ],
+  // });
+  //
+  // await quest.update({ status: blockedQuest.previousStatus });
+  //
+  // return output();
 }
-
-
-//TODO добавить разблокировку квеста
-//TODO узнать, может ли пользователь узнать о причинах блокировки и надо ли будет выводить ему это
-
-

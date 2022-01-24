@@ -55,7 +55,7 @@ const init = async () => {
     { plugin: require('hapi-rbac'), options: { } }
   ]);
 
-  server.app.db = await initDatabase(config.dbLink, false, true);
+  server.app.db = await initDatabase(config.dbLink, true, true);
   server.app.scheduler = await run({
     connectionString: config.dbLink,
     concurrency: 5,
