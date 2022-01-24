@@ -72,7 +72,7 @@ export async function disputeDecide(r) {
   await dispute.update({
     resolvedAt: Date.now(),
     status: DisputeStatus.closed,
-    decisionDescription: r.payload.decision,
+    decisionDescription: r.payload.decisionDescription,
   }, {transaction});
 
   await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});

@@ -116,7 +116,7 @@ export default[{
     id: "v1.admin.quest.getAdminDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get disputes",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),

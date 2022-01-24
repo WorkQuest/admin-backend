@@ -15,6 +15,7 @@ export async function getUser(r) {
 export async function getUsers(r) {
   const { rows, count } = await User.findAndCountAll({
     distinct: true,
+    col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
   });

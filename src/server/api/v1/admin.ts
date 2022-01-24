@@ -78,7 +78,7 @@ export async function activateAdminAccount(r) {
     return error(Errors.InvalidType, 'Can not activate your own account', {});
   }
 
-  await admin.update({ isActivated: true });
+  await admin.update({ isActive: true });
 
   return output();
 }
@@ -94,7 +94,7 @@ export async function deactivateAdminAccount(r) {
   }
 
   await admin.update({
-    isActivated: false
+    isActive: false
   });
 
   return output();
