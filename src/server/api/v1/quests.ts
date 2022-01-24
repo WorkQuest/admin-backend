@@ -30,6 +30,7 @@ export async function getQuests(r) {
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
     include, where,
+    distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
   });
