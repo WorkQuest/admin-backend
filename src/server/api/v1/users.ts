@@ -58,6 +58,19 @@ export async function changeUserRole(r) {
   // return output();
 }
 
+export async function changePhone(r) {
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+
+  await user.update({
+    phone: null,
+    tempPhone: r.payload.newPhone,
+  });
+}
+
 export async function blockUser(r) {
   throw new Error('Not implemented');
 }

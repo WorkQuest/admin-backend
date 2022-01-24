@@ -5,6 +5,7 @@ import {AdminRole} from "@workquest/database-models/lib/models";
 import {
   idSchema,
   userSchema,
+  phoneSchema,
   limitSchema,
   offsetSchema,
   emptyOkSchema,
@@ -91,6 +92,27 @@ export default[{
     },
     response: {
       schema: outputOkSchema(userSchema).label('ChangeUserRoleResponse')
+    }
+  }
+}, {
+  method: "POST",
+  path: "/v1/user/{userId}/phone/change",
+  handler: handlers.changePhone,
+  options: {
+    id: "v1.user.changePhone",
+    tags: ["api", "user"],
+    description: "Change phone on user",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        userId: idSchema.required(),
+      }).label("ChangeUserPhoneParams"),
+      payload: Joi.object({
+        newPhone: phoneSchema.required(),
+      }).label('ChangeUserPhonePayload'),
+    },
+    response: {
+      schema: emptyOkSchema,
     }
   }
 }, {
