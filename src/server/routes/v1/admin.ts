@@ -4,12 +4,13 @@ import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
 import {
   idSchema,
+  limitSchema,
   adminSchema,
+  offsetSchema,
   emptyOkSchema,
   outputOkSchema,
   adminRoleSchema,
   adminEmailSchema,
-  adminQuerySchema,
   adminLastNameSchema,
   adminPasswordSchema,
   adminFirstNameSchema,
@@ -27,7 +28,10 @@ export default[{
     description: "Get all admins. Allow admins: main",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
-      query: adminQuerySchema,
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetAdminsQuery'),
     },
     response: {
       schema: outputPaginationSchema('admins', adminSchema).label('GetAdminsResponse')

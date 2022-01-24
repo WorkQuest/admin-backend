@@ -20,24 +20,11 @@ export async function getQuestDispute(r) {
   return output(dispute);
 }
 
-export async function getUserQuestDisputes(r) {
-  const { count, rows } = await QuestDispute.findAndCountAll({
-    where: {
-      [Op.or]: {
-        opponentUserId: r.auth.credentials.id,
-        openDisputeUserId: r.auth.credentials.id,
-      },
-    },
-    limit: r.query.limit,
-    offset: r.query.offset,
-  });
-
-  return output({ count, disputes: rows });
-}
-
 export async function getQuestDisputes(r) {
   const where = {
+    ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+    ...(r.params.userId && { [Op.or]: { opponentUserId: r.params.userId, openDisputeUserId: r.params.userId } }),
   }
 
   const { count, rows } = await QuestDispute.findAndCountAll({
@@ -55,7 +42,6 @@ export async function takeDisputeToResolve(r) {
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
-
   if (dispute.status !== DisputeStatus.pending) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
@@ -74,7 +60,9 @@ export async function disputeDecide(r) {
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
-
+  if (dispute.assignedAdminId !== r.auth.credentials.id) {
+    throw error(Errors.Forbidden, 'You are not an assigned administrator', {});
+  }
   if (dispute.status !== DisputeStatus.inProgress) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
@@ -82,44 +70,18 @@ export async function disputeDecide(r) {
   const transaction = await r.server.app.db.transaction();
 
   await dispute.update({
-    decisionDescription: r.payload.decision,
-    status: DisputeStatus.closed,
     resolvedAt: Date.now(),
-  }, { transaction });
+    status: DisputeStatus.closed,
+    decisionDescription: r.payload.decision,
+  }, {transaction});
 
-  await Quest.update({ status: dispute.openOnQuestStatus }, { where: { id: dispute.questId }, transaction});
+  await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});
 
   await Admin.increment('resolvedDisputes', {
-    where: { id: r.auth.credentials.id }, transaction,
+    where: {id: r.auth.credentials.id}, transaction,
   });
 
   await transaction.commit();
 
   return output(await QuestDispute.findByPk(dispute.id));
-}
-
-export async function deleteDispute(r) {
-  const dispute = await QuestDispute.findByPk(r.params.disputeId);
-
-  if (!dispute) {
-    return error(Errors.NotFound, "Dispute not found", {});
-  }
-
-  if (dispute.status !== DisputeStatus.closed) {
-    return error(Errors.InvalidStatus, "Dispute cannot be deleted at current stage", {});
-  }
-
-  await dispute.destroy();
-
-  return output();
-}
-
-export async function getAdminDisputes(r) {
-  const { count, rows } = await QuestDispute.findAndCountAll({
-    where: { assignedAdminId: r.params.adminId },
-    limit: r.query.limit,
-    offset: r.query.offset,
-  });
-
-  return output({ count, disputes: rows });
 }

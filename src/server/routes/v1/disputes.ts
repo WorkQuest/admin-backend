@@ -4,11 +4,13 @@ import * as handlers from "../../api/v1/disputes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 import {
   idSchema,
+  limitSchema,
+  offsetSchema,
   outputOkSchema,
+  questDisputeSchema,
   outputPaginationSchema,
   questDisputeQuerySchema,
-  questDisputeSchema, limitSchema, offsetSchema,
-  questDisputeDecisionDescriptionSchema, emptyOkSchema,
+  questDisputeDecisionDescriptionSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -19,7 +21,7 @@ export default[{
     id: "v1.quest.getDispute",
     tags: ["api", "quest-dispute"],
     description: "Get quest dispute",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -32,12 +34,12 @@ export default[{
 }, {
   method: "GET",
   path: "/v1/user/{userId}/quest/disputes",
-  handler: handlers.getUserQuestDisputes,
+  handler: handlers.getQuestDisputes,
   options: {
     id: "v1.user.quest.getUserQuestDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get info about disputes of the user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -107,27 +109,9 @@ export default[{
     }
   }
 }, {
-  method: "DELETE",
-  path: "/v1/quest/dispute/{disputeId}",
-  handler: handlers.deleteDispute,
-  options: {
-    id: "v1.quest.deleteDispute",
-    tags: ["api", "quest-dispute"],
-    description: "Delete dispute",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      params: Joi.object({
-        disputeId: idSchema.required(),
-      }).label("DeleteQuestDisputeParams"),
-    },
-    response: {
-      schema: emptyOkSchema
-    }
-  }
-}, {
   method: "GET",
   path: "/v1/admin/{adminId}/quest/disputes",
-  handler: handlers.getAdminDisputes,
+  handler: handlers.getQuestDisputes,
   options: {
     id: "v1.admin.quest.getAdminDisputes",
     tags: ["api", "quest-dispute"],
