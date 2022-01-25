@@ -6,8 +6,9 @@ import {
   emptyOkSchema,
   outputOkSchema,
   adminEmailSchema,
-  adminPasswordSchema,
+  adminPasswordSchema, tokensWithStatus,
 } from "@workquest/database-models/lib/schemes";
+import {refreshTokens} from "../../api/v1/auth";
 
 export default[{
   method: "GET",
@@ -41,4 +42,16 @@ export default[{
       schema: outputOkSchema(jwtTokens).label("TokensResponse")
     }
   }
-}]
+}, {
+  method: "POST",
+  path: "/v1/auth/refresh-tokens",
+  handler: refreshTokens,
+  options: {
+    id: "v1.auth.refreshTokens",
+    tags: ["api", "auth"],
+    description: "Refresh auth tokens",
+    response: {
+      schema: outputOkSchema(tokensWithStatus).label("TokensWithStatusResponse")
+    }
+  }
+},]
