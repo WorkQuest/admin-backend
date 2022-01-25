@@ -19,12 +19,12 @@ import {
   questCategorySchema,
   questEmploymentSchema,
   questDescriptionSchema,
+  questBlockReasonSchema,
   outputPaginationSchema,
   specializationKeysSchema,
   questsForGetWithCountSchema,
   questLocationPlaceNameSchema,
 } from "@workquest/database-models/lib/schemes";
-import {questBlockReasonSchema} from "@workquest/database-models/lib/schemes/questBlackList";
 
 export default[{
   method: "GET",
