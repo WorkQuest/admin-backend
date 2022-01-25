@@ -128,6 +128,10 @@ export async function unblockQuest(r) {
     }
   });
 
+  if(!blockedQuest) {
+    return error(Errors.NotFound, 'Quest is not found or not blocked', {});
+  }
+
   await blockedQuest.update({status: BlackListStatus.Unblocked});
   await Quest.update({status: blockedQuest.previousQuestStatus}, {where: {id: r.params.questId}});
 
