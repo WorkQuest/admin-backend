@@ -24,6 +24,7 @@ import {
   questsForGetWithCountSchema,
   questLocationPlaceNameSchema,
 } from "@workquest/database-models/lib/schemes";
+import {questBlockReasonSchema} from "@workquest/database-models/lib/schemes/questBlackList";
 
 export default[{
   method: "GET",
@@ -128,9 +129,9 @@ export default[{
       params: Joi.object({
         questId: idSchema.required(),
       }).label("BlockQuestParams"),
-      // payload: Joi.object({
-      //   blockReason: blockReasonSchema,
-      // }).label('BlockQuestSchema')
+      payload: Joi.object({
+        blockReason: questBlockReasonSchema,
+      }).label('BlockQuestSchema')
     },
     response: {
       schema: emptyOkSchema

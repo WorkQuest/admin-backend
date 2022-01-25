@@ -9,6 +9,7 @@ import {
   Media,
   QuestStatus,
 } from "@workquest/database-models/lib/models";
+import {QuestBlackList} from "@workquest/database-models/lib/models/quest/QuestBlackList";
 
 export async function getQuests(r) {
   const where = {
@@ -102,14 +103,12 @@ export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
   const questController = new QuestController(quest);
 
-  questController
-    .questMustHaveStatus()
-
-  // const blockedQuest = await QuestBlockReason.create({
-  //   questId: quest.id,
-  //   blockReason: r.payload.blockReason,
-  //   previousStatus: quest.status,
-  // });
+  await QuestBlackList.create({
+    questId: quest.id,
+    adminId: r.auth.credentials.id,
+    blockReason: r.payload.blockReason,
+    previousStatus: quest.status,
+  });
 
   // await quest.update({ status: });
 
