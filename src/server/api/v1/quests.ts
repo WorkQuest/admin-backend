@@ -1,15 +1,17 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
+import {Op} from "sequelize";
 import {transformToGeoPostGIS} from "../../utils/postGIS";
 import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
 import {
   User,
-  Quest,
   Media,
+  Quest,
   QuestStatus,
+  QuestBlackList,
+  BlackListStatus,
 } from "@workquest/database-models/lib/models";
-import {QuestBlackList} from "@workquest/database-models/lib/models/quest/QuestBlackList";
 
 export async function getQuests(r) {
   const where = {
@@ -98,44 +100,36 @@ export async function deleteQuest(r) {
 }
 
 export async function blockQuest(r) {
-  throw new Error('Not implemented');
-
   const quest = await Quest.findByPk(r.params.questId);
-  const questController = new QuestController(quest);
+  new QuestController(quest);
 
-  await QuestBlackList.create({
-    questId: quest.id,
-    adminId: r.auth.credentials.id,
-    blockReason: r.payload.blockReason,
-    previousStatus: quest.status,
+  await QuestBlackList.findOrCreate({
+    where: {
+      questId: quest.id,
+      status: BlackListStatus.Blocked,
+    },
+    defaults: {
+      questId: quest.id,
+      adminId: r.auth.credentials.id,
+      reason: r.payload.blockReason,
+      previousQuestStatus: quest.status,
+    }
   });
 
-  // await quest.update({ status: });
+  await quest.update({ status: QuestStatus.Blocked});
 
-  // return output();
+  return output();
 }
 
 export async function unblockQuest(r) {
-  throw new Error('Not implemented');
+  const blockedQuest = await QuestBlackList.findOne({
+    where: {
+      [Op.and]: [{questId: r.params.questId}, {status: BlackListStatus.Blocked}]
+    }
+  });
 
-  // const quest = await Quest.findByPk(r.params.questId);
-  //
-  // if (!quest) {
-  //   return error(Errors.NotFound, "Quest is not found", {});
-  // }
-  //
-  // if(quest.status !== QuestStatus.isBlocked) {
-  //   return error(Errors.InvalidStatus, "Quest is unblocked", {});
-  // }
-  //
-  // const blockedQuest = await QuestBlockReason.findOne({
-  //   where: {
-  //     questId: quest.id,
-  //   },
-  //   order:[ ['createdAt', 'DESC'] ],
-  // });
-  //
-  // await quest.update({ status: blockedQuest.previousStatus });
-  //
-  // return output();
+  await blockedQuest.update({status: BlackListStatus.Unblocked});
+  await Quest.update({status: blockedQuest.previousQuestStatus}, {where: {id: r.params.questId}});
+
+  return output();
 }
