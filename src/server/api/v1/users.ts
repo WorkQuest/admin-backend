@@ -1,6 +1,12 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {User} from "@workquest/database-models/lib/models";
+import {
+  User,
+  UserStatus,
+  UserBlackList,
+  BlackListStatus,
+} from "@workquest/database-models/lib/models";
+import {Op} from "sequelize";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -63,7 +69,7 @@ export async function changePhone(r) {
   const user = await User.findByPk(r.params.userId);
 
   if (!user) {
-    return error(Errors.NotFound, 'User is not found', {});
+    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
   }
 
   await user.update({
@@ -73,11 +79,44 @@ export async function changePhone(r) {
 }
 
 export async function blockUser(r) {
-  throw new Error('Not implemented');
+  const user = await User.findByPk(r.params.userId);
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
+  }
+
+  await UserBlackList.findOrCreate({
+    where: {
+      userId: user.id,
+      status: BlackListStatus.Blocked,
+    },
+    defaults: {
+      userId: user.id,
+      adminId: r.auth.credentials.id,
+      reason: r.payload.blockReason,
+      previousQuestStatus: user.status,
+    }
+  });
+
+  await user.update({ status: UserStatus.Blocked});
+
+  return output();
 }
 
 export async function unblockUser(r) {
-  throw new Error('Not implemented');
+  const blockedUser = await UserBlackList.findOne({
+    where: {
+      [Op.and]: [{questId: r.params.userId}, {status: BlackListStatus.Blocked}]
+    }
+  });
+
+  if(!blockedUser) {
+    return error(Errors.NotFound, 'User is not found or not blocked', {});
+  }
+
+  await blockedUser.update({status: BlackListStatus.Unblocked});
+  await User.update({status: blockedUser.previousUserStatus}, {where: {id: r.params.userId}});
+
+  return output();
 }
 
 export async function getUserBlockingHistory(r) {
