@@ -11,7 +11,7 @@ import {
   emptyOkSchema,
   outputOkSchema,
   userRoleSchema,
-  outputPaginationSchema,
+  outputPaginationSchema, userBlackListSchema, userBlockReasonSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -69,9 +69,9 @@ export default[{
         offset: offsetSchema,
       }).label('GetUserBlockingHistoryQuery'),
     },
-    // response: {
-    //   schema: outputPaginationSchema('blockReasons', userBlockReasonSchema).label('GetUserBlockingHistoryResponse')
-    // }
+    response: {
+      schema: outputPaginationSchema('blockReasons', userBlackListSchema).label('GetUserBlockingHistoryResponse')
+    }
   }
 }, {
   method: "POST",
@@ -129,7 +129,7 @@ export default[{
         userId: idSchema.required(),
       }).label("BlockUserParams"),
       payload: Joi.object({
-        // blockReasons: blockReasonSchema,
+        blockReason: userBlockReasonSchema,
       }).label('BlockUserPayload')
     },
     response: {

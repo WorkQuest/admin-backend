@@ -93,7 +93,7 @@ export async function blockUser(r) {
       userId: user.id,
       adminId: r.auth.credentials.id,
       reason: r.payload.blockReason,
-      previousQuestStatus: user.status,
+      previousUserStatus: user.status,
     }
   });
 
@@ -105,7 +105,7 @@ export async function blockUser(r) {
 export async function unblockUser(r) {
   const blockedUser = await UserBlackList.findOne({
     where: {
-      [Op.and]: [{questId: r.params.userId}, {status: BlackListStatus.Blocked}]
+      [Op.and]: [{userId: r.params.userId}, {status: BlackListStatus.Blocked}]
     }
   });
 
@@ -120,5 +120,13 @@ export async function unblockUser(r) {
 }
 
 export async function getUserBlockingHistory(r) {
-  throw new Error('Not implemented');
+  const { rows, count } = await UserBlackList.findAndCountAll({
+    where: {
+      userId: r.params.userId,
+    },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count: count, users: rows });
 }
