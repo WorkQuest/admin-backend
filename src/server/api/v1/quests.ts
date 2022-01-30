@@ -49,11 +49,14 @@ export async function getQuest(r) {
 }
 
 export async function editQuest(r) {
+  const employer: User = r.auth.credentials;
+
   const questController = new QuestController(await Quest.findByPk(r.params.questId));
 
   const medias = await MediaController.getMedias(r.payload.medias);
 
   questController
+    .employerMustBeQuestCreator(employer.id)
     .questMustHaveStatus(QuestStatus.Created)
 
   const transaction = await r.server.app.db.transaction();
@@ -70,9 +73,9 @@ export async function editQuest(r) {
     workplace: r.payload.workplace,
     employment: r.payload.employment,
     description: r.payload.description,
-    location: r.payload.location,
-    locationPlaceName: r.payload.locationPlaceName,
-    locationPostGIS: transformToGeoPostGIS(r.payload.location),
+    location: r.payload.locationFull.location,
+    locationPlaceName: r.payload.locationFull.locationPlaceName,
+    locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
   }, { transaction });
 
   await transaction.commit();
