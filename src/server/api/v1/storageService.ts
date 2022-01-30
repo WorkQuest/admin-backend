@@ -8,7 +8,7 @@ export async function getUploadLink(r) {
   const uploadUrl = getUploadUrlS3(hash, r.payload.contentType);
 
   const media = await Media.create({
-    userId: r.auth.credentials.id,
+    adminId: r.auth.credentials.id,
     contentType: r.payload.contentType,
     url: config.cdn.pubUrl + '/' + hash,
     hash: hash,
