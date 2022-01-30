@@ -6,6 +6,7 @@ import { Media } from '@workquest/database-models/lib/models';
 export async function getUploadLink(r) {
   const hash = generateMediaHash(60);
   const uploadUrl = getUploadUrlS3(hash, r.payload.contentType);
+
   const media = await Media.create({
     userId: r.auth.credentials.id,
     contentType: r.payload.contentType,

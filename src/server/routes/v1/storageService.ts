@@ -1,12 +1,12 @@
 import * as Joi from 'joi';
+import * as handlers from '../../api/v1/storageService';
 import { outputOkSchema, mediaContentTypeSchema, mediaUploadLinkSchema } from '@workquest/database-models/lib/schemes';
-import { getUploadLink } from '../../api/v1/storageService';
 
 export default [
   {
     method: 'POST',
     path: '/v1/storage/get-upload-link',
-    handler: getUploadLink,
+    handler: handlers.getUploadLink,
     options: {
       auth: 'jwt-access',
       id: 'v1.storage.getUploadLink',
