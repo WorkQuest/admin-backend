@@ -4,6 +4,7 @@ import quests from "./quests";
 import users from "./users";
 import disputes from "./disputes";
 import profile from "./profile";
+import storageService from "./storageService";
 
 export default [
   ...auth,
@@ -12,4 +13,5 @@ export default [
   ...disputes,
   ...users,
   ...profile,
+  ...storageService,
 ];
