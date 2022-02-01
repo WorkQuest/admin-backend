@@ -56,7 +56,6 @@ export async function editQuest(r) {
   const medias = await MediaController.getMedias(r.payload.medias);
 
   questController
-    .employerMustBeQuestCreator(employer.id)
     .questMustHaveStatus(QuestStatus.Created)
 
   const transaction = await r.server.app.db.transaction();
