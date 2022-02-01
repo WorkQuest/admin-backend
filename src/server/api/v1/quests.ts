@@ -49,8 +49,6 @@ export async function getQuest(r) {
 }
 
 export async function editQuest(r) {
-  const employer: User = r.auth.credentials;
-
   const questController = new QuestController(await Quest.findByPk(r.params.questId));
 
   const medias = await MediaController.getMedias(r.payload.medias);
@@ -79,7 +77,7 @@ export async function editQuest(r) {
 
   await transaction.commit();
 
-  return output(questController.quest);
+  return output(await Quest.findByPk(questController.quest.id));
 }
 
 export async function deleteQuest(r) {
