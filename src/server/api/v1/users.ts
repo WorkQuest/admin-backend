@@ -1,6 +1,6 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {User} from "@workquest/database-models/lib/models";
+import {Session, User} from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -21,6 +21,26 @@ export async function getUsers(r) {
   });
 
   return output({ count: count, users: rows });
+}
+
+export async function getUserSessions(r) {
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+
+  const { rows, count } = await Session.findAndCountAll({
+    where: { userId: user.id }
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getUsersSessions(r) {
+  const { rows, count } = await Session.findAndCountAll();
+
+  return output({ count: count, sessions: rows });
 }
 
 export async function changeUserRole(r) {
