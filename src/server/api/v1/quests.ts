@@ -7,9 +7,8 @@ import {
   User,
   Quest,
   Media,
-  QuestStatus, QuestDispute,
+  QuestStatus, QuestDispute, DisputeStatus
 } from "@workquest/database-models/lib/models";
-import {DisputeStatus} from "@workquest/database-models/src/models/quest/QuestDispute";
 
 export async function getQuests(r) {
   const where = {
