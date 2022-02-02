@@ -1,14 +1,17 @@
 import {error, output, responseHandler} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {
-  AdminChangeRole,
-  Quest,
-  QuestsResponse, QuestsResponseStatus,
-  QuestStatus,
   User,
-  UserRole
+  Quest,
+  UserRole,
+  QuestStatus,
+  QuestsResponse,
+  AdminChangeRole,
+  QuestsResponseStatus
 } from "@workquest/database-models/lib/models";
 import {UserController} from "../../controllers/controller.user";
+import {addUpdateReviewStatisticsJob} from "../../jobs/updateReviewStatistics";
+import {updateQuestsStatisticJob} from "../../jobs/updateQuestsStatistic";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -45,7 +48,7 @@ export async function changeUserRole(r) {
     });
   }
 
-  if (user.role === r.payload.role ) {
+  if (user.role === r.payload.role) {
     throw error(Errors.InvalidRole, "The user is already assigned this role", {
       currentRole: user.role,
       newRole: r.payload.role,
@@ -91,7 +94,7 @@ export async function changeUserRole(r) {
   const [changeRole, isCreated] = await AdminChangeRole.findOrCreate({
     where: {userId: user.id},
     defaults: {
-      adminId: '4ba343e5-1111-1111-1111-ae396a5ecc3d',//r.auth.credentials.id, TODO add this params
+      adminId: r.auth.credentials.id,
       userId: user.id,
       role: user.role,
       additionalInfo: user.additionalInfo,
@@ -109,8 +112,16 @@ export async function changeUserRole(r) {
         daysAgo: diffDays
       });
     }
+
+    await user.update({
+      additionalInfo: changeRole.additionalInfo,
+      wagePerHour: changeRole.wagePerHour,
+      workplace: changeRole.workplace,
+      priority: changeRole.priority
+    }, {transaction})
+
     await changeRole.update({
-      adminId: '4ba343e5-1111-1111-1111-ae396a5ecc3d',//r.auth.credentials.id,  TODO add this params
+      adminId: r.auth.credentials.id,
       role: user.role,
       additionalInfo: user.additionalInfo,
       wagePerHour: user.wagePerHour,
@@ -119,17 +130,25 @@ export async function changeUserRole(r) {
     }, {transaction})
   }
 
-  await userController.setRole(r.payload.role, transaction)
-
-  // TODO need add jobs RatingStatistik
+  if (isCreated) {
+    await userController.setRole(r.payload.role, transaction)
+  }
 
   await transaction.commit();
+
+  await addUpdateReviewStatisticsJob({
+    userId: user.id,
+  });
+  await updateQuestsStatisticJob({
+    userId: user.id,
+    role: user.role,
+  });
 
   return output({
     adminId: changeRole.adminId,
     userId: changeRole.userId,
     role: changeRole.role,
-    additionalInfo: changeRole.additionalInfo
+    additionalInfo: changeRole.additionalInfo,
   });
 }
 

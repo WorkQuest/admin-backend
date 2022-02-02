@@ -14,7 +14,7 @@ import {
   outputPaginationSchema, totpSchema,
 } from "@workquest/database-models/lib/schemes";
 
-export default[{
+export default [{
   method: "GET",
   path: "/v1/user/{userId}",
   handler: handlers.getUser,
@@ -78,11 +78,10 @@ export default[{
   path: "/v1/user/{userId}/change-role",
   handler: handlers.changeUserRole,
   options: {
-    auth: false, //TODO delete this options, after test
     id: "v1.user.changeRole",
     tags: ["api", "user"],
     description: "Change role of the user",
-    // plugins: getRbacSettings(AdminRole.main), //TODO: Need delete comments in this options
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
