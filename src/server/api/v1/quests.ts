@@ -7,8 +7,9 @@ import {
   User,
   Quest,
   Media,
-  QuestStatus,
+  QuestStatus, QuestDispute,
 } from "@workquest/database-models/lib/models";
+import {DisputeStatus} from "@workquest/database-models/src/models/quest/QuestDispute";
 
 export async function getQuests(r) {
   const where = {
@@ -26,6 +27,11 @@ export async function getQuests(r) {
   }, {
     model: User.scope('short'),
     as: 'assignedWorker'
+  }, {
+    model: QuestDispute,
+    as: 'openDispute',
+    required: false,
+    where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -39,7 +45,14 @@ export async function getQuests(r) {
 }
 
 export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
+  const quest = await Quest.findByPk(r.params.questId, {
+    include: {
+      model: QuestDispute,
+      as: 'openDispute',
+      required: false,
+      where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+    }
+  });
 
   if (!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
