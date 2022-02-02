@@ -18,6 +18,7 @@ export async function getUsers(r) {
     col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
   });
 
   return output({ count: count, users: rows });
@@ -31,14 +32,21 @@ export async function getUserSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
-    where: { userId: user.id }
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { userId: user.id },
+    order: [ ['createdAt', 'DESC'] ],
   });
 
   return output({ count: count, sessions: rows });
 }
 
 export async function getUsersSessions(r) {
-  const { rows, count } = await Session.findAndCountAll();
+  const { rows, count } = await Session.findAndCountAll({
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
 
   return output({ count: count, sessions: rows });
 }
