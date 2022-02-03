@@ -1,6 +1,6 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Session, User, Admin, UserBlackList, UserBlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
+import {Session, User, Admin, UserBlackList, BlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -130,21 +130,21 @@ export async function unblockUser(r) {
     return error(Errors.NotFound, 'User is not found', {});
   }
   if (user.status !== UserStatus.Blocked) {
-    return error(Errors.NotFound, 'User is not blocked', {});
+    return error(Errors.InvalidStatus, 'User is not blocked', {});
   }
 
   const userBlackList = await UserBlackList.findOne({
     where: { userId: user.id }, order: [['createdAt', 'DESC']],
   });
 
-  if (userBlackList.status !== UserBlackListStatus.Blocked) {
+  if (userBlackList.status !== BlackListStatus.Blocked) {
     throw error(Errors.InvalidStatus, 'Internal error ', { userBlackList });
   }
 
   await user.update({ status: userBlackList.userStatusBeforeBlocking });
 
   await userBlackList.update({
-    status: UserBlackListStatus.Unblocked,
+    status: BlackListStatus.Unblocked,
     unblockedByAdminId: admin.id,
     unblockedAt: Date.now(),
   });
@@ -157,7 +157,8 @@ export async function getUserBlockingHistory(r) {
     where: { userId: r.params.userId },
     limit: r.query.limit,
     offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
   });
 
-  return output({ count: count, BlackLists: rows });
+  return output({ count: count, blackLists: rows });
 }
