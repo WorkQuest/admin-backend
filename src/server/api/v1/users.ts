@@ -1,6 +1,6 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Session, User} from "@workquest/database-models/lib/models";
+import {Session, User, Admin, UserBlackList, UserBlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -91,7 +91,7 @@ export async function changePhone(r) {
   const user = await User.findByPk(r.params.userId);
 
   if (!user) {
-    return error(Errors.NotFound, 'User is not found', {});
+    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
   }
 
   await user.update({
@@ -101,13 +101,63 @@ export async function changePhone(r) {
 }
 
 export async function blockUser(r) {
-  throw new Error('Not implemented');
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status === UserStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'User already blocked', {});
+  }
+
+  await UserBlackList.create({
+    userId: user.id,
+    blockedByAdminId: r.auth.credentials.id,
+    reason: r.payload.blockReason,
+    userStatusBeforeBlocking: user.status,
+  });
+
+  await user.update({ status: UserStatus.Blocked });
+
+  return output();
 }
 
 export async function unblockUser(r) {
-  throw new Error('Not implemented');
+  const admin: Admin = r.auth.credentials.id;
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status !== UserStatus.Blocked) {
+    return error(Errors.NotFound, 'User is not blocked', {});
+  }
+
+  const userBlackList = await UserBlackList.findOne({
+    where: { userId: user.id }, order: [['createdAt', 'DESC']],
+  });
+
+  if (userBlackList.status !== UserBlackListStatus.Blocked) {
+    throw error(Errors.InvalidStatus, 'Internal error ', { userBlackList });
+  }
+
+  await user.update({ status: userBlackList.userStatusBeforeBlocking });
+
+  await userBlackList.update({
+    status: UserBlackListStatus.Unblocked,
+    unblockedByAdminId: admin.id,
+    unblockedAt: Date.now(),
+  });
+
+  return output();
 }
 
 export async function getUserBlockingHistory(r) {
-  throw new Error('Not implemented');
+  const { rows, count } = await UserBlackList.findAndCountAll({
+    where: { userId: r.params.userId },
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count: count, BlackLists: rows });
 }
