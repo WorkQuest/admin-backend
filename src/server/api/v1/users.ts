@@ -1,6 +1,6 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Session, User, Admin, UserBlackList, UserBlackListStatus, UserStatus,} from "@workquest/database-models/src/models";
+import {Session, User, Admin, UserBlackList, UserBlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -159,5 +159,5 @@ export async function getUserBlockingHistory(r) {
     offset: r.query.offset,
   });
 
-  return output({ count: count, users: rows });
+  return output({ count: count, BlackLists: rows });
 }

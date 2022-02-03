@@ -12,9 +12,9 @@ import {
   outputOkSchema,
   userRoleSchema,
   userSessionsSchema,
-  outputPaginationSchema,
   userBlackListSchema,
-  userBlockReasonSchema,
+  outputPaginationSchema,
+  userBlackListReasonSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -73,7 +73,7 @@ export default[{
       }).label('GetUserBlockingHistoryQuery'),
     },
     response: {
-      schema: outputPaginationSchema('blockReasons', userBlackListSchema).label('GetUserBlockingHistoryResponse')
+      schema: outputPaginationSchema('BlackLists', userBlackListSchema).label('GetUserBlockingHistoryResponse')
     }
   }
 }, {
@@ -173,7 +173,7 @@ export default[{
         userId: idSchema.required(),
       }).label("BlockUserParams"),
       payload: Joi.object({
-        blockReason: userBlockReasonSchema,
+        blockReason: userBlackListReasonSchema.required(),
       }).label('BlockUserPayload')
     },
     response: {
