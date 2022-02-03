@@ -7,6 +7,8 @@ import {MediaController} from "../../controllers/controller.media";
 import {
   User,
   Media,
+  QuestDispute,
+  DisputeStatus,
   Quest,
   QuestStatus,
   QuestBlackList,
@@ -29,6 +31,11 @@ export async function getQuests(r) {
   }, {
     model: User.scope('short'),
     as: 'assignedWorker'
+  }, {
+    model: QuestDispute,
+    as: 'openDispute',
+    required: false,
+    where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -42,7 +49,14 @@ export async function getQuests(r) {
 }
 
 export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
+  const quest = await Quest.findByPk(r.params.questId, {
+    include: {
+      model: QuestDispute,
+      as: 'openDispute',
+      required: false,
+      where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+    }
+  });
 
   if (!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
@@ -73,14 +87,14 @@ export async function editQuest(r) {
     workplace: r.payload.workplace,
     employment: r.payload.employment,
     description: r.payload.description,
-    location: r.payload.location,
-    locationPlaceName: r.payload.locationPlaceName,
-    locationPostGIS: transformToGeoPostGIS(r.payload.location),
+    location: r.payload.locationFull.location,
+    locationPlaceName: r.payload.locationFull.locationPlaceName,
+    locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
   }, { transaction });
 
   await transaction.commit();
 
-  return output(questController.quest);
+  return output(await Quest.findByPk(questController.quest.id));
 }
 
 export async function deleteQuest(r) {

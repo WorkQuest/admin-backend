@@ -9,21 +9,20 @@ import {
   limitSchema,
   offsetSchema,
   emptyOkSchema,
-  locationSchema,
   prioritySchema,
   outputOkSchema,
   workPlaceSchema,
   questPriceSchema,
   questTitleSchema,
   questAdTypeSchema,
+  locationFullSchema,
   questCategorySchema,
   questEmploymentSchema,
   questDescriptionSchema,
   questBlockReasonSchema,
   outputPaginationSchema,
+  questForAdminsGetSchema,
   specializationKeysSchema,
-  questsForGetWithCountSchema,
-  questLocationPlaceNameSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -41,7 +40,7 @@ export default[{
       }).label('GetQuestsQuery'),
     },
     response: {
-      schema: outputOkSchema(questsForGetWithCountSchema).label("GetQuestsResponse")
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetQuestsResponse')
     },
   }
 }, {
@@ -59,7 +58,7 @@ export default[{
       }).label("GetQuestParams"),
     },
     response: {
-      schema: outputOkSchema(questSchema).label('GetQuestResponse')
+      schema: outputOkSchema(questForAdminsGetSchema).label('GetQuestResponse')
     }
   }
 }, {
@@ -81,7 +80,7 @@ export default[{
       }).label('GetUsersQuestsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('quests', questSchema).label('GetUsersQuestsResponse')
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetUsersQuestsResponse')
     }
   }
 }, {
@@ -102,8 +101,7 @@ export default[{
         workplace: workPlaceSchema.required(),
         employment: questEmploymentSchema.required(),
         priority: prioritySchema.required(),
-        location: locationSchema.required(),
-        locationPlaceName: questLocationPlaceNameSchema.required(),
+        locationFull: locationFullSchema.required(),
         title: questTitleSchema.required(),
         description: questDescriptionSchema.required(),
         price: questPriceSchema.required(),

@@ -4,6 +4,8 @@ import quests from "./quests";
 import users from "./users";
 import disputes from "./disputes";
 import profile from "./profile";
+import storageService from "./storageService";
+import skillFilters from "./skillFilters";
 
 export default [
   ...auth,
@@ -12,4 +14,6 @@ export default [
   ...disputes,
   ...users,
   ...profile,
+  ...storageService,
+  ...skillFilters,
 ];
