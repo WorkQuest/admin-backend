@@ -20,8 +20,8 @@ import {
   questEmploymentSchema,
   questDescriptionSchema,
   outputPaginationSchema,
+  questForAdminsGetSchema,
   specializationKeysSchema,
-  questsForGetWithCountSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -39,7 +39,7 @@ export default[{
       }).label('GetQuestsQuery'),
     },
     response: {
-      schema: outputOkSchema(questsForGetWithCountSchema).label("GetQuestsResponse")
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetQuestsResponse')
     },
   }
 }, {
@@ -57,7 +57,7 @@ export default[{
       }).label("GetQuestParams"),
     },
     response: {
-      schema: outputOkSchema(questSchema).label('GetQuestResponse')
+      schema: outputOkSchema(questForAdminsGetSchema).label('GetQuestResponse')
     }
   }
 }, {
@@ -79,7 +79,7 @@ export default[{
       }).label('GetUsersQuestsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('quests', questSchema).label('GetUsersQuestsResponse')
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetUsersQuestsResponse')
     }
   }
 }, {
