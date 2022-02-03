@@ -15,7 +15,7 @@ export async function login(r) {
     return error(Errors.NotFound, "Invalid password", {});
   }
 
-  if(!await admin.validateTOTP(r.payload.totp)) {
+  if (!await admin.validateTOTP(r.payload.totp)) {
     throw error(Errors.InvalidTOTP, "Invalid TOTP", {});
   }
 

@@ -1,6 +1,5 @@
-import {error, output} from "../../utils";
+import {output} from "../../utils";
 import {Admin} from "@workquest/database-models/lib/models"
-import {Errors} from "../../utils/errors";
 
 export async function getMe(r) {
   return output(await Admin.findByPk(r.auth.credentials.id));

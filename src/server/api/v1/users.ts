@@ -1,10 +1,18 @@
 import {error, output} from "../../utils";
-import {ChangeRole, Quest, QuestStatus, User, UserStatus} from "@workquest/database-models/lib/models";
 import {Errors} from "../../utils/errors";
-import {Session, User} from "@workquest/database-models/lib/models";
-import {Op} from "sequelize";
-import {UserBlockReason} from "@workquest/database-models/lib/models/user/UserBlockReason";
 import {getDefaultAdditionalInfo} from "../../utils/common";
+import updateQuestsStatisticJob from '../../jobs/updateQuestsStatistic';
+import addUpdateReviewStatisticsJob from '../../jobs/updateReviewStatistics';
+import {
+  User,
+  Quest,
+  Session,
+  UserRole,
+  QuestStatus,
+  QuestsResponse,
+  UserChangeRoleData,
+  QuestsResponseStatus,
+} from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -56,70 +64,94 @@ export async function getUsersSessions(r) {
 }
 
 export async function changeUserRole(r) {
-  const user = await User.findByPk(r.params.userId)
+  const user = await User.scope('withPassword').findByPk(r.params.userId)
 
-  if(quests.count !== 0) {
-    return error(Errors.InvalidStatus, 'You can not change role while you have not closed quests', {quests: quests.rows});
+  let invalidQuestStatus: any = []
+
+  if (!(user.role === UserRole.Employer || user.role === UserRole.Worker)) {
+    throw error(Errors.InvalidRole, "User isn't match role", {
+      currentRole: user.role,
+      requestedRole: UserRole,
+    });
   }
+  if (user.role === r.payload.role) {
+    throw error(Errors.InvalidRole, "The user is already assigned this role", {
+      currentRole: user.role,
+      newRole: r.payload.role,
+    });
+  }
+  if (user.role === UserRole.Employer) {
+    const quests = await Quest.scope('defaultScope').findAll({
+      where: { userId: user.id }
+    });
 
-  const alreadyChangedRole = await ChangeRole.findOne({
-    where: {
-      userId: r.params.userId
-    },
-    order: [ ['createdAt', 'DESC'] ],
-  });
+    for (const quest of quests) {
+      if (!(quest.status === QuestStatus.Done || quest.status === QuestStatus.Closed || quest.status === QuestStatus.Blocked)) {
+        invalidQuestStatus.push({ questId: quest.id, status: QuestStatus[quest.status] });
+      }
+    }
+
+    if (invalidQuestStatus.length !== 0) {
+      return error(Errors.InvalidStatus, "Quest status does not match, it should be disabled", {
+        invalidQuests: invalidQuestStatus
+      });
+    }
+  }
+  if (user.role === UserRole.Worker) {
+    const questsResponses = await QuestsResponse.scope('defaultScope').findAll({
+      where: { workerId: user.id }
+    });
+
+    for (const response of questsResponses) {
+      if (!(response.status === QuestsResponseStatus.Rejected || response.status === QuestsResponseStatus.Closed)) {
+        invalidQuestStatus.push({questResponseId: response.id, responseStatus: QuestsResponseStatus[response.status]})
+      }
+    }
+
+    if (invalidQuestStatus.length !== 0) {
+      return error(Errors.InvalidStatus, "The status of the response to the quest does not match, it should be changed", {
+        invalidQuests: invalidQuestStatus
+      });
+    }
+  }
 
   const transaction = await r.server.app.db.transaction();
 
-  if(!alreadyChangedRole) {
-    const user = await User.findByPk(r.params.userId);
-    await ChangeRole.create({
-      userId: user.id,
-      previousAdditionalInfo: user.additionalInfo,
-      previousRole: user.role,
-      changeRoleAt: Date.now(),
-    }, {transaction});
-
-    await user.update({
-      role: r.payload.role,
-      additionalInfo: getDefaultAdditionalInfo(r.payload.role),
-    }, {transaction});
-
-    await transaction.commit();
-
-    return output(user);
-  }
-
-  const user = await User.findByPk(r.params.userId);
-
-  //can change role once per month
-  const month = 1;
-
-  let date = new Date(alreadyChangedRole.changeRoleAt);
-  date.setMonth(date.getMonth() + month);
-  let canChangeRole = date <= new Date()
-  if(!canChangeRole){
-    await transaction.rollback
-    return error(Errors.InvalidDate, 'User can change role once per month', {})
-  }
-
-  await ChangeRole.create({
+  const userChangeRoleData = await UserChangeRoleData.create({
+    changedAdminId: r.auth.credentials.id,
     userId: user.id,
-    previousAdditionalInfo: user.additionalInfo,
-    previousRole: user.role,
-    changeRoleAt: Date.now(),
-  }, {transaction});
+    movedFromRole: user.role,
+    additionalInfo: user.additionalInfo,
+
+    ...(user.role === UserRole.Worker && {
+      wagePerHour: user.wagePerHour,
+      workplace: user.workplace,
+      priority: user.priority
+    }),
+  }, { transaction });
 
   await user.update({
-    role: alreadyChangedRole.previousRole,
-    additionalInfo: alreadyChangedRole.previousAdditionalInfo,
-  }, {transaction});
+    role: user.role,
+    additionalInfo: getDefaultAdditionalInfo(user.role),
+    wagePerHour: null,
+    workplace: null,
+    priority: null,
+  }, { transaction });
 
   await transaction.commit();
+
+  await addUpdateReviewStatisticsJob({
+    userId: user.id,
+  });
+  await updateQuestsStatisticJob({
+    userId: user.id,
+    role: user.role,
+  });
 
   return output(user);
 }
 
+// TODO взять функционал из основоного бека
 export async function changePhone(r) {
   const user = await User.findByPk(r.params.userId);
 
