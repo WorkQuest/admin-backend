@@ -1,217 +1,131 @@
 import * as Joi from "joi";
-import {
-  disputeDecision,
-  getQuestDispute,
-  takeDisputeToResolve,
-  deleteDispute,
-  getActiveDisputes,
-  getUserDisputes,
-  getDisputesByStatus,
-  getAdminDisputes,
-  adminResolvedDisputes
-} from "../../api/v1/disputes";
-import {
-  adminDecisionSchema,
-  adminIdParams,
-  idSchema,
-  outputOkSchema,
-  outputPaginationSchema,
-  disputesQuerySchema,
-  disputeSchema,
-} from "@workquest/database-models/lib/schemes";
 import {getRbacSettings} from "../../utils/auth";
-import {AdminRole, QuestDispute , DisputeStatus} from "@workquest/database-models/lib/models";
+import * as handlers from "../../api/v1/disputes";
+import {AdminRole} from "@workquest/database-models/lib/models";
+import {
+  idSchema,
+  limitSchema,
+  offsetSchema,
+  outputOkSchema,
+  questDisputeSchema,
+  outputPaginationSchema,
+  questDisputeQuerySchema,
+  questDisputeDecisionDescriptionSchema,
+} from "@workquest/database-models/lib/schemes";
 
 export default[{
   method: "GET",
-  path: "/v1/quest/{questId}/dispute", //Получаем диспут какого-то квеста, поэтому id квеста
-  handler: getQuestDispute,
+  path: "/v1/quest/{questId}/dispute",
+  handler: handlers.getQuestDispute,
   options: {
-    id: "v1.quest.dispute.info",
-    tags: ["api", "disputes"],
-    description: "Get info about dispute of the quest",
-    plugins: getRbacSettings(AdminRole.main),
+    id: "v1.quest.getDispute",
+    tags: ["api", "quest-dispute"],
+    description: "Get quest dispute",
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
-      }).label("GetQuestParams"),
+      }).label("GetQuestDisputeParams"),
     },
     response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeInfoResponse')
+      schema: outputOkSchema(questDisputeSchema).label('GetQuestDisputeResponse')
     }
   }
 }, {
   method: "GET",
-  path: "/v1/user/{userId}/disputes", //Получаем диспут какого-то юзера, поэтому id юзера
-  handler: getUserDisputes,
+  path: "/v1/user/{userId}/quest/disputes",
+  handler: handlers.getQuestDisputes,
   options: {
-    id: "v1.user.disputes.info",
-    tags: ["api", "disputes"],
+    id: "v1.user.quest.getUserQuestDisputes",
+    tags: ["api", "quest-dispute"],
     description: "Get info about disputes of the user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
-      query: disputesQuerySchema.label('QuerySchema'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetUserQuestDisputesQuery'),
       params: Joi.object({
         userId: idSchema.required(),
-      }).label("GetUserParams"),
+      }).label("GetUserQuestDisputesParams"),
     },
     response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputeInfoResponse')
+      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetUserQuestDisputesResponse')
     }
   }
 }, {
   method: "GET",
-  path: "/v1/activeDisputes",
-  handler: getActiveDisputes,
+  path: "/v1/quest/disputes",
+  handler: handlers.getQuestDisputes,
   options: {
-    id: "v1.disputes.info",
-    tags: ["api", "disputes"],
-    description: "Get info about active disputes",
+    id: "v1.quest.getQuestDisputes",
+    tags: ["api", "quest-dispute"],
+    description: "Get disputes",
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
-      query: disputesQuerySchema.label('QuerySchema')
+      query: questDisputeQuerySchema
     },
     response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
+      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetQuestDisputesResponse')
     }
   }
 }, {
-  method: "GET",
-  path: "/v1/pending/disputes",
-  handler: getDisputesByStatus(DisputeStatus.pending),
+  method: "POST",
+  path: "/v1/quest/dispute/{disputeId}/take",
+  handler: handlers.takeDisputeToResolve,
   options: {
-    id: "v1.disputes.pending",
-    tags: ["api", "disputes"],
-    description: "Get info about pending disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema')
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/in-process/disputes",
-  handler: getDisputesByStatus(DisputeStatus.inProgress),
-  options: {
-    id: "v1.disputes.inProcess",
-    tags: ["api", "disputes"],
-    description: "Get info about in-progress disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema')
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/completed/disputes",
-  handler: getDisputesByStatus(DisputeStatus.completed),
-  options: {
-    id: "v1.disputes.completed",
-    tags: ["api", "disputes"],
-    description: "Get info about completed disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema')
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-}, {
-  method: "PUT",
-  path: "/v1/dispute/{disputeId}/takeDispute",
-  handler: takeDisputeToResolve,
-  options: {
-    id: "v1.disputes.takeDispute",
-    tags: ["api", "disputes"],
+    id: "v1.quest.disputes.takeDispute",
+    tags: ["api", "quest-dispute"],
     description: "Admin take dispute",
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
-      }).label("GetDisputeParams"),
+      }).label("TakeQuestDisputeParams"),
     },
     response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeDecisionResponse')
+      schema: outputOkSchema(questDisputeSchema).label('TakeQuestDisputeResponse')
     }
   }
 }, {
-  method: "PUT",
-  path: "/v1/dispute/{disputeId}/decision",
-  handler: disputeDecision,
+  method: "POST",
+  path: "/v1/quest/dispute/{disputeId}/decide",
+  handler: handlers.disputeDecide,
   options: {
-    id: "v1.disputes.decision",
-    tags: ["api", "disputes"],
+    id: "v1.quest.dispute.decide",
+    tags: ["api", "quest-dispute"],
     description: "Admin resolve dispute",
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
-      }).label("GetDisputeParams"),
+      }).label("QuestDisputeDecideParams"),
       payload: Joi.object({
-        decision: adminDecisionSchema,
+        decisionDescription: questDisputeDecisionDescriptionSchema.required(),
       }).label('DisputeDecisionSchema')
     },
     response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeDecisionResponse')
+      schema: outputOkSchema(questDisputeSchema).label('QuestDisputeDecideResponse')
     }
   }
 }, {
-  method: "DELETE",
-  path: "/v1/dispute/{disputeId}/delete",
-  handler: deleteDispute,
+  method: "GET",
+  path: "/v1/admin/{adminId}/quest/disputes",
+  handler: handlers.getQuestDisputes,
   options: {
-    id: "v1.disputes.delete",
-    tags: ["api", "disputes"],
-    description: "Delete dispute",
+    id: "v1.admin.quest.getAdminDisputes",
+    tags: ["api", "quest-dispute"],
+    description: "Get disputes",
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
-        disputeId: idSchema.required(),
-      }).label("GetDisputeParams"),
+        adminId: idSchema.required(),
+      }).label("GetAdminQuestDisputesParams"),
+      query: questDisputeQuerySchema,
     },
     response: {
-      schema: outputOkSchema(disputeSchema).label('DisputeDecisionResponse')
+      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetAdminQuestDisputesResponse')
     }
   }
-}, {
-  method: "GET",
-  path: "/v1/admin/{adminId}/disputes",
-  handler: getAdminDisputes,
-  options: {
-    id: "v1.admin.completed.disputesByAdmin",
-    tags: ["api", "disputes"],
-    description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      params: adminIdParams.label('AdminAccountParams'),
-      query: disputesQuerySchema.label('QuerySchema'),
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-}, {
-  method: "GET",
-  path: "/v1/admin/{adminId}/completed-disputes",
-  handler: adminResolvedDisputes,
-  options: {
-    id: "v1.admin.completed.disputes",
-    tags: ["api", "disputes"],
-    description: "Get info about completed disputes of admin",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    validate: {
-      query: disputesQuerySchema.label('QuerySchema'),
-    },
-    response: {
-      schema: outputPaginationSchema('disputes', disputeSchema).label('DisputesInfoResponse')
-    }
-  }
-},]
+}]
 

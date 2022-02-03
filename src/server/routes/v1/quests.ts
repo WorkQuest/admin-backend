@@ -1,54 +1,54 @@
 import * as Joi from "joi";
-import {
-  blockQuest,
-  deleteQuest,
-  editQuest,
-  getQuestsList, getUserQuestsInfo,
-  questInfo, unblockQuest
-} from "../../api/v1/quests";
-import {
-  blockReasonSchema,
-  emptyOkSchema,
-  idSchema,
-  idsSchema, limitSchema,
-  locationSchema, offsetSchema,
-  outputOkSchema,
-  outputPaginationSchema, questBlockReasonSchema,
-  questDescriptionSchema,
-  questPriceSchema,
-  questPrioritySchema,
-  questSchema,
-  questTitleSchema,
-} from "@workquest/database-models/lib/schemes";
+import * as handlers from "../../api/v1/quests";
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
+import {
+  idSchema,
+  idsSchema,
+  questSchema,
+  limitSchema,
+  offsetSchema,
+  emptyOkSchema,
+  prioritySchema,
+  outputOkSchema,
+  workPlaceSchema,
+  questPriceSchema,
+  questTitleSchema,
+  questAdTypeSchema,
+  locationFullSchema,
+  questCategorySchema,
+  questEmploymentSchema,
+  questDescriptionSchema,
+  outputPaginationSchema,
+  questForAdminsGetSchema,
+  specializationKeysSchema,
+} from "@workquest/database-models/lib/schemes";
 
 export default[{
   method: "GET",
   path: "/v1/quests",
-  handler: getQuestsList,
+  handler: handlers.getQuests,
   options: {
-    id: "v1.quests.list",
-    tags: ["api", "quests"],
-    description: "Get list of quests",
-    plugins: getRbacSettings(AdminRole.main),
+    id: "v1.getQuests",
+    tags: ["api", "quest"],
+    description: "Get quests",
     validate: {
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
-      }).label('QuestQuery'),
+      }).label('GetQuestsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('questsList',questSchema).label('QuestsListResponse')
-    }
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetQuestsResponse')
+    },
   }
 }, {
   method: "GET",
   path: "/v1/quest/{questId}",
-  handler: questInfo,
+  handler: handlers.getQuest,
   options: {
     id: "v1.quest.info",
-    tags: ["api", "quests"],
+    tags: ["api", "quest"],
     description: "Get info about quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -57,38 +57,38 @@ export default[{
       }).label("GetQuestParams"),
     },
     response: {
-      schema: outputOkSchema(questSchema).label('QuestInfoResponse')
+      schema: outputOkSchema(questForAdminsGetSchema).label('GetQuestResponse')
     }
   }
 }, {
   method: "GET",
   path: "/v1/user/{userId}/quests",
-  handler: getUserQuestsInfo,
+  handler: handlers.getQuests,
   options: {
-    id: "v1.user.quests.info",
-    tags: ["api", "quests"],
+    id: "v1.user.getQuests",
+    tags: ["api", "quest"],
     description: "Get info about quests of the user",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
-      }).label("GetUserParams"),
+      }).label("GetUsersQuestsParams"),
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
-      }).label('QuestQuery'),
+      }).label('GetUsersQuestsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('questsList', questSchema).label('QuestInfoResponse')
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetUsersQuestsResponse')
     }
   }
 }, {
   method: "PUT",
-  path: "/v1/edit/quest/{questId}",
-  handler: editQuest,
+  path: "/v1/quest/{questId}",
+  handler: handlers.editQuest,
   options: {
     id: "v1.quest.editQuest",
-    tags: ["api", "quests"],
+    tags: ["api", "quest"],
     description: "Edit quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -96,46 +96,51 @@ export default[{
         questId: idSchema.required(),
       }).label("EditQuestParams"),
       payload: Joi.object({
-        title: questTitleSchema,
-        description: questDescriptionSchema,
-        medias: idsSchema.unique().label('MediaIds'),
-        location: locationSchema,
-        priority: questPrioritySchema,
-        price: questPriceSchema,
-      }).label('EditQuestSchema')
+        category: questCategorySchema.required(),
+        workplace: workPlaceSchema.required(),
+        employment: questEmploymentSchema.required(),
+        priority: prioritySchema.required(),
+        locationFull: locationFullSchema.required(),
+        title: questTitleSchema.required(),
+        description: questDescriptionSchema.required(),
+        price: questPriceSchema.required(),
+        adType: questAdTypeSchema.required(),
+        medias: idsSchema.unique().required(),
+        specializationKeys: specializationKeysSchema.unique().required(),
+      }).label('EditQuestPayload'),
     },
     response: {
-      schema: outputOkSchema(questSchema).label('QuestInfoResponse')
+      schema: outputOkSchema(questSchema).label('EditQuestResponse')
     }
   }
 }, {
-  method: "PUT",
-  path: "/v1/block/quest/{questId}",
-  handler: blockQuest,
+  method: "POST",
+  path: "/v1/quest/{questId}/block",
+  handler: handlers.blockQuest,
   options: {
     id: "v1.quest.blockQuest",
-    tags: ["api", "quests"],
+    tags: ["api", "quest"],
     description: "Block quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
       }).label("BlockQuestParams"),
-      payload: Joi.object({
-        blockReason: blockReasonSchema,
-      }).label('BlockQuestSchema')
+      // payload: Joi.object({
+      //   blockReason: blockReasonSchema,
+      // }).label('BlockQuestSchema')
     },
     response: {
-      schema: questBlockReasonSchema
+      schema: emptyOkSchema
     }
   }
 }, {
-  method: "PUT",
-  path: "/v1/unblock/quest/{questId}",
-  handler: unblockQuest,
+  method: "POST",
+  path: "/v1/quest/{questId}/unblock",
+  handler: handlers.unblockQuest,
   options: {
     id: "v1.quest.unblockQuest",
-    tags: ["api", "quests"],
+    tags: ["api", "quest"],
     description: "Unblock quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -150,10 +155,10 @@ export default[{
 }, {
   method: "DELETE",
   path: "/v1/quest/{questId}",
-  handler: deleteQuest,
+  handler: handlers.deleteQuest,
   options: {
     id: "v1.quest.deleteQuest",
-    tags: ["api", "quests"],
+    tags: ["api", "quest"],
     description: "Delete quest",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
@@ -165,5 +170,5 @@ export default[{
       schema: emptyOkSchema
     }
   }
-},]
+}]
 

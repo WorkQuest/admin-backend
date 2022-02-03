@@ -5,6 +5,7 @@ export default {
   basePath: '/api/',
   host: process.env.LOCAL === 'true' ? 'localhost:3000' : config.baseUrl.replace('https://', ''),
   grouping: 'tags',
+  schemes: ['https', 'http'],
   info: {
     title: 'API Documentation',
     version: '',

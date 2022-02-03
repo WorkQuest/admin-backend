@@ -1,47 +1,43 @@
 import * as Joi from "joi";
-import {getMe, editProfile} from "../../api/v1/profile";
+import * as handlers from "../../api/v1/profile";
 import {
-  adminAgeSchema,
-  adminFirstNameSchema,
-  adminLastNameSchema,
-  adminEmailSchema,
   adminSchema,
   outputOkSchema,
-  adminAboutSchema, adminLanguagesSchema,
+  adminLastNameSchema,
+  adminFirstNameSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
   method: "GET",
   path: "/v1/profile/me",
-  handler: getMe,
+  handler: handlers.getMe,
   options: {
-    id: "v1.admin.get.ownProfile",
+    id: "v1.admin.getMe",
     tags: ["api", "profile"],
-    description: "Get admin own profile",
+    description: "Get my profile",
     response: {
-      schema: outputOkSchema(adminSchema).label('GetAdminProfileResponse')
+      schema: outputOkSchema(adminSchema).label('GetMeResponse')
     }
   }
 }, {
   method: "PUT",
-  path: "/v1/admin/edit",
-  handler: editProfile,
+  path: "/v1/profile/edit",
+  handler: handlers.editProfile,
   options: {
-    id: "v1.admin.edit.ownProfile",
+    id: "v1.admin.editProfile",
     tags: ["api", "profile"],
-    description: "Edit admin own profile",
+    description: "Edit admin profile",
     validate: {
       payload: Joi.object({
         firstName: adminFirstNameSchema,
         lastName: adminLastNameSchema,
-        email: adminEmailSchema,
-        age: adminAgeSchema,
-        about: adminAboutSchema,
-        languages: adminLanguagesSchema,
+        // age: adminAgeSchema,
+        // about: adminAboutSchema,
+        // languages: adminLanguagesSchema,
       }).label('EditAdminPayload')
     },
     response: {
       schema: outputOkSchema(adminSchema).label("EditAdminResponse")
     }
   }
-},]
+}]
