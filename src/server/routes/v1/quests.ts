@@ -151,7 +151,7 @@ export default[{
         questId: idSchema.required(),
       }).label("BlockQuestParams"),
       payload: Joi.object({
-        blockReason: questBlackListReasonSchema,
+        blockReason: questBlackListReasonSchema.required(),
       }).label('BlockQuestSchema')
     },
     response: {
