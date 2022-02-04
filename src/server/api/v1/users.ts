@@ -32,6 +32,7 @@ export async function getUserSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
     limit: r.query.limit,
     offset: r.query.offset,
     where: { userId: user.id },
@@ -43,6 +44,7 @@ export async function getUserSessions(r) {
 
 export async function getUsersSessions(r) {
   const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
