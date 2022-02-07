@@ -4,7 +4,7 @@ import {error, output} from "../../utils";
 import {
   Admin,
   AdminRole,
-  AdminSession,
+  AdminSession, Session, User,
 } from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
@@ -19,16 +19,45 @@ export async function getAdmins(r) {
 export async function getAdmin(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
-  if(!admin) {
+  if (!admin) {
     return error(Errors.NotFound, "Admin is not found", {});
   }
 
   return output(admin);
 }
 
-export async function registerAdminAccount(r) {
+export async function getAdminSessions(r) {
+  const admin = await Admin.findByPk(r.params.adminId);
+
+  if (!admin) {
+    return error(Errors.NotFound, 'Admin is not found', {});
+  }
+
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { adminId: admin.id },
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getAdminsSessions(r) {
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function createAdminAccount(r) {
   if (await Admin.isEmailExist(r.payload.email)) {
-    return error(Errors.AlreadyExist, "Account with this email already exist", {});
+    return error(Errors.AlreadyExists, "Account with this email already exist", {});
   }
 
   const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWorkQuest'});
@@ -46,6 +75,7 @@ export async function registerAdminAccount(r) {
       }
     },
   });
+
   return output({
     admin: await Admin.findByPk(newAdmin.id),
     secret: base32,
@@ -59,7 +89,7 @@ export async function deleteAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not delete your own account', {});
+    return error(Errors.InvalidType, 'Can not delete your own account', {});
   }
 
   await admin.destroy();
@@ -74,10 +104,10 @@ export async function activateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not activate your own account', {});
+    return error(Errors.InvalidType, 'Can not activate your own account', {});
   }
 
-  await admin.update({ isActivated: true });
+  await admin.update({ isActive: true });
 
   return output();
 }
@@ -89,28 +119,28 @@ export async function deactivateAdminAccount(r) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
   if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Can not deactivate your own account', {});
+    return error(Errors.InvalidType, 'Can not deactivate your own account', {});
   }
 
   await admin.update({
-    isActivated: false
+    isActive: false
   });
 
   return output();
 }
 
-export async function changeLogin(r) {
+export async function changeEmail(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
   }
 
-  if (await Admin.isEmailExist(r.payload.newLogin)) {
-    return error(Errors.AlreadyExist, 'Email already exist', {});
+  if (await Admin.isEmailExist(r.payload.email)) {
+    return error(Errors.InvalidType, 'Email already exist', {});
   }
 
-  await admin.update({ email: r.payload.newLogin });
+  await admin.update({ email: r.payload.email });
 
   return output();
 }
@@ -122,13 +152,11 @@ export async function changePassword(r) {
     return error(Errors.NotFound, 'Account not found', {});
   }
 
-  if(await admin.passwordCompare(r.payload.newPassword)) {
-    return error(Errors.AlreadyExist, "New password is the same with the old one", {});
+  if (await admin.passwordCompare(r.payload.newPassword)) {
+    return error(Errors.InvalidType, "New password is the same with the old one", {});
   }
 
-  await admin.update({
-    password: r.payload.newPassword
-  });
+  await admin.update({ password: r.payload.newPassword });
 
   return output();
 }

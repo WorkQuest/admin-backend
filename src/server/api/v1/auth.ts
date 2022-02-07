@@ -1,5 +1,5 @@
 import {Errors} from "../../utils/errors";
-import {output, error, getDevice, getGeo } from "../../utils";
+import {output, error, getDevice, getGeo, getRealIp } from "../../utils";
 import {Admin, AdminSession} from "@workquest/database-models/lib/models"
 import {Op} from "sequelize";
 import {generateJwt} from "../../utils/auth";
@@ -21,7 +21,7 @@ export async function login(r) {
 
   const session = await AdminSession.create({
     adminId: admin.id,
-    isActive: true,
+    invalidating: false,
   });
 
   return output({
@@ -30,13 +30,27 @@ export async function login(r) {
 
 }
 
+export async function refreshTokens(r) {
+  const newSession = await AdminSession.create({
+    adminId: r.auth.credentials.id,
+    invalidating: false,
+    place: getGeo(r),
+    ip: getRealIp(r),
+    device: getDevice(r),
+  });
+
+  const result = {
+    ...generateJwt({ id: newSession.id }),
+    userStatus: r.auth.credentials.status,
+  };
+
+  return output(result);
+}
+
+
 export async function logout(r) {
-  // TODO!!!!
-  const admin = await Admin.findByPk(r.auth.credentials.id);
-  if(!admin) {
-    return error(Errors.NotFound, 'Account is not found', {});
-  }
   await AdminSession.update({
+    invalidating: true,
     logoutAt: Date.now(),
   }, {
     where: { id: r.auth.artifacts.sessionId }

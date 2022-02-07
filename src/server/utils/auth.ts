@@ -7,7 +7,6 @@ import { Admin,
 } from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
 
-
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
   const refresh = jwt.sign(data, config.auth.jwt.refresh.secret, { expiresIn: config.auth.jwt.refresh.lifetime, });
@@ -32,27 +31,24 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
   return async function (r, token: string) {
     const data = await decodeJwt(token, config.auth.jwt[tokenType].secret);
 
-    const { admin } = await AdminSession.findByPk(data.id, {
+    const session = await AdminSession.findByPk(data.id, {
       include: [{ model: Admin}],
     });
 
-    if (admin) {
-      return { isValid: true, credentials: admin, artifacts: { token, type: tokenType, }, };
+    if (!session) {
+      throw error(Errors.SessionNotFound, 'Session not found', {});
     }
-
-    if(!admin.isActivated) {
+    if (session.invalidating) {
+      throw error(Errors.SessionNotFound, 'Session not found', {});
+    }
+    if (!session.admin) {
+      throw error(Errors.NotFound, 'User not found', {});
+    }
+    if (!session.admin.isActive) {
       throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
     }
 
-    const session = await AdminSession.findByPk(r.auth.artifacts.sessionId);
-    if(!session.isActive) {
-      throw error(Errors.SessionNotFound, 'Session is not active', {});
-    }
-    await session.update({
-      lastActionTime: Date.now(),
-    });
-
-    throw error(Errors.SessionNotFound, 'User not found', {});
+    return { isValid: true, credentials: session.admin, artifacts: { token, type: tokenType, sessionId: session.id } };
   };
 }
 

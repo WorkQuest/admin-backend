@@ -1,11 +1,46 @@
-import {Quest, QuestMedia, QuestsResponse, QuestStatus, QuestBlockReason} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {getMedias} from "../../utils/medias";
-import {Op} from "sequelize";
+import {transformToGeoPostGIS} from "../../utils/postGIS";
+import {QuestController} from "../../controllers/controller.quest";
+import {MediaController} from "../../controllers/controller.media";
+import {
+  User,
+  Admin,
+  Media,
+  QuestDispute,
+  DisputeStatus,
+  Quest,
+  QuestStatus,
+  QuestBlackList,
+  BlackListStatus, UserBlackList,
+} from "@workquest/database-models/lib/models";
 
-export async function getQuestsList(r) {
-  const {rows, count} = await Quest.findAndCountAll({
+export async function getQuests(r) {
+  const where = {
+    ...(r.params.userId && { userId: r.params.userId }),
+    ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
+  };
+
+  const include = [{
+    model: Media.scope('urlOnly'),
+    as: 'medias',
+    through: { attributes: [] }
+  }, {
+    model: User.scope('short'),
+    as: 'user'
+  }, {
+    model: User.scope('short'),
+    as: 'assignedWorker'
+  }, {
+    model: QuestDispute,
+    as: 'openDispute',
+    required: false,
+    where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+  }];
+
+  const { rows, count } = await Quest.unscoped().findAndCountAll({
+    include, where,
+    distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -13,123 +48,127 @@ export async function getQuestsList(r) {
   return output({ count, quests: rows });
 }
 
-export async function questInfo(r) {
-  const quest = await Quest.findByPk(r.params.questId);
-
-  if(!quest) {
-    return error(Errors.NotFound, 'Quest not found',{});
-  }
-
-  return output(quest);
-}
-
-export async function getUserQuestsInfo(r) {
-  const quests = await Quest.findAndCountAll({
-    where: {
-      [Op.or]: [{userId: r.params.userId}, {assignedWorkerId: r.params.userId}],
-    },
-    limit: r.query.limit,
-    offset: r.query.offset,
+export async function getQuest(r) {
+  const quest = await Quest.findByPk(r.params.questId, {
+    include: {
+      model: QuestDispute,
+      as: 'openDispute',
+      required: false,
+      where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+    }
   });
 
-  return output({ count: quests.count, quests: quests.rows });
-}
-
-//TODO change logic
-export async function editQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
-  const transaction = await r.server.app.db.transaction();
-
-  if(!quest) {
+  if (!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
   }
-  quest.mustHaveStatus(QuestStatus.Created);
-
-  if(r.payload.medias) {
-    const medias = await getMedias(r.payload.medias);
-
-    await quest.$set('medias', medias, { transaction });
-  }
-
-  await quest.update(r.payload, { transaction });
-  await transaction.commit();
 
   return output(quest);
+}
+
+export async function editQuest(r) {
+  const questController = new QuestController(await Quest.findByPk(r.params.questId));
+
+  const medias = await MediaController.getMedias(r.payload.medias);
+
+  questController
+    .questMustHaveStatus(QuestStatus.Created)
+
+  const transaction = await r.server.app.db.transaction();
+
+  await questController.setMedias(medias, transaction);
+  await questController.setQuestSpecializations(r.payload.specializationKeys, false, transaction);
+
+  questController.quest = await questController.quest.update({
+    price: r.payload.price,
+    title: r.payload.title,
+    adType: r.payload.adType,
+    priority: r.payload.priority,
+    category: r.payload.category,
+    workplace: r.payload.workplace,
+    employment: r.payload.employment,
+    description: r.payload.description,
+    location: r.payload.locationFull.location,
+    locationPlaceName: r.payload.locationFull.locationPlaceName,
+    locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
+  }, { transaction });
+
+  await transaction.commit();
+
+  return output(await Quest.findByPk(questController.quest.id));
 }
 
 export async function deleteQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  const transaction = await r.server.app.db.transaction();
-  if (!quest) {
-    return error(Errors.NotFound, "Quest not found", {});
-  }
+  const questController = new QuestController(quest);
 
-  if (quest.status !== QuestStatus.Created && quest.status !== QuestStatus.Closed) {
-    return error(Errors.InvalidStatus, "Quest cannot be deleted at current stage", {});
-  }
+  questController
+    .questMustHaveStatus(QuestStatus.Created, QuestStatus.Closed)
 
-  //TODO maybe made quest and response paranoid?
-  await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
-  await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
-  await quest.destroy({ force: true, transaction });
 
-  await transaction.commit();
+  // TODO: добавить удаления чатов и прочее
+  // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
+  // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
+  await quest.destroy();
 
   return output();
 }
 
 export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  if (!quest) {
-    return error(Errors.NotFound, "Quest is not found", {});
+  const questController = new QuestController(quest);
+
+  if (quest.status === QuestStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'Quest already blocked', {});
   }
 
-  //TODO: check statuses for blocking!
-  if (quest.status === QuestStatus.Closed) {
-    return error(Errors.InvalidStatus, "Quest cannot be blocked at current stage", {});
-  }
-
-  if(quest.status === QuestStatus.isBlocked) {
-    return error(Errors.AlreadyBlocked, "Quest is already blocked", {});
-  }
-
-  const blockedQuest = await QuestBlockReason.create({
+  await QuestBlackList.create({
     questId: quest.id,
-    blockReason: r.payload.blockReason,
-    previousStatus: quest.status,
+    blockedByAdminId: r.auth.credentials.id,
+    reason: r.payload.blockReason,
+    questStatusBeforeBlocking: quest.status,
   });
 
-  await quest.update({
-    status: QuestStatus.isBlocked,
-  });
-
-  return output(blockedQuest);
-}
-
-export async function unblockQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
-  if (!quest) {
-    return error(Errors.NotFound, "Quest is not found", {});
-  }
-
-  if(quest.status !== QuestStatus.isBlocked) {
-    return error(Errors.InvalidStatus, "Quest is unblocked", {});
-  }
-
-  const blockedQuest = await QuestBlockReason.findOne({
-    where: {
-      questId: quest.id,
-    },
-    order:[ ['createdAt', 'DESC'] ],
-  });
-
-  await quest.update({ status: blockedQuest.previousStatus });
+  await quest.update({ status: QuestStatus.Blocked });
 
   return output();
 }
 
+export async function unblockQuest(r) {
+  const admin: Admin = r.auth.credentials.id;
+  const quest = await Quest.findByPk(r.params.questId);
 
-//TODO добавить разблокировку квеста
-//TODO узнать, может ли пользователь узнать о причинах блокировки и надо ли будет выводить ему это
+  if (!quest) {
+    return error(Errors.NotFound, 'Quest is not found', {});
+  }
+  if (quest.status !== QuestStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'Quest already blocked', {});
+  }
 
+  const quesBlackList = await QuestBlackList.findOne({
+    where: { questId: quest.id }, order: [['createdAt', 'DESC']],
+  });
+  if (quesBlackList.status !== BlackListStatus.Blocked) {
+    throw error(Errors.InvalidStatus, 'Internal error ', { quesBlackList });
+  }
 
+  await quest.update({ status: quesBlackList.questStatusBeforeBlocking });
+
+  await quesBlackList.update({
+    status: BlackListStatus.Unblocked,
+    unblockedByAdminId: admin.id,
+    unblockedAt: Date.now(),
+  });
+
+  return output();
+}
+
+export async function getQuestBlockingHistory(r) {
+  const { rows, count } = await QuestBlackList.findAndCountAll({
+    where: { questId: r.params.questId },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, blackLists: rows });
+}

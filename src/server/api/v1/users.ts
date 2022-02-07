@@ -1,42 +1,62 @@
-import {User, UserStatus} from "@workquest/database-models/lib/models";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Op} from "sequelize";
-import {UserBlockReason} from "@workquest/database-models/lib/models/user/UserBlockReason";
+import {Session, User, Admin, UserBlackList, BlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
 
-export async function getUserInfo(r) {
-  const user = await User.findByPk(r.params.userId, {
-    include: [{
-      model: UserBlockReason,
-      as: 'blockReasons'
-    }]
-  });
+export async function getUser(r) {
+  const user = await User.findByPk(r.params.userId);
 
-  if(!user) {
+  if (!user) {
     return error(Errors.NotFound, 'User is not found', {});
   }
 
   return output(user);
 }
 
-//TODO обычная или не обычная активность
 export async function getUsers(r) {
-  const {rows, count} = await User.findAndCountAll({
-    attributes: {exclude: ['password']},
-    where: {
-      status: {
-        [Op.not]: UserStatus.Blocked, //TODO for op: NE or NOT?
-      }
-    },
+  const { rows, count } = await User.findAndCountAll({
+    distinct: true,
+    col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
   });
+
   return output({ count: count, users: rows });
 }
 
-//TODO: сделать смену дополнительной информации при смене роли (у воркера и эмплоера они разные)
+export async function getUserSessions(r) {
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+
+  const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { userId: user.id },
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getUsersSessions(r) {
+  const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
 export async function changeUserRole(r) {
-  const user = await User.findByPk(r.params.userId)
+  throw new Error('Not implemented');
+
+/*  const user = await User.findByPk(r.params.userId)
 
   if(!user) {
     return error(Errors.NotFound, 'User is not found', {})
@@ -64,92 +84,83 @@ export async function changeUserRole(r) {
   await user.update({
     role: r.payload.role,
     changeRoleAt: Date.now(),
-  });
+  });*/
 
-  return output();
+  // return output();
+}
+
+export async function changePhone(r) {
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
+  }
+
+  await user.update({
+    phone: null,
+    tempPhone: r.payload.newPhone,
+  });
 }
 
 export async function blockUser(r) {
-  const user = await User.findByPk(r.params.userId)
+  const user = await User.findByPk(r.params.userId);
 
-  if(!user) {
-    return error(Errors.NotFound, 'User is not found', {})
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status === UserStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'User already blocked', {});
   }
 
-  //Это нужно для того, чтобы статус не менялся по таблице UserBlockReason, иначе статус перезапишется на isBlocked навсегда
-  if(user.status === UserStatus.Blocked) {
-    return error(Errors.AlreadyBlocked, 'User is already blocked', {});
-  }
-
-  await UserBlockReason.create({
+  await UserBlackList.create({
     userId: user.id,
-    blockReason: r.payload.userBlockReasons,
-    previousStatus: user.status,
+    blockedByAdminId: r.auth.credentials.id,
+    reason: r.payload.blockReason,
+    userStatusBeforeBlocking: user.status,
   });
 
-  await user.update({
-    status: UserStatus.Blocked,
-  });
+  await user.update({ status: UserStatus.Blocked });
 
   return output();
 }
 
 export async function unblockUser(r) {
-  const user = await User.findByPk(r.params.userId)
+  const admin: Admin = r.auth.credentials.id;
+  const user = await User.findByPk(r.params.userId);
 
-  if(!user) {
-    return error(Errors.NotFound, 'User is not found', {})
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status !== UserStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'User is not blocked', {});
   }
 
-  //Это нужно для того, чтобы статус не менялся по таблице UserBlockReason, иначе статус будет некорректный
-  if(user.status !== UserStatus.Blocked) {
-    return error(Errors.AlreadyUnblocked, 'User is already unblocked', {});
-  }
-
-  const wasBlocked = await UserBlockReason.findAndCountAll({
-    where: {
-      userId: user.id,
-    },
-    order:[ ['createdAt', 'DESC'] ], //the last status
+  const userBlackList = await UserBlackList.findOne({
+    where: { userId: user.id }, order: [['createdAt', 'DESC']],
   });
 
-  const maxUnblockedCount = 3;
-
-  if(wasBlocked.count === maxUnblockedCount) {
-    return error(Errors.TooMuchBlocked, 'Unblock limit is expired', {});
+  if (userBlackList.status !== BlackListStatus.Blocked) {
+    throw error(Errors.InvalidStatus, 'Internal error ', { userBlackList });
   }
 
-  await user.update({ status: wasBlocked.rows[0].previousStatus });
+  await user.update({ status: userBlackList.userStatusBeforeBlocking });
+
+  await userBlackList.update({
+    status: BlackListStatus.Unblocked,
+    unblockedByAdminId: admin.id,
+    unblockedAt: Date.now(),
+  });
 
   return output();
 }
 
-export async function userBlockedStory(r) {
-  const blockReasons = await UserBlockReason.findAndCountAll({
-    where: {
-      userId: r.params.userId,
-    },
-    order:[ ['createdAt', 'DESC'] ],
+export async function getUserBlockingHistory(r) {
+  const { rows, count } = await UserBlackList.findAndCountAll({
+    where: { userId: r.params.userId },
     limit: r.query.limit,
     offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
   });
 
-  return output(blockReasons);
-}
-
-export async function blackListInfo(r) {
-  const {rows, count} = await User.scope('short').findAndCountAll({
-    include: [{
-      model: UserBlockReason,
-      as: 'blockReasons',
-      order: [ ['createdAt', 'DESC'] ],
-      required: true,
-    }],
-    where: {
-      status: UserStatus.Blocked,
-    },
-    limit: r.query.limit,
-    offset: r.query.offset,
-  });
-  return output({ count: count, users: rows });
+  return output({ count: count, blackLists: rows });
 }

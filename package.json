@@ -1,6 +1,6 @@
 {
   "name": "admin-backend",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/joi": "^14.3.4",
     "@types/validator": "^13.1.0",
-    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#9daea5e1de22370e5f323b054523fa8e85a51615",
+    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#8b446a614519c29705d7ecbfd6d9c0e8157929e5",
     "aws-sdk": "^2.963.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
