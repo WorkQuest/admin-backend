@@ -1,12 +1,8 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {
-  Admin,
-  QuestsResponse,
-  QuestDispute,
-  DisputeStatus, Quest,
-} from "@workquest/database-models/lib/models";
-import { Op } from 'sequelize'
+import {Admin, DisputeStatus, Quest, QuestDispute,} from "@workquest/database-models/lib/models";
+import {Op} from 'sequelize'
+import {QuestNotificationActions} from "../../controllers/controller.broker";
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findOne({
@@ -82,6 +78,12 @@ export async function disputeDecide(r) {
   });
 
   await transaction.commit();
+
+  r.server.app.broker.sendQuestNotification({
+    action: QuestNotificationActions.DisputeDecision,
+    recipients: [dispute.openDisputeUserId, dispute.opponentUserId],
+    data: dispute
+  });
 
   return output(await QuestDispute.findByPk(dispute.id));
 }
