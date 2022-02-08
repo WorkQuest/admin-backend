@@ -16,6 +16,7 @@ import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
 import { initDatabase } from "@workquest/database-models/lib/models";
 import { run } from "graphile-worker";
+import {ControllerBroker} from "./controllers/controller.broker";
 const HapiSwagger = require('hapi-swagger');
 const Package = require('../../package.json');
 
@@ -55,6 +56,7 @@ const init = async () => {
     { plugin: require('hapi-rbac'), options: { } }
   ]);
 
+  server.app.broker = new ControllerBroker();
   server.app.db = await initDatabase(config.dbLink, true, true);
   server.app.scheduler = await run({
     connectionString: config.dbLink,
