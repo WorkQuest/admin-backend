@@ -63,6 +63,8 @@ jobs:
             DB_LINK=${{ secrets.DEV_DB_LINK }} \
             JWT_ACCESS_SECRET=${{ secrets.DEV_JWT_ACCESS_SECRET }} \
             JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET }} \
+          
+            NOTIFICATION_MESSAGE_BROKER_LINK=${{ secrets.DEV_NOTIFICATION_MESSAGE_BROKER_LINK }} \
 
             SMTP_HOST=${{ secrets.DEV_SMTP_HOST }} \
             SMTP_PORT=${{ secrets.DEV_SMTP_PORT }} \
