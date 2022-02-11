@@ -131,12 +131,11 @@ export default [{
         userId: idSchema.required(),
       }).label("ChangeUserRoleParams"),
       payload: Joi.object({
-        role: userRoleSchema.required(),
-        totp: totpSchema.required(),
+        role: userRoleSchema.required()
       }).label('ChangeUserRolePayload')
     },
     response: {
-      schema: outputOkSchema(userSchema).label('ChangeUserRoleResponse')
+      schema: emptyOkSchema
     }
   }
 }, {
