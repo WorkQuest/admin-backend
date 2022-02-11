@@ -77,12 +77,6 @@ export async function changeUserRole(r) {
     return error(Errors.NoRole, 'The user does not have a role', {});
   }
 
-  if (user.role === r.payload.role) {
-    return error(Errors.InvalidRole, "The user is already assigned this role", {
-      currentRole: user.role
-    });
-  }
-
   if (user.role === UserRole.Worker) {
     const questCount = await Quest.count({
       where: {
