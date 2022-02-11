@@ -74,10 +74,12 @@ export async function getUsersSessions(r) {
 export async function changeUserRole(r) {
   const user = await User.scope('withPassword').findByPk(r.params.userId)
 
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
   if (!user.role) {
     return error(Errors.NoRole, 'The user does not have a role', {});
   }
-
   if (user.role === UserRole.Worker) {
     const questCount = await Quest.count({
       where: {
@@ -99,7 +101,6 @@ export async function changeUserRole(r) {
       return error(Errors.HasActiveResponses, 'User has active responses', { questsResponseCount });
     }
   }
-
   if (user.role === UserRole.Employer) {
     const questCount = await Quest.count({
       where: { userId: user.id, status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done] } }
@@ -133,8 +134,9 @@ export async function changeUserRole(r) {
 
   await transaction.commit();
 
-  await deleteUserFiltersJob({ userId: user.id });
-
+  await deleteUserFiltersJob({
+    userId: user.id,
+  });
   await addUpdateReviewStatisticsJob({
     userId: user.id,
   });
