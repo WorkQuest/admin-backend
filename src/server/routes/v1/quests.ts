@@ -9,20 +9,21 @@ import {
   limitSchema,
   offsetSchema,
   emptyOkSchema,
-  locationSchema,
   prioritySchema,
   outputOkSchema,
   workPlaceSchema,
   questPriceSchema,
   questTitleSchema,
   questAdTypeSchema,
+  locationFullSchema,
   questCategorySchema,
   questEmploymentSchema,
   questDescriptionSchema,
   outputPaginationSchema,
+  questForAdminsGetSchema,
   specializationKeysSchema,
-  questsForGetWithCountSchema,
-  questLocationPlaceNameSchema,
+  questBlackListSchema,
+  questBlackListReasonSchema
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -40,7 +41,7 @@ export default[{
       }).label('GetQuestsQuery'),
     },
     response: {
-      schema: outputOkSchema(questsForGetWithCountSchema).label("GetQuestsResponse")
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetQuestsResponse')
     },
   }
 }, {
@@ -58,7 +59,7 @@ export default[{
       }).label("GetQuestParams"),
     },
     response: {
-      schema: outputOkSchema(questSchema).label('GetQuestResponse')
+      schema: outputOkSchema(questForAdminsGetSchema).label('GetQuestResponse')
     }
   }
 }, {
@@ -80,7 +81,7 @@ export default[{
       }).label('GetUsersQuestsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('quests', questSchema).label('GetUsersQuestsResponse')
+      schema: outputPaginationSchema('quests', questForAdminsGetSchema).label('GetUsersQuestsResponse')
     }
   }
 }, {
@@ -101,8 +102,7 @@ export default[{
         workplace: workPlaceSchema.required(),
         employment: questEmploymentSchema.required(),
         priority: prioritySchema.required(),
-        location: locationSchema.required(),
-        locationPlaceName: questLocationPlaceNameSchema.required(),
+        locationFull: locationFullSchema.required(),
         title: questTitleSchema.required(),
         description: questDescriptionSchema.required(),
         price: questPriceSchema.required(),
@@ -113,6 +113,28 @@ export default[{
     },
     response: {
       schema: outputOkSchema(questSchema).label('EditQuestResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/quest/{questId}/block-history",
+  handler: handlers.getQuestBlockingHistory,
+  options: {
+    id: "v1.quest.getBlockHistory",
+    tags: ["api", "quest"],
+    description: "Show quest block story",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required()
+      }).label('GetQuestBlockingHistoryParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestBlockingHistoryQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('blackLists', questBlackListSchema).label('GetQuestBlockingHistoryResponse')
     }
   }
 }, {
@@ -128,9 +150,9 @@ export default[{
       params: Joi.object({
         questId: idSchema.required(),
       }).label("BlockQuestParams"),
-      // payload: Joi.object({
-      //   blockReason: blockReasonSchema,
-      // }).label('BlockQuestSchema')
+      payload: Joi.object({
+        blockReason: questBlackListReasonSchema.required(),
+      }).label('BlockQuestSchema')
     },
     response: {
       schema: emptyOkSchema

@@ -4,7 +4,7 @@ import {error, output} from "../../utils";
 import {
   Admin,
   AdminRole,
-  AdminSession,
+  AdminSession, Session, User,
 } from "@workquest/database-models/lib/models"
 
 export async function getAdmins(r) {
@@ -24,6 +24,35 @@ export async function getAdmin(r) {
   }
 
   return output(admin);
+}
+
+export async function getAdminSessions(r) {
+  const admin = await Admin.findByPk(r.params.adminId);
+
+  if (!admin) {
+    return error(Errors.NotFound, 'Admin is not found', {});
+  }
+
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { adminId: admin.id },
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getAdminsSessions(r) {
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
 }
 
 export async function createAdminAccount(r) {

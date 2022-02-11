@@ -1,5 +1,6 @@
 import {error, output, responseHandler} from "../../utils";
 import {Errors} from "../../utils/errors";
+import {Session, User, Admin, UserBlackList, BlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
 import {
   User,
   Quest,
@@ -24,14 +25,44 @@ export async function getUser(r) {
 }
 
 export async function getUsers(r) {
-  const {rows, count} = await User.findAndCountAll({
+  const { rows, count } = await User.findAndCountAll({
     distinct: true,
     col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
   });
 
-  return output({count: count, users: rows});
+  return output({ count, users: rows });
+}
+
+export async function getUserSessions(r) {
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+
+  const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { userId: user.id },
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getUsersSessions(r) {
+  const { rows, count } = await Session.findAndCountAll({
+    include: { model: User, as: 'user' },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
 }
 
 export async function changeUserRole(r) {
@@ -156,7 +187,7 @@ export async function changePhone(r) {
   const user = await User.findByPk(r.params.userId);
 
   if (!user) {
-    return error(Errors.NotFound, 'User is not found', {});
+    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
   }
 
   await user.update({
@@ -166,13 +197,64 @@ export async function changePhone(r) {
 }
 
 export async function blockUser(r) {
-  throw new Error('Not implemented');
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status === UserStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'User already blocked', {});
+  }
+
+  await UserBlackList.create({
+    userId: user.id,
+    blockedByAdminId: r.auth.credentials.id,
+    reason: r.payload.blockReason,
+    userStatusBeforeBlocking: user.status,
+  });
+
+  await user.update({ status: UserStatus.Blocked });
+
+  return output();
 }
 
 export async function unblockUser(r) {
-  throw new Error('Not implemented');
+  const admin: Admin = r.auth.credentials.id;
+  const user = await User.findByPk(r.params.userId);
+
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
+  }
+  if (user.status !== UserStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'User is not blocked', {});
+  }
+
+  const userBlackList = await UserBlackList.findOne({
+    where: { userId: user.id }, order: [['createdAt', 'DESC']],
+  });
+
+  if (userBlackList.status !== BlackListStatus.Blocked) {
+    throw error(Errors.InvalidStatus, 'Internal error ', { userBlackList });
+  }
+
+  await user.update({ status: userBlackList.userStatusBeforeBlocking });
+
+  await userBlackList.update({
+    status: BlackListStatus.Unblocked,
+    unblockedByAdminId: admin.id,
+    unblockedAt: Date.now(),
+  });
+
+  return output();
 }
 
 export async function getUserBlockingHistory(r) {
-  throw new Error('Not implemented');
+  const { rows, count } = await UserBlackList.findAndCountAll({
+    where: { userId: r.params.userId },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, blackLists: rows });
 }

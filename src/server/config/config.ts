@@ -6,6 +6,9 @@ export default {
   dbLink: process.env.DB_LINK,
   baseUrl: process.env.BASE_URL,
   baseURLMainBackend: process.env.BASE_URL_MAIN_BACKEND,
+  notificationMessageBroker: {
+    link: process.env.NOTIFICATION_MESSAGE_BROKER_LINK
+  },
   auth: {
     emailConfirmCodeLifetime: Number(process.env.EMAIL_CONFIRM_CODE_LIFETIME),
     captcha: {

@@ -11,6 +11,7 @@ import {
   outputOkSchema,
   adminRoleSchema,
   adminEmailSchema,
+  userSessionsSchema,
   adminLastNameSchema,
   adminPasswordSchema,
   adminFirstNameSchema,
@@ -53,6 +54,47 @@ export default[{
     },
     response: {
       schema: outputOkSchema(adminSchema).label('GetAdminResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/admin/{adminId}/sessions",
+  handler: handlers.getAdminSessions,
+  options: {
+    id: "v1.user.getAdminSessions",
+    tags: ["api", "admin"],
+    description: "Get admin sessions",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required()
+      }).label('GetAdminSessionsParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetAdminSessionsQuery'),
+    },
+    response: {
+      schema: outputOkSchema(userSessionsSchema).label('GetAdminSessionsResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/admin/sessions",
+  handler: handlers.getAdminsSessions,
+  options: {
+    id: "v1.user.getAdminsSessions",
+    tags: ["api", "admin"],
+    description: "Get admins sessions",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetAdminsSessionsQuery'),
+    },
+    response: {
+      schema: outputOkSchema(userSessionsSchema).label('GetAdminsSessionsResponse')
     }
   }
 }, {

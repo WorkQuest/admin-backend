@@ -63,6 +63,8 @@ jobs:
             DB_LINK=${{ secrets.DEV_DB_LINK }} \
             JWT_ACCESS_SECRET=${{ secrets.DEV_JWT_ACCESS_SECRET }} \
             JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET }} \
+          
+            NOTIFICATION_MESSAGE_BROKER_LINK=${{ secrets.DEV_NOTIFICATION_MESSAGE_BROKER_LINK }} \
 
             SMTP_HOST=${{ secrets.DEV_SMTP_HOST }} \
             SMTP_PORT=${{ secrets.DEV_SMTP_PORT }} \
@@ -70,6 +72,13 @@ jobs:
             SMTP_USER=${{ secrets.DEV_SMTP_USER }} \
             SMTP_PASSWORD=${{ secrets.DEV_SMTP_PASSWORD }} \
             SMTP_SENDER=${{ secrets.DEV_SMTP_SENDER }} \
+
+            CDN_ACCESS_KEY_ID=${{ secrets.DEV_CDN_ACCESS_KEY_ID }} \
+            CDN_SECRET_ACCESS_KEY=${{ secrets.DEV_CDN_SECRET_ACCESS_KEY }} \
+            CDN_END_POINT=${{ secrets.DEV_CDN_END_POINT }} \
+            CDN_BUCKET=${{ secrets.DEV_CDN_BUCKET }} \
+            CDN_PUB_END_POINT=${{ secrets.DEV_CDN_PUB_END_POINT }} \
+            CDN_EXPIRES_IN=${{ secrets.DEV_CDN_EXPIRES_IN }} \
 
             BASE_URL=${{ secrets.DEV_BASE_URL }} \
 

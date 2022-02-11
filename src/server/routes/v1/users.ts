@@ -11,7 +11,10 @@ import {
   emptyOkSchema,
   outputOkSchema,
   userRoleSchema,
-  outputPaginationSchema, totpSchema,
+  userSessionsSchema,
+  userBlackListSchema,
+  outputPaginationSchema,
+  userBlackListReasonSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -69,9 +72,50 @@ export default [{
         offset: offsetSchema,
       }).label('GetUserBlockingHistoryQuery'),
     },
-    // response: {
-    //   schema: outputPaginationSchema('blockReasons', userBlockReasonSchema).label('GetUserBlockingHistoryResponse')
-    // }
+    response: {
+      schema: outputPaginationSchema('BlackLists', userBlackListSchema).label('GetUserBlockingHistoryResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/user/{userId}/sessions",
+  handler: handlers.getUserSessions,
+  options: {
+    id: "v1.user.getUserSessions",
+    tags: ["api", "user"],
+    description: "Get user sessions",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        userId: idSchema.required()
+      }).label('GetUserSessionsParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetUserSessionsQuery'),
+    },
+    response: {
+      schema: outputOkSchema(userSessionsSchema).label('GetUserSessionsResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/user/sessions",
+  handler: handlers.getUsersSessions,
+  options: {
+    id: "v1.user.getUsersSessions",
+    tags: ["api", "user"],
+    description: "Get users sessions",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetUsersSessionsQuery'),
+    },
+    response: {
+      schema: outputOkSchema(userSessionsSchema).label('GetUsersSessionsResponse')
+    }
   }
 }, {
   method: "POST",
@@ -130,7 +174,7 @@ export default [{
         userId: idSchema.required(),
       }).label("BlockUserParams"),
       payload: Joi.object({
-        // blockReasons: blockReasonSchema,
+        blockReason: userBlackListReasonSchema.required(),
       }).label('BlockUserPayload')
     },
     response: {

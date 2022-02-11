@@ -5,9 +5,14 @@ import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
 import {
   User,
-  Quest,
+  Admin,
   Media,
+  QuestDispute,
+  DisputeStatus,
+  Quest,
   QuestStatus,
+  QuestBlackList,
+  BlackListStatus, UserBlackList,
 } from "@workquest/database-models/lib/models";
 
 export async function getQuests(r) {
@@ -26,6 +31,11 @@ export async function getQuests(r) {
   }, {
     model: User.scope('short'),
     as: 'assignedWorker'
+  }, {
+    model: QuestDispute,
+    as: 'openDispute',
+    required: false,
+    where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -39,7 +49,14 @@ export async function getQuests(r) {
 }
 
 export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
+  const quest = await Quest.findByPk(r.params.questId, {
+    include: {
+      model: QuestDispute,
+      as: 'openDispute',
+      required: false,
+      where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+    }
+  });
 
   if (!quest) {
     return error(Errors.NotFound, 'Quest not found',{});
@@ -70,14 +87,14 @@ export async function editQuest(r) {
     workplace: r.payload.workplace,
     employment: r.payload.employment,
     description: r.payload.description,
-    location: r.payload.location,
-    locationPlaceName: r.payload.locationPlaceName,
-    locationPostGIS: transformToGeoPostGIS(r.payload.location),
+    location: r.payload.locationFull.location,
+    locationPlaceName: r.payload.locationFull.locationPlaceName,
+    locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
   }, { transaction });
 
   await transaction.commit();
 
-  return output(questController.quest);
+  return output(await Quest.findByPk(questController.quest.id));
 }
 
 export async function deleteQuest(r) {
@@ -97,46 +114,61 @@ export async function deleteQuest(r) {
 }
 
 export async function blockQuest(r) {
-  throw new Error('Not implemented');
-
   const quest = await Quest.findByPk(r.params.questId);
   const questController = new QuestController(quest);
 
-  questController
-    .questMustHaveStatus()
+  if (quest.status === QuestStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'Quest already blocked', {});
+  }
 
-  // const blockedQuest = await QuestBlockReason.create({
-  //   questId: quest.id,
-  //   blockReason: r.payload.blockReason,
-  //   previousStatus: quest.status,
-  // });
+  await QuestBlackList.create({
+    questId: quest.id,
+    blockedByAdminId: r.auth.credentials.id,
+    reason: r.payload.blockReason,
+    questStatusBeforeBlocking: quest.status,
+  });
 
-  // await quest.update({ status: });
+  await quest.update({ status: QuestStatus.Blocked });
 
-  // return output();
+  return output();
 }
 
 export async function unblockQuest(r) {
-  throw new Error('Not implemented');
+  const admin: Admin = r.auth.credentials.id;
+  const quest = await Quest.findByPk(r.params.questId);
 
-  // const quest = await Quest.findByPk(r.params.questId);
-  //
-  // if (!quest) {
-  //   return error(Errors.NotFound, "Quest is not found", {});
-  // }
-  //
-  // if(quest.status !== QuestStatus.isBlocked) {
-  //   return error(Errors.InvalidStatus, "Quest is unblocked", {});
-  // }
-  //
-  // const blockedQuest = await QuestBlockReason.findOne({
-  //   where: {
-  //     questId: quest.id,
-  //   },
-  //   order:[ ['createdAt', 'DESC'] ],
-  // });
-  //
-  // await quest.update({ status: blockedQuest.previousStatus });
-  //
-  // return output();
+  if (!quest) {
+    return error(Errors.NotFound, 'Quest is not found', {});
+  }
+  if (quest.status !== QuestStatus.Blocked) {
+    return error(Errors.InvalidStatus, 'Quest already blocked', {});
+  }
+
+  const quesBlackList = await QuestBlackList.findOne({
+    where: { questId: quest.id }, order: [['createdAt', 'DESC']],
+  });
+  if (quesBlackList.status !== BlackListStatus.Blocked) {
+    throw error(Errors.InvalidStatus, 'Internal error ', { quesBlackList });
+  }
+
+  await quest.update({ status: quesBlackList.questStatusBeforeBlocking });
+
+  await quesBlackList.update({
+    status: BlackListStatus.Unblocked,
+    unblockedByAdminId: admin.id,
+    unblockedAt: Date.now(),
+  });
+
+  return output();
+}
+
+export async function getQuestBlockingHistory(r) {
+  const { rows, count } = await QuestBlackList.findAndCountAll({
+    where: { questId: r.params.questId },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, blackLists: rows });
 }
