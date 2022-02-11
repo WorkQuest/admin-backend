@@ -18,6 +18,7 @@ import {
   UserRole,
   UserStatus
 } from "@workquest/database-models/lib/models";
+import {deleteUserFiltersJob} from "../../jobs/deleteUserFilters";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -131,6 +132,8 @@ export async function changeUserRole(r) {
   }, { transaction });
 
   await transaction.commit();
+
+  await deleteUserFiltersJob({ userId: user.id });
 
   await addUpdateReviewStatisticsJob({
     userId: user.id,
