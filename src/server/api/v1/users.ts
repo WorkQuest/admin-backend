@@ -119,47 +119,22 @@ export async function changeUserRole(r) {
 
   const changeToRole = user.role === UserRole.Worker ? UserRole.Employer : UserRole.Worker;
 
-  const [previousData, isCreated] = await UserChangeRoleData.findOrCreate({
-    where: { userId: user.id },
-    defaults: {
-      changedAdminId: r.auth.credentials.id,
-      userId: user.id,
-      movedFromRole: user.role,
-      additionalInfo: user.additionalInfo,
-      wagePerHour: user.wagePerHour,
-      workplace: user.workplace,
-      priority: user.priority,
-    },
-    transaction,
-  });
+  await UserChangeRoleData.create({
+    changedAdminId: r.auth.credentials.id,
+    userId: user.id,
+    movedFromRole: user.role,
+    additionalInfo: user.additionalInfo,
+    wagePerHour: user.wagePerHour,
+    workplace: user.workplace,
+    priority: user.priority,
+  }, { transaction });
 
-  if (isCreated) {
-    await user.update({
-      workplace: null,
-      wagePerHour: null,
-      role: changeToRole,
-      additionalInfo: UserController.getDefaultAdditionalInfo(changeToRole),
-    }, { transaction })
-  } else {
-    await UserChangeRoleData.update({
-      adminId: r.auth.credentials.id,
-      movedFromRole: user.role,
-      workplace: user.workplace,
-      wagePerHour: user.wagePerHour,
-      additionalInfo: user.additionalInfo
-    }, {
-      where: { userId: user.id },
-      transaction
-    });
-
-    await user.update({
-      workplace: previousData.workplace,
-      wagePerHour: previousData.wagePerHour,
-      priority: previousData.priority,
-      additionalInfo: previousData.additionalInfo,
-      role: changeToRole,
-    }, { transaction });
-  }
+  await user.update({
+    workplace: null,
+    wagePerHour: null,
+    role: changeToRole,
+    additionalInfo: UserController.getDefaultAdditionalInfo(changeToRole),
+  }, { transaction });
 
   await transaction.commit();
 
