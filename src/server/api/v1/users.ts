@@ -1,22 +1,22 @@
-import {Op} from 'sequelize',
+import {Op} from 'sequelize'
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {UserController} from "../../controllers/controller.user";
 import {addUpdateReviewStatisticsJob} from "../../jobs/updateReviewStatistics";
 import {updateQuestsStatisticJob} from "../../jobs/updateQuestsStatistic";
 import {
-  User,
-  Quest,
   Admin,
-  Session,
-  UserRole,
-  UserStatus,
-  QuestStatus,
-  UserBlackList,
-  QuestsResponse,
   BlackListStatus,
+  Quest,
+  QuestsResponse,
+  QuestsResponseStatus,
+  QuestStatus,
+  Session,
+  User,
+  UserBlackList,
   UserChangeRoleData,
-  QuestsResponseStatus
+  UserRole,
+  UserStatus
 } from "@workquest/database-models/lib/models";
 
 export async function getUser(r) {
@@ -73,62 +73,91 @@ export async function getUsersSessions(r) {
 export async function changeUserRole(r) {
   const user = await User.scope('withPassword').findByPk(r.params.userId)
 
+  if (!user.role) {
+    return error(Errors.NoRole, 'The user does not have a role', {});
+  }
+
   if (user.role === r.payload.role) {
-    throw error(Errors.InvalidRole, "The user is already assigned this role", {
+    return error(Errors.InvalidRole, "The user is already assigned this role", {
       currentRole: user.role
     });
   }
+
   if (user.role === UserRole.Worker) {
     const questCount = await Quest.count({
-      where: { workerId: user.id, status: { [Op.ne]: [QuestStatus.Closed, QuestStatus.Done] } }
+      where: {
+        assignedWorkerId: user.id,
+        status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done, QuestStatus.Blocked] }
+      }
     });
     const questsResponseCount = await QuestsResponse.count({
-      where: { workerId: user.id, status: { [Op.ne]: [QuestsResponseStatus.Closed, QuestsResponseStatus.Rejected] } }
-    })
-
-    if (questCount !== 0) {
-      throw error()
-    }
-    if (questsResponseCount !== 0) {
-      throw error()
-    }
-  }
-  if (user.role === UserRole.Employer) {
-    const questCount = await Quest.count({
-      where: { userId: user.id, status: { [Op.ne]: [QuestStatus.Closed, QuestStatus.Done] } }
+      where: {
+        workerId: user.id,
+        status: { [Op.notIn]: [QuestsResponseStatus.Closed, QuestsResponseStatus.Rejected] }
+      }
     });
 
     if (questCount !== 0) {
-      throw error()
+      return error(Errors.HasActiveQuests, 'User has active quests', { questCount });
+    }
+    if (questsResponseCount !== 0) {
+      return error(Errors.HasActiveResponses, 'User has active responses', { questsResponseCount });
+    }
+  }
+
+  if (user.role === UserRole.Employer) {
+    const questCount = await Quest.count({
+      where: { userId: user.id, status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done] } }
+    });
+
+    if (questCount !== 0) {
+      return error(Errors.HasActiveQuests, 'User has active quests', { questCount });
     }
   }
 
   const transaction = await r.server.app.db.transaction();
 
-  await UserChangeRoleData.create({
-    changedAdminId: r.auth.credentials.id,
-    userId: user.id,
-    movedFromRole: user.role,
-    additionalInfo: user.additionalInfo,
-    wagePerHour: user.wagePerHour,
-    workplace: user.workplace,
-    priority: user.priority,
-  }, { transaction });
+  const changeToRole = user.role === UserRole.Worker ? UserRole.Employer : UserRole.Worker;
 
-  if (user.role === UserRole.Worker) {
+  const [previousData, isCreated] = await UserChangeRoleData.findOrCreate({
+    where: { userId: user.id },
+    defaults: {
+      changedAdminId: r.auth.credentials.id,
+      userId: user.id,
+      movedFromRole: user.role,
+      additionalInfo: user.additionalInfo,
+      wagePerHour: user.wagePerHour,
+      workplace: user.workplace,
+      priority: user.priority,
+    },
+    transaction,
+  });
+
+  if (isCreated) {
     await user.update({
       workplace: null,
       wagePerHour: null,
-      role: UserRole.Employer,
-      additionalInfo: UserController.getDefaultAdditionalInfo(UserRole.Employer),
-    }, { transaction });
-  }
-  if (user.role === UserRole.Employer) {
+      role: changeToRole,
+      additionalInfo: UserController.getDefaultAdditionalInfo(changeToRole),
+    }, { transaction })
+  } else {
+    await UserChangeRoleData.update({
+      adminId: r.auth.credentials.id,
+      movedFromRole: user.role,
+      workplace: user.workplace,
+      wagePerHour: user.wagePerHour,
+      additionalInfo: user.additionalInfo
+    }, {
+      where: { userId: user.id },
+      transaction
+    });
+
     await user.update({
-      workplace: null,
-      wagePerHour: null,
-      role: UserRole.Worker,
-      additionalInfo: UserController.getDefaultAdditionalInfo(UserRole.Worker),
+      workplace: previousData.workplace,
+      wagePerHour: previousData.wagePerHour,
+      priority: previousData.priority,
+      additionalInfo: previousData.additionalInfo,
+      role: changeToRole,
     }, { transaction });
   }
 

@@ -14,6 +14,9 @@ export enum Errors {
   InvalidType = 400009,
   AlreadyExists = 400010,
   WalletExists = 400011,
+  HasActiveQuests = 400012,
+  HasActiveResponses = 400013,
+  NoRole = 400014,
   // Authorization errors (401)
   TokenExpired = 401001,
   TokenInvalid = 401002,
