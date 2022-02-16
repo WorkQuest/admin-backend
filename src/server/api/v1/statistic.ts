@@ -8,5 +8,5 @@ export async function getDaoStatistic(r) {
     limit: r.query.limit,
     offset: r.query.offset,
   });
-  return output({count, statistic: rows});
+  return output({count, proposals: rows});
 }
