@@ -6,6 +6,7 @@ import disputes from "./disputes";
 import profile from "./profile";
 import storageService from "./storageService";
 import skillFilters from "./skillFilters";
+import statistic from "./statistic";
 
 export default [
   ...auth,
@@ -16,4 +17,5 @@ export default [
   ...profile,
   ...storageService,
   ...skillFilters,
+  ...statistic,
 ];
