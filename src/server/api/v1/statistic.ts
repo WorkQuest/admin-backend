@@ -10,3 +10,4 @@ export async function getDaoStatistic(r) {
   });
   return output({count, proposals: rows});
 }
+
