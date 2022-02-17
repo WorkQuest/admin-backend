@@ -50,8 +50,6 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
       throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
     }
 
-    //if (r.method !== AdminActionMethod.Get) await saveAdminActions({ adminId: session.admin.id, method: r.method, path: r.path });
-
     return { isValid: true, credentials: session.admin, artifacts: { token, type: tokenType, sessionId: session.id } };
   };
 }

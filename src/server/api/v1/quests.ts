@@ -14,6 +14,7 @@ import {
   QuestBlackList,
   BlackListStatus, UserBlackList,
 } from "@workquest/database-models/lib/models";
+import saveAdminActions from "../../jobs/saveAdminActions";
 
 export async function getQuests(r) {
   const where = {
@@ -94,6 +95,8 @@ export async function editQuest(r) {
 
   await transaction.commit();
 
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+
   return output(await Quest.findByPk(questController.quest.id));
 }
 
@@ -109,6 +112,8 @@ export async function deleteQuest(r) {
   // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
   // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
   await quest.destroy();
+
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
 
   return output();
 }
@@ -129,6 +134,8 @@ export async function blockQuest(r) {
   });
 
   await quest.update({ status: QuestStatus.Blocked });
+
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
 
   return output();
 }
@@ -158,6 +165,8 @@ export async function unblockQuest(r) {
     unblockedByAdminId: admin.id,
     unblockedAt: Date.now(),
   });
+
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
 
   return output();
 }

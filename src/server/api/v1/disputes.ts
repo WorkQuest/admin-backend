@@ -3,6 +3,7 @@ import {Errors} from "../../utils/errors";
 import {Admin, DisputeStatus, Quest, QuestDispute,} from "@workquest/database-models/lib/models";
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
+import saveAdminActions from "../../jobs/saveAdminActions";
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findOne({
@@ -47,6 +48,8 @@ export async function takeDisputeToResolve(r) {
     assignedAdminId: r.auth.credentials.id,
   });
 
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+
   return output(dispute);
 }
 
@@ -84,6 +87,8 @@ export async function disputeDecide(r) {
     recipients: [dispute.openDisputeUserId, dispute.opponentUserId],
     data: dispute
   });
+
+  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
 
   return output(await QuestDispute.findByPk(dispute.id));
 }

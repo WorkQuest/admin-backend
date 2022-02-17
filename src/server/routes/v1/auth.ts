@@ -11,7 +11,7 @@ import {
 import {refreshTokens} from "../../api/v1/auth";
 
 export default[{
-  method: "GET",
+  method: "POST",
   path: "/v1/auth/logout",
   handler: handlers.logout,
   options: {
