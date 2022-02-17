@@ -3,8 +3,11 @@ import {output} from "../../utils";
 import {Op} from "sequelize";
 
 export async function getDaoStatistic(r) {
+  const where = {
+    ...(r.query.statuses&& {status: {[Op.in]: r.query.statuses}})
+  }
   const {count, rows} = await Proposal.findAndCountAll({
-    where: { status: {[Op.in]: r.query.statuses} },
+    where,
     limit: r.query.limit,
     offset: r.query.offset,
   });

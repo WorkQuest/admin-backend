@@ -1,11 +1,13 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Admin,
+import {
+  Admin,
   AdminSession,
-  AdminRole,
+  AdminRole, AdminActionMethod,
 } from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
+import saveAdminActions from "../jobs/saveAdminActions";
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
@@ -47,6 +49,8 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
     if (!session.admin.isActive) {
       throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
     }
+
+    //if (r.method !== AdminActionMethod.Get) await saveAdminActions({ adminId: session.admin.id, method: r.method, path: r.path });
 
     return { isValid: true, credentials: session.admin, artifacts: { token, type: tokenType, sessionId: session.id } };
   };
