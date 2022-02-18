@@ -25,7 +25,7 @@ export async function login(r) {
     invalidating: false,
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActions({ adminId: admin.id, method: r.method, path: r.path });
 
   return output({
     ...generateJwt({ id: session.id })
