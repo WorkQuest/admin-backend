@@ -1,6 +1,6 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
-import {Admin, AdminAction, Proposal, User} from "@workquest/database-models/lib/models";
+import {Admin, AdminAction, Proposal, User, Session} from "@workquest/database-models/lib/models";
 
 export const searchProposalFields = [
   'title',
@@ -74,6 +74,59 @@ export async function getAdminActionStatistic(r) {
   }
 
   const {count, rows} = await AdminAction.findAndCountAll({
+    where,
+    include,
+    replacements,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [['createdAt', 'desc']]
+  });
+
+  return output({count, actions: rows});
+}
+
+export async function getUsersSessionStatistic(r) {
+  const searchByFirstAndLastNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "user" ` +
+    `WHERE ("user"."firstName" || ' ' || "user"."lastName" ILIKE '%${r.query.q}%' OR "user"."role" ILIKE '%${r.query.q}%') AND "Session"."userId" = "user"."id") THEN 1 ELSE 0 END ) `,
+  );
+  const replacements = {};
+
+  const where = {};
+
+  const include = [{
+    model: User,
+    as: 'user'
+  }];
+
+  if (r.query.q) {
+    where[Op.or] = searchByFirstAndLastNameLiteral;
+    replacements['query'] = `%${r.query.q}%`;
+  }
+
+  const {count, rows} = await Session.findAndCountAll({
+    where,
+    include,
+    replacements,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [['createdAt', 'desc']]
+  });
+
+  return output({count, actions: rows});
+}
+
+export async function getUserStatistic(r) {
+  const replacements = {};
+
+  const where = { userId: r.params.userId };
+
+  const include = [{
+    model: User,
+    as: 'user'
+  }];
+
+  const {count, rows} = await Session.findAndCountAll({
     where,
     include,
     replacements,
