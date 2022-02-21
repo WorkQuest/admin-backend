@@ -52,7 +52,7 @@
     "qs": "^6.9.6",
     "reflect-metadata": "^0.1.13",
     "sequelize": "6.2.1",
-    "sequelize-typescript": "^2.0.0",
+    "sequelize-typescript": "2.0.0",
     "speakeasy": "^2.0.0",
     "typescript": "^4.1.5",
     "uuid": "^8.2.0"
