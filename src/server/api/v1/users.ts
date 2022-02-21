@@ -2,8 +2,6 @@ import {Op} from 'sequelize'
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {UserController} from "../../controllers/controller.user";
-import {addUpdateReviewStatisticsJob} from "../../jobs/updateReviewStatistics";
-import {updateQuestsStatisticJob} from "../../jobs/updateQuestsStatistic";
 import {
   Admin,
   BlackListStatus,
@@ -18,7 +16,7 @@ import {
   UserRole,
   UserStatus
 } from "@workquest/database-models/lib/models";
-import {deleteUserFiltersJob} from "../../jobs/deleteUserFilters";
+import {addJob} from "../../utils/scheduler";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -134,13 +132,13 @@ export async function changeUserRole(r) {
 
   await transaction.commit();
 
-  await deleteUserFiltersJob({
+  await addJob('deleteUserFilters', {
     userId: user.id,
   });
-  await addUpdateReviewStatisticsJob({
+  await addJob('updateReviewStatistics', {
     userId: user.id,
   });
-  await updateQuestsStatisticJob({
+  await addJob('updateQuestsStatistic', {
     userId: user.id,
     role: user.role,
   });

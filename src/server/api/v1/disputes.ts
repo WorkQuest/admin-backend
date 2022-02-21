@@ -44,6 +44,7 @@ export async function takeDisputeToResolve(r) {
 
   await dispute.update({
     status: DisputeStatus.inProgress,
+    acceptedAt: new Date(),
     assignedAdminId: r.auth.credentials.id,
   });
 
