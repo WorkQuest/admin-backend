@@ -1,4 +1,4 @@
-import {Op} from 'sequelize'
+import {literal, Op} from 'sequelize'
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {UserController} from "../../controllers/controller.user";
@@ -60,8 +60,26 @@ export async function getUserSessions(r) {
 }
 
 export async function getUsersSessions(r) {
+  const searchByFirstAndLastNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "user" ` +
+    `WHERE ("user"."firstName" || ' ' || "user"."lastName" ILIKE '%${r.query.q}%' OR "user"."role" ILIKE '%${r.query.q}%') AND "Session"."userId" = "user"."id") THEN 1 ELSE 0 END ) `,
+  );
+  const replacements = {};
+
+  const where = {};
+
+  const include = [{
+    model: User,
+    as: 'user'
+  }];
+
+  if (r.query.q) {
+    where[Op.or] = searchByFirstAndLastNameLiteral;
+    replacements['query'] = `%${r.query.q}%`;
+  }
+
   const { rows, count } = await Session.findAndCountAll({
-    include: { model: User, as: 'user' },
+    include,
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
