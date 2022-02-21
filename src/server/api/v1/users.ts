@@ -1,6 +1,22 @@
+import {Op} from 'sequelize'
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Session, User, Admin, UserBlackList, BlackListStatus, UserStatus,} from "@workquest/database-models/lib/models";
+import {UserController} from "../../controllers/controller.user";
+import {
+  Admin,
+  BlackListStatus,
+  Quest,
+  QuestsResponse,
+  QuestsResponseStatus,
+  QuestStatus,
+  Session,
+  User,
+  UserBlackList,
+  UserChangeRoleData,
+  UserRole,
+  UserStatus
+} from "@workquest/database-models/lib/models";
+import {addJob} from "../../utils/scheduler";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -21,7 +37,7 @@ export async function getUsers(r) {
     order: [ ['createdAt', 'DESC'] ],
   });
 
-  return output({ count: count, users: rows });
+  return output({ count, users: rows });
 }
 
 export async function getUserSessions(r) {
@@ -54,39 +70,80 @@ export async function getUsersSessions(r) {
 }
 
 export async function changeUserRole(r) {
-  throw new Error('Not implemented');
+  const user = await User.scope('withPassword').findByPk(r.params.userId)
 
-/*  const user = await User.findByPk(r.params.userId)
-
-  if(!user) {
-    return error(Errors.NotFound, 'User is not found', {})
+  if (!user) {
+    return error(Errors.NotFound, 'User is not found', {});
   }
-
-  if(!user.changeRoleAt){
-    await user.update({
-      role: r.payload.role,
-      changeRoleAt: Date.now(),
+  if (!user.role) {
+    return error(Errors.NoRole, 'The user does not have a role', {});
+  }
+  if (user.role === UserRole.Worker) {
+    const questCount = await Quest.count({
+      where: {
+        assignedWorkerId: user.id,
+        status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done, QuestStatus.Blocked] }
+      }
+    });
+    const questsResponseCount = await QuestsResponse.count({
+      where: {
+        workerId: user.id,
+        status: { [Op.notIn]: [QuestsResponseStatus.Closed, QuestsResponseStatus.Rejected] }
+      }
     });
 
-    return output();
+    if (questCount !== 0) {
+      return error(Errors.HasActiveQuests, 'User has active quests', { questCount });
+    }
+    if (questsResponseCount !== 0) {
+      return error(Errors.HasActiveResponses, 'User has active responses', { questsResponseCount });
+    }
+  }
+  if (user.role === UserRole.Employer) {
+    const questCount = await Quest.count({
+      where: { userId: user.id, status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done] } }
+    });
+
+    if (questCount !== 0) {
+      return error(Errors.HasActiveQuests, 'User has active quests', { questCount });
+    }
   }
 
-  //can change role once per month
-  const month = 31;
+  const transaction = await r.server.app.db.transaction();
 
-  let date = new Date();
-  date.setDate(user.changeRoleAt.getDate() + month);
-  const canChangeRole = date <= user.changeRoleAt
+  const changeToRole = user.role === UserRole.Worker ? UserRole.Employer : UserRole.Worker;
 
-  if(!canChangeRole){
-    return error(Errors.InvalidDate, 'User can change role once in 31 days', {})
-  }
+  await UserChangeRoleData.create({
+    changedAdminId: r.auth.credentials.id,
+    userId: user.id,
+    movedFromRole: user.role,
+    additionalInfo: user.additionalInfo,
+    wagePerHour: user.wagePerHour,
+    workplace: user.workplace,
+    priority: user.priority,
+  }, { transaction });
+
   await user.update({
-    role: r.payload.role,
-    changeRoleAt: Date.now(),
-  });*/
+    workplace: null,
+    wagePerHour: null,
+    role: changeToRole,
+    additionalInfo: UserController.getDefaultAdditionalInfo(changeToRole),
+  }, { transaction });
 
-  // return output();
+  await transaction.commit();
+
+  await addJob('deleteUserFilters', {
+    userId: user.id,
+  });
+  await addJob('updateReviewStatistics', {
+    userId: user.id,
+  });
+  await addJob('updateQuestsStatistic', {
+    userId: user.id,
+    role: user.role,
+  });
+
+  return output();
 }
 
 export async function changePhone(r) {

@@ -17,7 +17,7 @@ import {
   userBlackListReasonSchema,
 } from "@workquest/database-models/lib/schemes";
 
-export default[{
+export default [{
   method: "GET",
   path: "/v1/user/{userId}",
   handler: handlers.getUser,
@@ -130,12 +130,9 @@ export default[{
       params: Joi.object({
         userId: idSchema.required(),
       }).label("ChangeUserRoleParams"),
-      payload: Joi.object({
-        role: userRoleSchema,
-      }).label('ChangeUserRolePayload')
     },
     response: {
-      schema: outputOkSchema(userSchema).label('ChangeUserRoleResponse')
+      schema: emptyOkSchema
     }
   }
 }, {
