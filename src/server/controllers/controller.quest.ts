@@ -7,7 +7,7 @@ import {
   Quest,
   QuestChat,
   QuestStatus,
-  StarredQuests,
+  QuestsStarred,
   QuestsResponse,
   QuestSpecializationFilter,
 } from "@workquest/database-models/lib/models";
@@ -16,14 +16,14 @@ abstract class QuestHelper {
   public abstract quest: Quest;
 
   public setStar(user: User) {
-    return StarredQuests.findOrCreate({
+    return QuestsStarred.findOrCreate({
       where: { userId: user.id, questId: this.quest.id },
       defaults: { userId: user.id, questId: this.quest.id },
     });
   }
 
   public removeStar(user: User) {
-    return StarredQuests.destroy({
+    return QuestsStarred.destroy({
       where: { userId: user.id, questId: this.quest.id },
     });
   }
