@@ -1,6 +1,12 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
-import {Admin, AdminAction, Proposal, User, Session} from "@workquest/database-models/lib/models";
+import {
+  User,
+  Admin,
+  Proposal,
+  AdminAction,
+  AdminDisputesStatistic
+} from "@workquest/database-models/lib/models";
 
 export const searchProposalFields = [
   'title',
@@ -57,7 +63,7 @@ export async function getDaoStatistic(r) {
 export async function getAdminActionStatistic(r) {
   const searchByFirstAndLastNameLiteral = literal(
     `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "admin" ` +
-    `WHERE ("admin"."firstName" || ' ' || "admin"."lastName" ILIKE '%${r.query.q}%' OR "admin"."role" ILIKE '%${r.query.q}%') AND "AdminAction"."adminId" = "admin"."id") THEN 1 ELSE 0 END ) `,
+    `WHERE ("admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query OR "admin"."role" ILIKE :query) AND "AdminAction"."adminId" = "admin"."id") THEN 1 ELSE 0 END ) `,
   );
   const replacements = {};
 
@@ -84,3 +90,34 @@ export async function getAdminActionStatistic(r) {
 
   return output({count, actions: rows});
 }
+
+export async function getQuestDisputesStatistic(r) {
+  const searchByFirstAndLastNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "admin" ` +
+    `WHERE ("admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query OR "admin"."role" ILIKE :query) AND "AdminDisputesStatistic"."adminId" = "admin"."id") THEN 1 ELSE 0 END ) `,
+  );
+  const replacements = {};
+
+  const where = {
+    ...(r.params.adminId && {adminId: r.params.adminId} ),
+  };
+
+  const include = [{
+    model: Admin,
+    as: 'admin'
+  }];
+
+  if (r.query.q) {
+    where[Op.or] = searchByFirstAndLastNameLiteral;
+    replacements['query'] = `%${r.query.q}%`;
+  }
+
+  const {count, rows} = await AdminDisputesStatistic.findAndCountAll({
+    where,
+    include,
+    replacements,
+  });
+
+  return output({count, disputesStatistic: rows});
+}
+

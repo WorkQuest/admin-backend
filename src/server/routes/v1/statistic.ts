@@ -5,10 +5,11 @@ import {
   proposalQuerySchema,
   outputPaginationSchema,
   limitSchema,
-  offsetSchema, searchSchema, adminActionSchema,
+  offsetSchema, searchSchema, adminActionSchema, adminDisputesStatisticSchema, idSchema,
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
+import {getQuestDisputesStatistic} from "../../api/v1/statistic";
 
 export default [
   {
@@ -48,6 +49,53 @@ export default [
       },
       response: {
         schema: outputPaginationSchema('actions', adminActionSchema).label('GetAdminActionsStatisticResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/statistic/disputes',
+    handler: handlers.getQuestDisputesStatistic,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getQuestDisputesStatistic',
+      tags: ['api', 'statistic'],
+      description: 'Get questDisputes statistic',
+      validate: {
+        query: Joi.object({
+          q: searchSchema,
+          limit: limitSchema,
+          offset: offsetSchema,
+        }).label('GetQuestDisputesStatisticQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('questDisputesStatistic', adminDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/statistic/{adminId}/disputes',
+    handler: handlers.getQuestDisputesStatistic,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getQuestDisputesStatistic',
+      tags: ['api', 'statistic'],
+      description: 'Get questDisputes statistic',
+      validate: {
+        params: {
+          adminId: idSchema.required(),
+        },
+        query: Joi.object({
+          q: searchSchema,
+          limit: limitSchema,
+          offset: offsetSchema,
+        }).label('GetQuestDisputesStatisticQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('questDisputesStatistic', adminDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
       },
     },
   },

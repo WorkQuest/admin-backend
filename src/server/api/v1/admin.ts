@@ -2,9 +2,9 @@ import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
 import {
-  Admin, AdminActionMethod,
+  Admin,
   AdminRole,
-  AdminSession, Session, User,
+  AdminSession,
 } from "@workquest/database-models/lib/models"
 import saveAdminActions from "../../jobs/saveAdminActions";
 
