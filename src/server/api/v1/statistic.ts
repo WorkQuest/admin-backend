@@ -94,7 +94,7 @@ export async function getAdminActionStatistic(r) {
 export async function getQuestDisputesStatistic(r) {
   const searchByFirstAndLastNameLiteral = literal(
     `(1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "admin" ` +
-    `WHERE "admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query AND "AdminDisputesStatistic"."adminId" = "admin"."id") THEN 1 ELSE 0 END )) `
+    `WHERE "admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query AND "AdminQuestDisputesStatistic"."adminId" = "admin"."id") THEN 1 ELSE 0 END )) `
   );
 
   const replacements = {};
