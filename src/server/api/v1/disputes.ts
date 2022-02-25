@@ -4,6 +4,7 @@ import {Admin, DisputeStatus, Quest, QuestDispute,} from "@workquest/database-mo
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
 import saveAdminActions from "../../jobs/saveAdminActions";
+import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findOne({
@@ -45,7 +46,7 @@ export async function takeDisputeToResolve(r) {
 
   await dispute.update({
     status: DisputeStatus.inProgress,
-    acceptedAt: new Date(),
+    acceptedAt: Date.now(),
     assignedAdminId: r.auth.credentials.id,
   });
 
@@ -77,11 +78,14 @@ export async function disputeDecide(r) {
 
   await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});
 
-  await Admin.increment('resolvedDisputes', {
-    where: {id: r.auth.credentials.id}, transaction,
-  });
-
   await transaction.commit();
+
+  const resolutionTimeInSeconds: number = (dispute.resolvedAt.getTime() - dispute.acceptedAt.getTime())/1000;
+
+  await incrementAdminDisputeStatisticJob({
+    adminId: dispute.assignedAdminId,
+    resolutionTimeInSeconds,
+  });
 
   r.server.app.broker.sendQuestNotification({
     action: QuestNotificationActions.DisputeDecision,

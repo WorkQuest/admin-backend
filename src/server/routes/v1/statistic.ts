@@ -5,7 +5,7 @@ import {
   proposalQuerySchema,
   outputPaginationSchema,
   limitSchema,
-  offsetSchema, searchSchema, adminActionSchema, adminDisputesStatisticSchema, idSchema,
+  offsetSchema, searchSchema, adminActionSchema, adminQuestDisputesStatisticSchema, idSchema,
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
@@ -70,7 +70,7 @@ export default [
         }).label('GetQuestDisputesStatisticQuery'),
       },
       response: {
-        schema: outputPaginationSchema('questDisputesStatistic', adminDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
+        schema: outputPaginationSchema('questDisputesStatistic', adminQuestDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
       },
     },
   },
@@ -81,21 +81,16 @@ export default [
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
-      id: 'v1.getQuestDisputesStatistic',
+      id: 'v1.getQuestDisputesAdminStatistic',
       tags: ['api', 'statistic'],
-      description: 'Get questDisputes statistic',
+      description: 'Get questDisputes admin statistic',
       validate: {
-        params: {
+        params: Joi.object({
           adminId: idSchema.required(),
-        },
-        query: Joi.object({
-          q: searchSchema,
-          limit: limitSchema,
-          offset: offsetSchema,
-        }).label('GetQuestDisputesStatisticQuery'),
+        }).label('GetQuestDisputesAdminStatistic'),
       },
       response: {
-        schema: outputPaginationSchema('questDisputesStatistic', adminDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
+        schema: outputPaginationSchema('questDisputesAdminStatistic', adminQuestDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
       },
     },
   },

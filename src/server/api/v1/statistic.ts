@@ -5,7 +5,7 @@ import {
   Admin,
   Proposal,
   AdminAction,
-  AdminDisputesStatistic
+  AdminQuestDisputesStatistic,
 } from "@workquest/database-models/lib/models";
 
 export const searchProposalFields = [
@@ -93,13 +93,14 @@ export async function getAdminActionStatistic(r) {
 
 export async function getQuestDisputesStatistic(r) {
   const searchByFirstAndLastNameLiteral = literal(
-    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "admin" ` +
-    `WHERE ("admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query OR "admin"."role" ILIKE :query) AND "AdminDisputesStatistic"."adminId" = "admin"."id") THEN 1 ELSE 0 END ) `,
+    `(1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "admin" ` +
+    `WHERE "admin"."firstName" || ' ' || "admin"."lastName" ILIKE :query AND "AdminDisputesStatistic"."adminId" = "admin"."id") THEN 1 ELSE 0 END )) `
   );
+
   const replacements = {};
 
   const where = {
-    ...(r.params.adminId && {adminId: r.params.adminId} ),
+    ...(r.params.adminId && { adminId: r.params.adminId }),
   };
 
   const include = [{
@@ -112,7 +113,7 @@ export async function getQuestDisputesStatistic(r) {
     replacements['query'] = `%${r.query.q}%`;
   }
 
-  const {count, rows} = await AdminDisputesStatistic.findAndCountAll({
+  const {count, rows} = await AdminQuestDisputesStatistic.findAndCountAll({
     where,
     include,
     replacements,
