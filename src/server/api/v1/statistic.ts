@@ -23,10 +23,14 @@ export async function getDaoStatistic(r) {
     `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "author" ` +
     `WHERE "author"."firstName" || ' ' || "author"."lastName" ILIKE :query AND "Proposal"."userId" = "author"."id") THEN 1 ELSE 0 END ) `,
   );
+
+  const searchByProposalTitleLiteral = literal(`"Proposal"."title" ILIKE :query`);
+
   const replacements = {};
 
   const where = {
-    ...(r.query.statuses && {status: {[Op.in]: r.query.statuses}})
+    ...(r.query.statuses && {status: { [Op.in]: r.query.statuses } }),
+    ...(r.params.userId && { userId: r.params.userId }),
   }
 
   const order = [];
@@ -41,6 +45,7 @@ export async function getDaoStatistic(r) {
       [field]: {[Op.iLike]: `%${r.query.q}%`}
     }));
     where[Op.or].push(searchByFirstAndLastNameLiteral);
+    where[Op.or].push(searchByProposalTitleLiteral);
     replacements['query'] = `%${r.query.q}%`;
   }
 
@@ -67,7 +72,9 @@ export async function getAdminActionStatistic(r) {
   );
   const replacements = {};
 
-  const where = {};
+  const where = {
+    ...(r.params.adminId && { adminId: r.params.adminId }),
+  };
 
   const include = [{
     model: Admin,

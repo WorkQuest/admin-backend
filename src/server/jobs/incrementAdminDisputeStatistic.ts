@@ -2,7 +2,6 @@ import {addJob} from '../utils/scheduler';
 import {
   AdminQuestDisputesStatistic
 } from '@workquest/database-models/lib/models';
-import {log} from "util";
 
 export type adminDisputeStatisticPayload = {
   adminId: string

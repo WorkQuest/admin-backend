@@ -5,16 +5,16 @@ import {
   proposalQuerySchema,
   outputPaginationSchema,
   limitSchema,
-  offsetSchema, searchSchema, adminActionSchema, adminQuestDisputesStatisticSchema, idSchema,
+  offsetSchema, searchSchema, adminActionSchema, adminQuestDisputesStatisticSchema, idSchema, proposalSortSchema,
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-import {getQuestDisputesStatistic} from "../../api/v1/statistic";
+import {proposalStatusesSchema} from "@workquest/database-models/src/schemes/proposal";
 
 export default [
   {
     method: 'GET',
-    path: '/v1/statistic/dao',
+    path: '/v1/user/statistic/dao',
     handler: handlers.getDaoStatistic,
     options: {
       auth: 'jwt-access',
@@ -32,17 +32,62 @@ export default [
   },
   {
     method: 'GET',
+    path: '/v1/user/statistic/{userId}/dao',
+    handler: handlers.getDaoStatistic,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getUserDaoStatistic',
+      tags: ['api', 'statistic'],
+      description: 'Get dao statistic for user',
+      validate: {
+        params: Joi.object({
+          userId: idSchema.required(),
+        }).label('GetUserDaoStatisticParams'),
+        query: proposalQuerySchema.label('GetUserDaoStatisticQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserDaoStatisticResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
     path: '/v1/admin/statistic/action',
     handler: handlers.getAdminActionStatistic,
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
-      id: 'v1.getAdminActionStatistic',
+      id: 'v1.getAdminsActionsStatistic',
       tags: ['api', 'statistic'],
       description: 'Get admins actions statistic',
       validate: {
         query: Joi.object({
           q: searchSchema,
+          limit: limitSchema,
+          offset: offsetSchema,
+        }).label('GetAdminsActionsStatisticQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('actions', adminActionSchema).label('GetAdminsActionsStatisticResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/statistic/{adminId}/action',
+    handler: handlers.getAdminActionStatistic,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getAdminActionsStatistic',
+      tags: ['api', 'statistic'],
+      description: 'Get admin actions statistic',
+      validate: {
+        params: Joi.object({
+          adminId: idSchema.required(),
+        }).label('GetAdminActionsStatisticParams'),
+        query: Joi.object({
           limit: limitSchema,
           offset: offsetSchema,
         }).label('GetAdminActionsStatisticQuery'),
