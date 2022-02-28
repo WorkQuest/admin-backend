@@ -107,6 +107,7 @@ export async function disputeDecide(r) {
 export async function getQuestDisputeReviews(r) {
   const where = {
     ...(r.params.adminId && { toAdminId: r.params.adminId }),
+    ...(r.params.disputeId && { disputeId: r.params.disputeId }),
   };
 
   const include = [{
@@ -117,6 +118,7 @@ export async function getQuestDisputeReviews(r) {
     as: 'toAdmin',
   }, {
     model: QuestDispute,
+    where: {...r.params.questId && { questId: r.params.questId } },
     as: 'dispute',
   }];
 
