@@ -116,7 +116,7 @@ export default[{
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main),
     id: 'v1.getQuestDisputeReviews',
-    tags: ['api', "admin"],
+    tags: ['api', "quest-dispute"],
     description: 'Get quest disputes reviews',
     validate: {
       query: Joi.object({
@@ -131,12 +131,12 @@ export default[{
 }, {
   method: "GET",
   path: "/v1/admin/{adminId}/quest/dispute/reviews",
-  handler: handlers.getQuestDisputes,
+  handler: handlers.getQuestDisputeAdminReview,
   options: {
     id: "v1.admin.quest.getAdminDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -150,35 +150,12 @@ export default[{
 }, {
   method: 'GET',
   path: '/v1/admin/quest/dispute/reviews/me',
-  handler: handlers.getQuestDisputeAdminReview,
-  options: {
-    auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
-    id: 'v1.getQuestDisputeAdminReview',
-    tags: ['api', "admin"],
-    description: 'Get questDisputes admin review',
-    validate: {
-      params: Joi.object({
-        adminId: idSchema.required(),
-      }).label('GetQuestDisputesAdminReviewParams'),
-      query: Joi.object({
-        limit: limitSchema,
-        offset: offsetSchema,
-      }).label('GetQuestDisputesAdminReviewQuery'),
-    },
-    response: {
-      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewResponse'),
-    },
-  },
-}, {
-  method: 'GET',
-  path: '/v1/admin/review/me',
   handler: handlers.getQuestDisputeAdminReviewMe,
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     id: 'v1.getQuestDisputeAdminReviewMe',
-    tags: ['api', "admin"],
+    tags: ['api', "quest-dispute"],
     description: 'Get questDisputes admin (me) review',
     validate: {
       query: Joi.object({
