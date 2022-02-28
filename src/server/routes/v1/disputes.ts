@@ -184,7 +184,7 @@ export default[{
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
-      }).label('GetQuestDisputeReviewsByDisputeQuery'),
+      }).label('GetQuestDisputeReviewsByDisputeParams'),
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
@@ -208,7 +208,7 @@ export default[{
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
-      }).label('GetQuestDisputeReviewsByQuestQuery'),
+      }).label('GetQuestDisputeReviewsByQuestParams'),
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
