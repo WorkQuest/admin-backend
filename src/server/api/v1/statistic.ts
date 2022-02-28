@@ -12,6 +12,7 @@ export const searchProposalFields = [
   'title',
   'description',
 ];
+
 export const searchAdminFields = [
   'firstName',
   'lastName',

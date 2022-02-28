@@ -9,7 +9,6 @@ import {
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-import {proposalStatusesSchema} from "@workquest/database-models/src/schemes/proposal";
 
 export default [
   {

@@ -1,9 +1,10 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {
+  Admin,
   DisputeStatus,
   Quest,
-  QuestDispute,
+  QuestDispute, QuestDisputeReview, User,
 } from "@workquest/database-models/lib/models";
 
 import {Op} from 'sequelize'
@@ -101,4 +102,56 @@ export async function disputeDecide(r) {
   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(await QuestDispute.findByPk(dispute.id));
+}
+
+export async function getQuestDisputeAdminReview(r) {
+  const where = {
+    ...(r.params.adminId && {toAdminId: r.params.adminId}),
+  };
+
+  const include = [{
+    model: User,
+    as: 'fromUser',
+  }, {
+    model: Admin,
+    as: 'toAdmin',
+  }, {
+    model: QuestDispute,
+    as: 'dispute',
+  }];
+
+  const { count, rows } = await QuestDisputeReview.findAndCountAll({
+    where,
+    include,
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count, review: rows });
+}
+
+export async function getQuestDisputeAdminReviewMe(r) {
+  const where = {
+    toAdminId: r.auth.credentials.id
+  };
+
+  const include = [{
+    model: User,
+    as: 'fromUser',
+  }, {
+    model: Admin,
+    as: 'toAdmin',
+  }, {
+    model: QuestDispute,
+    as: 'dispute',
+  }];
+
+  const {count, rows} = await QuestDisputeReview.findAndCountAll({
+    where,
+    include,
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({count, review: rows});
 }

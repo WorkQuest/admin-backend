@@ -1,4 +1,4 @@
-import {error, output} from "../../utils";
+import {output} from "../../utils";
 import {Admin} from "@workquest/database-models/lib/models"
 import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
