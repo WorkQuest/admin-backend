@@ -104,9 +104,9 @@ export async function disputeDecide(r) {
   return output(await QuestDispute.findByPk(dispute.id));
 }
 
-export async function getQuestDisputeAdminReview(r) {
+export async function getQuestDisputeReviews(r) {
   const where = {
-    ...(r.params.adminId && {toAdminId: r.params.adminId}),
+    ...(r.params.adminId && { toAdminId: r.params.adminId }),
   };
 
   const include = [{
@@ -127,14 +127,10 @@ export async function getQuestDisputeAdminReview(r) {
     offset: r.query.offset,
   });
 
-  return output({ count, review: rows });
+  return output({ count, reviews: rows });
 }
 
-export async function getQuestDisputeAdminReviewMe(r) {
-  const where = {
-    toAdminId: r.auth.credentials.id
-  };
-
+export async function getQuestDisputeReviewsForAdminMe(r) {
   const include = [{
     model: User,
     as: 'fromUser',
@@ -147,11 +143,11 @@ export async function getQuestDisputeAdminReviewMe(r) {
   }];
 
   const {count, rows} = await QuestDisputeReview.findAndCountAll({
-    where,
     include,
     limit: r.query.limit,
     offset: r.query.offset,
+    where: { toAdminId: r.auth.credentials.id },
   });
 
-  return output({count, review: rows});
+  return output({ count, reviews: rows });
 }

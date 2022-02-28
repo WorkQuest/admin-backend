@@ -7,10 +7,11 @@ import {
   limitSchema,
   offsetSchema,
   outputOkSchema,
-  outputPaginationSchema,
-  questDisputeDecisionDescriptionSchema,
-  questDisputeQuerySchema, questDisputeReviewSchema,
   questDisputeSchema,
+  outputPaginationSchema,
+  questDisputeQuerySchema,
+  questDisputeReviewSchema,
+  questDisputeDecisionDescriptionSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -110,45 +111,73 @@ export default[{
   }
 }, {
   method: 'GET',
-  path: '/v1/admin/quest/dispute/reviews',
-  handler: handlers.getQuestDisputeAdminReview,
+  path: '/v1/quest/dispute/reviews',
+  handler: handlers.getQuestDisputeReviews,
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main),
-    id: 'v1.getQuestDisputeReviews',
+    id: 'v1.quest.dispute.getQuestDisputeReviews',
     tags: ['api', "quest-dispute"],
     description: 'Get quest disputes reviews',
     validate: {
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
-      }).label('GetQuestDisputesAdminReviewsQuery'),
+      }).label('GetQuestDisputeReviewsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewsResponse'),
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputeReviewsResponse'),
     },
   },
 }, {
   method: "GET",
   path: "/v1/admin/{adminId}/quest/dispute/reviews",
-  handler: handlers.getQuestDisputeAdminReview,
+  handler: handlers.getQuestDisputeReviews,
   options: {
-    id: "v1.admin.quest.getAdminDisputes",
+    id: "v1.admin.quest.dispute.getQuestDisputeReviewsForAdmin",
     tags: ["api", "quest-dispute"],
     description: "Get disputes",
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
-      }).label("GetAdminQuestDisputesParams"),
-      query: questDisputeQuerySchema,
+      }).label("GetQuestDisputeReviewsForAdminParams"),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestDisputeReviewsForAdminQuery'),
     },
     response: {
-      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetAdminQuestDisputesResponse')
+      schema: outputPaginationSchema('', questDisputeSchema).label('GetQuestDisputeReviewsForAdminResponse')
     }
   }
 }, {
   method: 'GET',
+  path: '/v1/admin/me/quest/dispute/reviews',
+  handler: handlers.getQuestDisputeReviewsForAdminMe,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.main),
+    id: 'v1.getQuestDisputeAdminReview',
+    tags: ['api', "dispute"],
+    description: 'Get questDisputes admin review',
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required(),
+      }).label('GetQuestDisputesAdminReviewParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestDisputesAdminReviewQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewResponse'),
+    },
+  },
+}, {
+  method: 'GET',
+  path: '/v1/admin/review/me',
+  handler: handlers.getQuestDisputeReviewsForAdminMe,
   path: '/v1/admin/quest/dispute/reviews/me',
   handler: handlers.getQuestDisputeAdminReviewMe,
   options: {
