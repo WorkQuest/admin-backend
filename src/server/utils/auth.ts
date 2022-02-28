@@ -4,10 +4,9 @@ import { error, } from './index';
 import {
   Admin,
   AdminSession,
-  AdminRole, AdminActionMethod,
+  AdminRole,
 } from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
-import saveAdminActions from "../jobs/saveAdminActions";
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });

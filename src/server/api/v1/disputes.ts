@@ -8,7 +8,7 @@ import {
 
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
-import saveAdminActions from "../../jobs/saveAdminActions";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
 
 export async function getQuestDispute(r) {
@@ -55,7 +55,7 @@ export async function takeDisputeToResolve(r) {
     assignedAdminId: r.auth.credentials.id,
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(dispute);
 }
@@ -98,7 +98,7 @@ export async function disputeDecide(r) {
     data: dispute
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(await QuestDispute.findByPk(dispute.id));
 }

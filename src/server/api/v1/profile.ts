@@ -1,7 +1,6 @@
 import {error, output} from "../../utils";
 import {Admin} from "@workquest/database-models/lib/models"
-import {Errors} from "../../utils/errors";
-import saveAdminActions from "../../jobs/saveAdminActions";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getMe(r) {
   return output(await Admin.findByPk(r.auth.credentials.id));
@@ -12,7 +11,7 @@ export async function editProfile(r) {
 
   await admin.update(r.payload);
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(await Admin.findByPk(admin.id));
 }

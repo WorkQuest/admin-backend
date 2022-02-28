@@ -17,7 +17,7 @@ import {
   UserStatus
 } from "@workquest/database-models/lib/models";
 import {addJob} from "../../utils/scheduler";
-import saveAdminActions from "../../jobs/saveAdminActions";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -163,7 +163,7 @@ export async function changeUserRole(r) {
     role: user.role,
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -175,7 +175,7 @@ export async function changePhone(r) {
     return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
   }
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   await user.update({
     phone: null,
@@ -202,7 +202,7 @@ export async function blockUser(r) {
 
   await user.update({ status: UserStatus.Blocked });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -234,7 +234,7 @@ export async function unblockUser(r) {
     unblockedAt: Date.now(),
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }

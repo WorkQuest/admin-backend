@@ -16,7 +16,6 @@ import {
   questTitleSchema,
   questAdTypeSchema,
   locationFullSchema,
-  questCategorySchema,
   questEmploymentSchema,
   questDescriptionSchema,
   outputPaginationSchema,
@@ -98,7 +97,6 @@ export default[{
         questId: idSchema.required(),
       }).label("EditQuestParams"),
       payload: Joi.object({
-        category: questCategorySchema.required(),
         workplace: workPlaceSchema.required(),
         employment: questEmploymentSchema.required(),
         priority: prioritySchema.required(),

@@ -3,7 +3,7 @@ import {output, error, getDevice, getGeo, getRealIp } from "../../utils";
 import {Admin, AdminSession} from "@workquest/database-models/lib/models"
 import {Op} from "sequelize";
 import {generateJwt} from "../../utils/auth";
-import saveAdminActions from "../../jobs/saveAdminActions";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function login(r) {
   const admin = await Admin.scope("withPassword").findOne({ where: { email: { [Op.iLike]: r.payload.email } } });
@@ -25,7 +25,7 @@ export async function login(r) {
     invalidating: false,
   });
 
-  await saveAdminActions({ adminId: admin.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: admin.id, HTTPVerb: r.method, path: r.path });
 
   return output({
     ...generateJwt({ id: session.id })
@@ -59,7 +59,7 @@ export async function logout(r) {
     where: { id: r.auth.artifacts.sessionId }
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }

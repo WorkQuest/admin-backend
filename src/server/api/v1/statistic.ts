@@ -4,7 +4,7 @@ import {
   User,
   Admin,
   Proposal,
-  AdminAction,
+  AdminActionMetadata,
   AdminQuestDisputesStatistic,
 } from "@workquest/database-models/lib/models";
 
@@ -86,7 +86,7 @@ export async function getAdminActionStatistic(r) {
     replacements['query'] = `%${r.query.q}%`;
   }
 
-  const {count, rows} = await AdminAction.findAndCountAll({
+  const {count, rows} = await AdminActionMetadata.findAndCountAll({
     where,
     include,
     replacements,

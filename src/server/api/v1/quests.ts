@@ -12,9 +12,9 @@ import {
   Quest,
   QuestStatus,
   QuestBlackList,
-  BlackListStatus, UserBlackList,
+  BlackListStatus,
 } from "@workquest/database-models/lib/models";
-import saveAdminActions from "../../jobs/saveAdminActions";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getQuests(r) {
   const where = {
@@ -95,7 +95,7 @@ export async function editQuest(r) {
 
   await transaction.commit();
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(await Quest.findByPk(questController.quest.id));
 }
@@ -113,7 +113,7 @@ export async function deleteQuest(r) {
   // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
   await quest.destroy();
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -135,7 +135,7 @@ export async function blockQuest(r) {
 
   await quest.update({ status: QuestStatus.Blocked });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -166,7 +166,7 @@ export async function unblockQuest(r) {
     unblockedAt: Date.now(),
   });
 
-  await saveAdminActions({ adminId: r.auth.credentials.id, method: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
