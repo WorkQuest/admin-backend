@@ -1,5 +1,5 @@
 import {addJob} from '../utils/scheduler';
-import {AdminAction, AdminActionMethod} from '@workquest/database-models/lib/models';
+import {AdminActionMetadata, AdminActionMethod} from '@workquest/database-models/lib/models';
 
 export type saveAdminActionsPayload = {
   adminId: string,
@@ -12,7 +12,7 @@ export async function saveAdminActionsJob(payload: saveAdminActionsPayload) {
 }
 
 export default async function saveAdminActions(payload: saveAdminActionsPayload) {
-  await AdminAction.create({
+  await AdminActionMetadata.create({
     adminId: payload.adminId,
     method: payload.method,
     path: payload.path,
