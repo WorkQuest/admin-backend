@@ -9,41 +9,43 @@ import {
   outputPaginationSchema,
 } from '@workquest/database-models/lib/schemes';
 
-export default [{
-  method: 'GET',
-  path: '/v1/proposal',
-  handler: handlers.getDaoStatistic,
-  options: {
-    auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
-    id: 'v1.getProposals',
-    tags: ['api', 'statistic'],
-    description: 'Get proposals statistic',
-    validate: {
-      query: proposalQuerySchema.label('GetProposalsStatisticQuery'),
-    },
-    response: {
-      schema: outputPaginationSchema('proposals', proposalSchema).label('GetProposalsStatisticResponse'),
-    },
-  },
-}, {
-  method: 'GET',
-  path: '/v1/user/{userId}/proposal',
-  handler: handlers.getDaoStatistic,
-  options: {
-    auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
-    id: 'v1.getUserProposalsStatistic',
-    tags: ['api', 'statistic'],
-    description: 'Get proposals statistic for user',
-    validate: {
-      params: Joi.object({
-        userId: idSchema.required(),
-      }).label('GetUserProposalsStatisticParams'),
-      query: proposalQuerySchema.label('GetUserProposalsStatisticForUserQuery'),
-    },
-    response: {
-      schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserProposalsStatisticForUserResponse'),
+export default [
+  {
+    method: 'GET',
+    path: '/v1/proposals',
+    handler: handlers.getProposals,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getProposals',
+      tags: ['api', 'proposal'],
+      description: 'Get proposals',
+      validate: {
+        query: proposalQuerySchema.label('GetProposalsQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetProposalsResponse'),
+      },
     },
   },
+  {
+    method: 'GET',
+    path: '/v1/user/{userId}/proposals',
+    handler: handlers.getProposals,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getUserProposals',
+      tags: ['api', 'proposal'],
+      description: 'Get proposals by user',
+      validate: {
+        params: Joi.object({
+          userId: idSchema.required(),
+        }).label('GetUserProposalsParams'),
+        query: proposalQuerySchema.label('GetUserProposalsByUserQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserProposalsByUserResponse'),
+      },
+    },
 }];
