@@ -12,7 +12,7 @@ import {AdminRole} from "@workquest/database-models/lib/models";
 export default [
   {
     method: 'GET',
-    path: '/v1/user/statistic/dao',
+    path: '/v1/user/statistic/dao/proposal',
     handler: handlers.getDaoStatistic,
     options: {
       auth: 'jwt-access',
@@ -30,7 +30,7 @@ export default [
   },
   {
     method: 'GET',
-    path: '/v1/user/statistic/{userId}/dao',
+    path: '/v1/user/statistic/{userId}/dao/proposal',
     handler: handlers.getDaoStatistic,
     options: {
       auth: 'jwt-access',

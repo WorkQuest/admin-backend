@@ -5,13 +5,12 @@ import {
   limitSchema,
   offsetSchema,
   searchSchema,
-  adminActionSchema,
+  adminActionMetadataSchema,
   adminQuestDisputesStatisticSchema,
   idSchema, outputOkSchema,
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
-import {getQuestDisputesAdminStatistic} from "../../api/v1/statistic";
 
 export default [
   {
@@ -32,7 +31,7 @@ export default [
         }).label('GetAdminsActionsStatisticQuery'),
       },
       response: {
-        schema: outputPaginationSchema('actions', adminActionSchema).label('GetAdminsActionsStatisticResponse'),
+        schema: outputPaginationSchema('actions', adminActionMetadataSchema).label('GetAdminsActionsStatisticResponse'),
       },
     },
   },
@@ -56,7 +55,7 @@ export default [
         }).label('GetAdminActionsStatisticQuery'),
       },
       response: {
-        schema: outputPaginationSchema('actions', adminActionSchema).label('GetAdminActionsStatisticResponse'),
+        schema: outputPaginationSchema('actions', adminActionMetadataSchema).label('GetAdminActionsStatisticResponse'),
       },
     },
   },
@@ -84,7 +83,7 @@ export default [
   },
   {
     method: 'GET',
-    path: '/v1/admin/statistic/{adminId}/disputes',
+    path: '/v1/admin/{adminId}/statistic/disputes',
     handler: handlers.getQuestDisputesAdminStatistic,
     options: {
       auth: 'jwt-access',
@@ -99,6 +98,26 @@ export default [
       },
       response: {
         schema: outputOkSchema(adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/statistic/disputes/me',
+    handler: handlers.getQuestDisputesAdminStatisticMe,
+    options: {
+      auth: 'jwt-access',
+      plugins: getRbacSettings(AdminRole.main),
+      id: 'v1.getQuestDisputesAdminStatisticMe',
+      tags: ['api', 'statistic'],
+      description: 'Get questDisputes admin (me) statistic',
+      validate: {
+        params: Joi.object({
+          adminId: idSchema.required(),
+        }).label('GetQuestDisputesAdminStatisticMeParams'),
+      },
+      response: {
+        schema: outputOkSchema(adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticMeResponse'),
       },
     },
   },

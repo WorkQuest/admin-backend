@@ -1,9 +1,7 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
 import {
-  User,
   Admin,
-  Proposal,
   AdminActionMetadata,
   AdminQuestDisputesStatistic,
 } from "@workquest/database-models/lib/models";
@@ -91,6 +89,20 @@ export async function getQuestDisputesAdminStatistic(r) {
 
   const adminStatistic = await AdminQuestDisputesStatistic.findOne({
     where: { adminId: r.params.adminId },
+    include,
+  });
+
+  return output(adminStatistic);
+}
+
+export async function getQuestDisputesAdminStatisticMe(r) {
+  const include = [{
+    model: Admin,
+    as: 'admin'
+  }];
+
+  const adminStatistic = await AdminQuestDisputesStatistic.findOne({
+    where: { adminId: r.auth.credentials.id },
     include,
   });
 
