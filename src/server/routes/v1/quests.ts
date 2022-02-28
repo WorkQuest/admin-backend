@@ -192,5 +192,4 @@ export default[{
       schema: emptyOkSchema
     }
   }
-}]
-
+}];

@@ -13,7 +13,6 @@ import {
   questDisputeReviewSchema,
   questDisputeDecisionDescriptionSchema,
 } from "@workquest/database-models/lib/schemes";
-import {getQuestDisputeReviews} from "../../api/v1/disputes";
 
 export default[{
   method: "GET",
@@ -154,12 +153,12 @@ export default[{
   }
 }, {
   method: 'GET',
-  path: '/v1/admin/review/me',
+  path: '/v1/admin/me/quest/dispute/reviews',
   handler: handlers.getQuestDisputeReviewsForAdminMe,
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    id: 'v1.getQuestDisputeAdminReviewMe',
+    id: 'v1.admin.me.quest.dispute.getQuestDisputeAdminReviewMe',
     tags: ['api', "quest-dispute"],
     description: 'Get questDisputes admin (me) review',
     validate: {
@@ -179,12 +178,12 @@ export default[{
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    id: 'v1.getQuestDisputeReviewsByDispute',
+    id: 'v1.admin.quest.dispute.getQuestDisputeReviewsByDispute',
     tags: ['api', "quest-dispute"],
-    description: 'Get questDispute reviews ByDispute',
+    description: 'Get quest dispute reviews by dispute',
     validate: {
       params: Joi.object({
-        disputeId: idSchema,
+        disputeId: idSchema.required(),
       }).label('GetQuestDisputeReviewsByDisputeQuery'),
       query: Joi.object({
         limit: limitSchema,
@@ -203,12 +202,12 @@ export default[{
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
-    id: 'v1.getQuestDisputeReviewsByQuest',
+    id: 'v1.admin.quest.dispute.getQuestDisputeReviewsByQuest',
     tags: ['api', "quest-dispute"],
     description: 'Get questDispute reviews by quest',
     validate: {
       params: Joi.object({
-        questId: idSchema,
+        questId: idSchema.required(),
       }).label('GetQuestDisputeReviewsByQuestQuery'),
       query: Joi.object({
         limit: limitSchema,
