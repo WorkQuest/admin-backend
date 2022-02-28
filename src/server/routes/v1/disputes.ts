@@ -198,7 +198,7 @@ export default[{
 },
   {
   method: 'GET',
-  path: '/v1/quest/dispute/{questId}/dispute/reviews',
+  path: '/v1/quest/{questId}/dispute/reviews',
   handler: handlers.getQuestDisputeReviews,
   options: {
     auth: 'jwt-access',

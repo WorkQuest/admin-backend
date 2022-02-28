@@ -83,3 +83,17 @@ export async function getQuestDisputesStatistic(r) {
   return output({count, disputesStatistic: rows});
 }
 
+export async function getQuestDisputesAdminStatistic(r) {
+  const include = [{
+    model: Admin,
+    as: 'admin'
+  }];
+
+  const adminStatistic = await AdminQuestDisputesStatistic.findOne({
+    where: { adminId: r.params.adminId },
+    include,
+  });
+
+  return output(adminStatistic);
+}
+

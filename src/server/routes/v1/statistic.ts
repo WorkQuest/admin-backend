@@ -7,10 +7,11 @@ import {
   searchSchema,
   adminActionSchema,
   adminQuestDisputesStatisticSchema,
-  idSchema,
+  idSchema, outputOkSchema,
 } from '@workquest/database-models/lib/schemes';
 import {getRbacSettings} from "../../utils/auth";
 import {AdminRole} from "@workquest/database-models/lib/models";
+import {getQuestDisputesAdminStatistic} from "../../api/v1/statistic";
 
 export default [
   {
@@ -84,7 +85,7 @@ export default [
   {
     method: 'GET',
     path: '/v1/admin/statistic/{adminId}/disputes',
-    handler: handlers.getQuestDisputesStatistic,
+    handler: handlers.getQuestDisputesAdminStatistic,
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
@@ -97,7 +98,7 @@ export default [
         }).label('GetQuestDisputesAdminStatisticParams'),
       },
       response: {
-        schema: outputPaginationSchema('questDisputesAdminStatistic', adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticResponse'),
+        schema: outputOkSchema(adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticResponse'),
       },
     },
   },
