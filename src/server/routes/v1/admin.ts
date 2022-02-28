@@ -16,7 +16,8 @@ import {
   adminPasswordSchema,
   adminFirstNameSchema,
   adminWithSecretSchema,
-  outputPaginationSchema, questDisputeReviewSchema,
+  outputPaginationSchema,
+  questDisputeReviewSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -217,14 +218,14 @@ export default[{
   }
 }, {
   method: 'GET',
-  path: '/v1/admin/review',
+  path: '/v1/quest/dispute/admin/reviews',
   handler: handlers.getQuestDisputeAdminReview,
   options: {
     auth: 'jwt-access',
     plugins: getRbacSettings(AdminRole.main),
     id: 'v1.getQuestDisputeReviews',
     tags: ['api', "admin"],
-    description: 'Get questDisputes reviews',
+    description: 'Get quest disputes reviews',
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -232,12 +233,12 @@ export default[{
       }).label('GetQuestDisputesAdminReviewsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewsResponse'),
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewsResponse'),
     },
   },
 }, {
   method: 'GET',
-  path: '/v1/admin/{adminId}/review',
+  path: '/v1/admin/{adminId}/quest/dispute/reviews',
   handler: handlers.getQuestDisputeAdminReview,
   options: {
     auth: 'jwt-access',

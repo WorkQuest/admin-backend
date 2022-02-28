@@ -190,15 +190,14 @@ export async function getQuestDisputeAdminReview(r) {
     as: 'dispute',
   }];
 
-
-  const {count, rows} = await QuestDisputeReview.findAndCountAll({
+  const { count, rows } = await QuestDisputeReview.findAndCountAll({
     where,
     include,
     limit: r.query.limit,
     offset: r.query.offset,
   });
 
-  return output({count, review: rows});
+  return output({ count, review: rows });
 }
 
 export async function getQuestDisputeAdminReviewMe(r) {
