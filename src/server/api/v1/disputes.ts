@@ -1,6 +1,11 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Admin, DisputeStatus, Quest, QuestDispute,} from "@workquest/database-models/lib/models";
+import {
+  DisputeStatus,
+  Quest,
+  QuestDispute,
+} from "@workquest/database-models/lib/models";
+
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
 import saveAdminActions from "../../jobs/saveAdminActions";

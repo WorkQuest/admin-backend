@@ -115,7 +115,7 @@ export default [
         }).label('GetQuestDisputesStatisticQuery'),
       },
       response: {
-        schema: outputPaginationSchema('questDisputesStatistic', adminQuestDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
+        schema: outputPaginationSchema('questDisputesStatistic', adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticResponse'),
       },
     },
   },
@@ -132,10 +132,10 @@ export default [
       validate: {
         params: Joi.object({
           adminId: idSchema.required(),
-        }).label('GetQuestDisputesAdminStatistic'),
+        }).label('GetQuestDisputesAdminStatisticParams'),
       },
       response: {
-        schema: outputPaginationSchema('questDisputesAdminStatistic', adminQuestDisputesStatisticSchema).label('ПetQuestDisputesStatisticResponse'),
+        schema: outputPaginationSchema('questDisputesAdminStatistic', adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticResponse'),
       },
     },
   },

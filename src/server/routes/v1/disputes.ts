@@ -3,14 +3,15 @@ import {getRbacSettings} from "../../utils/auth";
 import * as handlers from "../../api/v1/disputes";
 import {AdminRole} from "@workquest/database-models/lib/models";
 import {
+  adminQuestDisputesStatisticSchema,
   idSchema,
   limitSchema,
   offsetSchema,
   outputOkSchema,
-  questDisputeSchema,
   outputPaginationSchema,
-  questDisputeQuerySchema,
   questDisputeDecisionDescriptionSchema,
+  questDisputeQuerySchema, questDisputeReviewSchema,
+  questDisputeSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{

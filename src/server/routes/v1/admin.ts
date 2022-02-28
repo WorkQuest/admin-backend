@@ -16,7 +16,7 @@ import {
   adminPasswordSchema,
   adminFirstNameSchema,
   adminWithSecretSchema,
-  outputPaginationSchema,
+  outputPaginationSchema, questDisputeReviewSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -215,4 +215,67 @@ export default[{
       schema: emptyOkSchema
     }
   }
-}]
+}, {
+  method: 'GET',
+  path: '/v1/admin/review',
+  handler: handlers.getQuestDisputeAdminReview,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.main),
+    id: 'v1.getQuestDisputeReviews',
+    tags: ['api', "admin"],
+    description: 'Get questDisputes reviews',
+    validate: {
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestDisputesAdminReviewsQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewsResponse'),
+    },
+  },
+}, {
+  method: 'GET',
+  path: '/v1/admin/{adminId}/review',
+  handler: handlers.getQuestDisputeAdminReview,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.main),
+    id: 'v1.getQuestDisputeAdminReview',
+    tags: ['api', "admin"],
+    description: 'Get questDisputes admin review',
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required(),
+      }).label('GetQuestDisputesAdminReviewParams'),
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestDisputesAdminReviewQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewResponse'),
+    },
+  },
+}, {
+  method: 'GET',
+  path: '/v1/admin/review/me',
+  handler: handlers.getQuestDisputeAdminReviewMe,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    id: 'v1.getQuestDisputeAdminReviewMe',
+    tags: ['api', "admin"],
+    description: 'Get questDisputes admin (me) review',
+    validate: {
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetQuestDisputesAdminReviewMeQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('questDisputesAdminReviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewMeResponse'),
+    },
+  },
+},]
