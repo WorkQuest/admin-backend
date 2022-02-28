@@ -3,7 +3,7 @@ import {Proposal, User} from "@workquest/database-models/lib/models";
 import {output} from "../../utils";
 import {searchProposalFields} from "./statistic";
 
-export async function getDaoStatistic(r) {
+export async function getProposals(r) {
   const searchByFirstAndLastNameLiteral = literal(
     `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "author" ` +
     `WHERE "author"."firstName" || ' ' || "author"."lastName" ILIKE :query AND "Proposal"."userId" = "author"."id") THEN 1 ELSE 0 END ) `,

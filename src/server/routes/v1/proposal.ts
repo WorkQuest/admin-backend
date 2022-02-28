@@ -12,40 +12,40 @@ import {AdminRole} from "@workquest/database-models/lib/models";
 export default [
   {
     method: 'GET',
-    path: '/v1/proposal',
-    handler: handlers.getDaoStatistic,
+    path: '/v1/proposals',
+    handler: handlers.getProposals,
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
       id: 'v1.getProposals',
-      tags: ['api', 'statistic'],
-      description: 'Get proposals statistic',
+      tags: ['api', 'proposal'],
+      description: 'Get proposals',
       validate: {
-        query: proposalQuerySchema.label('GetProposalsStatisticQuery'),
+        query: proposalQuerySchema.label('GetProposalsQuery'),
       },
       response: {
-        schema: outputPaginationSchema('proposals', proposalSchema).label('GetProposalsStatisticResponse'),
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetProposalsResponse'),
       },
     },
   },
   {
     method: 'GET',
-    path: '/v1/user/{userId}/proposal',
-    handler: handlers.getDaoStatistic,
+    path: '/v1/user/{userId}/proposals',
+    handler: handlers.getProposals,
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
-      id: 'v1.getUserProposalsStatistic',
-      tags: ['api', 'statistic'],
-      description: 'Get proposals statistic for user',
+      id: 'v1.getUserProposals',
+      tags: ['api', 'proposal'],
+      description: 'Get proposals by user',
       validate: {
         params: Joi.object({
           userId: idSchema.required(),
-        }).label('GetUserProposalsStatisticParams'),
-        query: proposalQuerySchema.label('GetUserProposalsStatisticForUserQuery'),
+        }).label('GetUserProposalsParams'),
+        query: proposalQuerySchema.label('GetUserProposalsByUserQuery'),
       },
       response: {
-        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserProposalsStatisticForUserResponse'),
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserProposalsByUserResponse'),
       },
     },
   },
