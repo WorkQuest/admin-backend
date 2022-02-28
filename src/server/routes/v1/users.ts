@@ -14,7 +14,7 @@ import {
   userSessionsSchema,
   userBlackListSchema,
   outputPaginationSchema,
-  userBlackListReasonSchema,
+  userBlackListReasonSchema, searchSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -109,6 +109,7 @@ export default [{
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       query: Joi.object({
+        q: searchSchema,
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetUsersSessionsQuery'),

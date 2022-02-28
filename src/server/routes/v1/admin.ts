@@ -17,6 +17,7 @@ import {
   adminFirstNameSchema,
   adminWithSecretSchema,
   outputPaginationSchema,
+  questDisputeReviewSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -215,4 +216,4 @@ export default[{
       schema: emptyOkSchema
     }
   }
-}]
+},]

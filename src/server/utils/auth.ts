@@ -1,7 +1,8 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Admin,
+import {
+  Admin,
   AdminSession,
   AdminRole,
 } from "@workquest/database-models/lib/models";

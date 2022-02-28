@@ -1,8 +1,16 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
-import {Admin, DisputeStatus, Quest, QuestDispute,} from "@workquest/database-models/lib/models";
+import {
+  Admin,
+  DisputeStatus,
+  Quest,
+  QuestDispute, QuestDisputeReview, User,
+} from "@workquest/database-models/lib/models";
+
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
+import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findOne({
@@ -44,9 +52,11 @@ export async function takeDisputeToResolve(r) {
 
   await dispute.update({
     status: DisputeStatus.inProgress,
-    acceptedAt: new Date(),
+    acceptedAt: Date.now(),
     assignedAdminId: r.auth.credentials.id,
   });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output(dispute);
 }
@@ -74,11 +84,14 @@ export async function disputeDecide(r) {
 
   await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});
 
-  await Admin.increment('resolvedDisputes', {
-    where: {id: r.auth.credentials.id}, transaction,
-  });
-
   await transaction.commit();
+
+  const resolutionTimeInSeconds: number = (dispute.resolvedAt.getTime() - dispute.acceptedAt.getTime())/1000;
+
+  await incrementAdminDisputeStatisticJob({
+    adminId: dispute.assignedAdminId,
+    resolutionTimeInSeconds,
+  });
 
   r.server.app.broker.sendQuestNotification({
     action: QuestNotificationActions.DisputeDecision,
@@ -86,5 +99,57 @@ export async function disputeDecide(r) {
     data: dispute
   });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output(await QuestDispute.findByPk(dispute.id));
+}
+
+export async function getQuestDisputeReviews(r) {
+  const where = {
+    ...(r.params.adminId && { toAdminId: r.params.adminId }),
+    ...(r.params.disputeId && { disputeId: r.params.disputeId }),
+  };
+
+  const include = [{
+    model: User,
+    as: 'fromUser',
+  }, {
+    model: Admin,
+    as: 'toAdmin',
+  }, {
+    model: QuestDispute,
+    where: {...r.params.questId && { questId: r.params.questId } },
+    as: 'dispute',
+  }];
+
+  const { count, rows } = await QuestDisputeReview.findAndCountAll({
+    where,
+    include,
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count, reviews: rows });
+}
+
+export async function getQuestDisputeReviewsForAdminMe(r) {
+  const include = [{
+    model: User,
+    as: 'fromUser',
+  }, {
+    model: Admin,
+    as: 'toAdmin',
+  }, {
+    model: QuestDispute,
+    as: 'dispute',
+  }];
+
+  const {count, rows} = await QuestDisputeReview.findAndCountAll({
+    include,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { toAdminId: r.auth.credentials.id },
+  });
+
+  return output({ count, reviews: rows });
 }

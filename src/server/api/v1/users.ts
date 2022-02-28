@@ -1,4 +1,4 @@
-import {Op} from 'sequelize'
+import {literal, Op} from 'sequelize'
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {UserController} from "../../controllers/controller.user";
@@ -17,6 +17,7 @@ import {
   UserStatus
 } from "@workquest/database-models/lib/models";
 import {addJob} from "../../utils/scheduler";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
@@ -59,8 +60,27 @@ export async function getUserSessions(r) {
 }
 
 export async function getUsersSessions(r) {
+  const searchByFirstAndLastNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "user" ` +
+    `WHERE ("user"."firstName" || ' ' || "user"."lastName" ILIKE '%${r.query.q}%' OR "user"."role" ILIKE '%${r.query.q}%') AND "Session"."userId" = "user"."id") THEN 1 ELSE 0 END ) `,
+  );
+  const replacements = {};
+
+  const where = {};
+
+  const include = [{
+    model: User,
+    as: 'user'
+  }];
+
+  if (r.query.q) {
+    where[Op.or] = searchByFirstAndLastNameLiteral;
+    replacements['query'] = `%${r.query.q}%`;
+  }
+
   const { rows, count } = await Session.findAndCountAll({
-    include: { model: User, as: 'user' },
+    where,
+    include,
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
@@ -143,6 +163,8 @@ export async function changeUserRole(r) {
     role: user.role,
   });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output();
 }
 
@@ -152,6 +174,8 @@ export async function changePhone(r) {
   if (!user) {
     return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
   }
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   await user.update({
     phone: null,
@@ -177,6 +201,8 @@ export async function blockUser(r) {
   });
 
   await user.update({ status: UserStatus.Blocked });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -207,6 +233,8 @@ export async function unblockUser(r) {
     unblockedByAdminId: admin.id,
     unblockedAt: Date.now(),
   });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }

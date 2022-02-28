@@ -4,8 +4,9 @@ import {error, output} from "../../utils";
 import {
   Admin,
   AdminRole,
-  AdminSession, Session, User,
+  AdminSession, QuestDispute, QuestDisputeReview, User,
 } from "@workquest/database-models/lib/models"
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
@@ -76,6 +77,8 @@ export async function createAdminAccount(r) {
     },
   });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output({
     admin: await Admin.findByPk(newAdmin.id),
     secret: base32,
@@ -94,6 +97,8 @@ export async function deleteAdminAccount(r) {
 
   await admin.destroy();
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output();
 }
 
@@ -108,6 +113,8 @@ export async function activateAdminAccount(r) {
   }
 
   await admin.update({ isActive: true });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -126,6 +133,8 @@ export async function deactivateAdminAccount(r) {
     isActive: false
   });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output();
 }
 
@@ -141,6 +150,8 @@ export async function changeEmail(r) {
   }
 
   await admin.update({ email: r.payload.email });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -158,5 +169,8 @@ export async function changePassword(r) {
 
   await admin.update({ password: r.payload.newPassword });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output();
 }
+
