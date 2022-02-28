@@ -7,6 +7,7 @@ import profile from "./profile";
 import storageService from "./storageService";
 import skillFilters from "./skillFilters";
 import statistic from "./statistic";
+import proposal from "./proposal";
 
 export default [
   ...auth,
@@ -18,4 +19,5 @@ export default [
   ...storageService,
   ...skillFilters,
   ...statistic,
+  ...proposal,
 ];
