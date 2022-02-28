@@ -21,10 +21,10 @@ export default [
       tags: ['api', 'statistic'],
       description: 'Get dao proposals statistic',
       validate: {
-        query: proposalQuerySchema.label('GetDaoStatisticQuery'),
+        query: proposalQuerySchema.label('GetDaoProposalsStatisticQuery'),
       },
       response: {
-        schema: outputPaginationSchema('proposals', proposalSchema).label('GetDaoStatisticResponse'),
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetDaoProposalsStatisticResponse'),
       },
     },
   },
@@ -35,17 +35,17 @@ export default [
     options: {
       auth: 'jwt-access',
       plugins: getRbacSettings(AdminRole.main),
-      id: 'v1.getUserDaoStatistic',
+      id: 'v1.getUserDaoProposalsStatistic',
       tags: ['api', 'statistic'],
       description: 'Get dao proposals statistic for user',
       validate: {
         params: Joi.object({
           userId: idSchema.required(),
-        }).label('GetUserDaoStatisticParams'),
-        query: proposalQuerySchema.label('GetUserDaoStatisticQuery'),
+        }).label('GetUserDaoProposalsStatisticParams'),
+        query: proposalQuerySchema.label('GetUserDaoProposalsStatisticForUserQuery'),
       },
       response: {
-        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserDaoStatisticResponse'),
+        schema: outputPaginationSchema('proposals', proposalSchema).label('GetUserDaoProposalsStatisticForUserResponse'),
       },
     },
   },
