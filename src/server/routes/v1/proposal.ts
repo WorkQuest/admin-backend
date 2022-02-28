@@ -19,7 +19,7 @@ export default [
       plugins: getRbacSettings(AdminRole.main),
       id: 'v1.getDaoStatistic',
       tags: ['api', 'statistic'],
-      description: 'Get dao statistic',
+      description: 'Get dao proposals statistic',
       validate: {
         query: proposalQuerySchema.label('GetDaoStatisticQuery'),
       },
@@ -37,7 +37,7 @@ export default [
       plugins: getRbacSettings(AdminRole.main),
       id: 'v1.getUserDaoStatistic',
       tags: ['api', 'statistic'],
-      description: 'Get dao statistic for user',
+      description: 'Get dao proposals statistic for user',
       validate: {
         params: Joi.object({
           userId: idSchema.required(),

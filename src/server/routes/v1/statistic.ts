@@ -107,7 +107,7 @@ export default [
     handler: handlers.getQuestDisputesAdminStatisticMe,
     options: {
       auth: 'jwt-access',
-      plugins: getRbacSettings(AdminRole.main),
+      plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
       id: 'v1.getQuestDisputesAdminStatisticMe',
       tags: ['api', 'statistic'],
       description: 'Get questDisputes admin (me) statistic',
