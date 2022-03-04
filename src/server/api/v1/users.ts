@@ -168,21 +168,6 @@ export async function changeUserRole(r) {
   return output();
 }
 
-export async function changePhone(r) {
-  const user = await User.findByPk(r.params.userId);
-
-  if (!user) {
-    return error(Errors.NotFound, 'User is not found', {userId: r.params.userId});
-  }
-
-  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
-
-  await user.update({
-    phone: null,
-    tempPhone: r.payload.newPhone,
-  });
-}
-
 export async function blockUser(r) {
   const user = await User.findByPk(r.params.userId);
 
