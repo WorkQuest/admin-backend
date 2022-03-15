@@ -25,11 +25,10 @@ export function getGeo(request) {
   }
   let ip = getRealIp(request);
   let geo = geoip.lookup(ip);
-  let place = {
-    country: geo.country,
-    city: geo.city
+  return {
+    country: geo ? geo.country : null,
+    city: geo ? geo.city : null,
   }
-  return place
 }
 
 export function getDevice(request): string {
