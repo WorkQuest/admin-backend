@@ -10,9 +10,14 @@ export function getUUID(): string {
 }
 
 export function getRealIp(request): string {
-  return request.headers['X-Forwarded-For']
-    ? request.headers['X-Forwarded-For']
-    : request.info.remoteAddress;
+  if (request.headers['x-forwarded-for']) {
+    return request.headers['x-forwarded-for'];
+  }
+  if (request.headers['X-Forwarded-For']) {
+    return request.headers['X-Forwarded-For'];
+  }
+
+  return request.info.remoteAddress;
 }
 
 //DO NOT WORK WITH LOCAL IP
