@@ -23,6 +23,9 @@ export async function login(r) {
   const session = await AdminSession.create({
     adminId: admin.id,
     invalidating: false,
+    place: getGeo(r),
+    ip: getRealIp(r),
+    device: getDevice(r),
   });
 
   await saveAdminActionsMetadataJob({ adminId: admin.id, HTTPVerb: r.method, path: r.path });
