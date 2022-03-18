@@ -193,7 +193,6 @@ export async function blockUser(r) {
 }
 
 export async function unblockUser(r) {
-  const admin: Admin = r.auth.credentials.id;
   const user = await User.findByPk(r.params.userId);
 
   if (!user) {
@@ -215,7 +214,7 @@ export async function unblockUser(r) {
 
   await userBlackList.update({
     status: BlackListStatus.Unblocked,
-    unblockedByAdminId: admin.id,
+    unblockedByAdminId: r.auth.credentials.id,
     unblockedAt: Date.now(),
   });
 
@@ -227,6 +226,13 @@ export async function unblockUser(r) {
 export async function getUserBlockingHistory(r) {
   const { rows, count } = await UserBlackList.findAndCountAll({
     where: { userId: r.params.userId },
+    include: [{
+      model: Admin,
+      as: 'blockedByAdmin',
+    }, {
+      model: Admin,
+      as: 'unblockedByAdmin'
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
