@@ -5,7 +5,6 @@ import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
 import {
   User,
-  Admin,
   Media,
   QuestDispute,
   DisputeStatus,
@@ -120,7 +119,6 @@ export async function deleteQuest(r) {
 
 export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  const questController = new QuestController(quest);
 
   if (quest.status === QuestStatus.Blocked) {
     return error(Errors.InvalidStatus, 'Quest already blocked', {});
@@ -141,7 +139,6 @@ export async function blockQuest(r) {
 }
 
 export async function unblockQuest(r) {
-  const admin: Admin = r.auth.credentials.id;
   const quest = await Quest.findByPk(r.params.questId);
 
   if (!quest) {
@@ -162,7 +159,7 @@ export async function unblockQuest(r) {
 
   await quesBlackList.update({
     status: BlackListStatus.Unblocked,
-    unblockedByAdminId: admin.id,
+    unblockedByAdminId: r.auth.credentials.id,
     unblockedAt: Date.now(),
   });
 
