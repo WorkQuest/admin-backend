@@ -120,7 +120,6 @@ export async function deleteQuest(r) {
 
 export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  const questController = new QuestController(quest);
 
   if (quest.status === QuestStatus.Blocked) {
     return error(Errors.InvalidStatus, 'Quest already blocked', {});
