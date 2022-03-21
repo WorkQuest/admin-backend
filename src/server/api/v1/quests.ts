@@ -5,6 +5,7 @@ import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
 import {
   User,
+  Admin,
   Media,
   QuestDispute,
   DisputeStatus,
@@ -171,6 +172,13 @@ export async function unblockQuest(r) {
 export async function getQuestBlockingHistory(r) {
   const { rows, count } = await QuestBlackList.findAndCountAll({
     where: { questId: r.params.questId },
+    include: [{
+      model: Admin,
+      as: 'blockedByAdmin',
+    }, {
+      model: Admin,
+      as: 'unblockedByAdmin',
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
