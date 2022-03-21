@@ -40,7 +40,7 @@ jobs:
     needs: [build]
     steps:
       - name: Copy code files to container
-        uses: actions/checkout@v
+        uses: actions/checkout@v3
 
       - name: Environment preparation
         run: |
