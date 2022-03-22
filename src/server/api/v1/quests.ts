@@ -120,7 +120,6 @@ export async function deleteQuest(r) {
 
 export async function blockQuest(r) {
   const quest = await Quest.findByPk(r.params.questId);
-  const questController = new QuestController(quest);
 
   if (quest.status === QuestStatus.Blocked) {
     return error(Errors.InvalidStatus, 'Quest already blocked', {});
@@ -141,7 +140,6 @@ export async function blockQuest(r) {
 }
 
 export async function unblockQuest(r) {
-  const admin: Admin = r.auth.credentials.id;
   const quest = await Quest.findByPk(r.params.questId);
 
   if (!quest) {
@@ -162,7 +160,7 @@ export async function unblockQuest(r) {
 
   await quesBlackList.update({
     status: BlackListStatus.Unblocked,
-    unblockedByAdminId: admin.id,
+    unblockedByAdminId: r.auth.credentials.id,
     unblockedAt: Date.now(),
   });
 
@@ -174,6 +172,13 @@ export async function unblockQuest(r) {
 export async function getQuestBlockingHistory(r) {
   const { rows, count } = await QuestBlackList.findAndCountAll({
     where: { questId: r.params.questId },
+    include: [{
+      model: Admin,
+      as: 'blockedByAdmin',
+    }, {
+      model: Admin,
+      as: 'unblockedByAdmin',
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],
