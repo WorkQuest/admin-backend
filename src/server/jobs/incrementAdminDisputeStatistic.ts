@@ -22,8 +22,6 @@ export default async function incrementAdminDisputeStatistic(payload: adminDispu
     }
   });
 
-  console.log(questDisputeStatistic)
-
   if (!isCreated) {
     const averageResolutionTimeInSeconds = (questDisputeStatistic.averageResolutionTimeInSeconds *
        questDisputeStatistic.resolvedQuestDisputes + payload.resolutionTimeInSeconds) / (questDisputeStatistic.resolvedQuestDisputes + 1);

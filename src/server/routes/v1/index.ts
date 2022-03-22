@@ -8,6 +8,7 @@ import storageService from "./storageService";
 import skillFilters from "./skillFilters";
 import statistic from "./statistic";
 import proposal from "./proposal";
+import chat from "./chat";
 
 export default [
   ...auth,
@@ -20,4 +21,5 @@ export default [
   ...skillFilters,
   ...statistic,
   ...proposal,
+  ...chat,
 ];
