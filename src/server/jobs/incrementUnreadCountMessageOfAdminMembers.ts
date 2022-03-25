@@ -1,10 +1,10 @@
 import { addJob } from '../utils/scheduler';
-import { ChatMemberData } from '@workquest/database-models/lib/models';
+import {ChatMember, ChatMemberData} from '@workquest/database-models/lib/models';
 import { literal, Op } from "sequelize";
 
 export type UnreadMessageIncrementPayload = {
   chatId: string;
-  notifierMemberId?: string;
+  notifierMemberId?: string[];
 };
 
 export async function incrementUnreadCountMessageOfAdminMembersJob(payload: UnreadMessageIncrementPayload) {
@@ -12,13 +12,17 @@ export async function incrementUnreadCountMessageOfAdminMembersJob(payload: Unre
 }
 
 export default async function incrementUnreadCountMessageOfAdminMembers(payload: UnreadMessageIncrementPayload) {
-  const chatMemberIncrementLiteral = literal(
-    `(1 = (CASE WHEN EXISTS (SELECT "chatId" FROM "ChatMemberData" INNER JOIN "ChatMembers" ON "ChatMemberData"."chatMemberId" = "ChatMembers"."id" WHERE "ChatMembers"."chatId" = '${payload.chatId}') THEN 1 ELSE 0 END))`
-  );
-  await ChatMemberData.increment('unreadCountMessages', {
-    where: {
-      ...(payload.notifierMemberId && { chatMemberId: { [Op.ne]: payload.notifierMemberId } }),
-      chatMemberIncrementLiteral
-    }
+    const chatMemberData = await ChatMemberData.findAll({
+      where: { chatMemberId: { [Op.notIn]: payload.notifierMemberId } },
+      include: [{
+        model: ChatMember,
+        where: { chatId: payload.chatId },
+        as: 'chatMember',
+      }]
+    });
+
+  chatMemberData.map(async data => {
+    await data.update({ unreadCountMessages: data.unreadCountMessages + 1 })
   });
+
 }
