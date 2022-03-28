@@ -3,7 +3,7 @@ import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {AdminController} from "../../controllers/controller.admin";
 import {MediaController} from "../../controllers/controller.media";
-import {ChatController} from "../../controllers/controller.chat";
+import {ChatController} from "../../controllers/chat/controller.chat";
 import {
   Chat,
   ChatData,
@@ -11,10 +11,11 @@ import {
   ChatType, GroupChat, InfoMessage, MemberStatus,
   Message,
   MessageAction,
-  QuestChatStatuses
+  QuestChatStatuses, SenderMessageStatus, StarredMessage
 } from "@workquest/database-models/lib/models";
 import {markMessageAsReadJob} from "../../jobs/markMessageAsRead";
 import {updateCountUnreadAdminChatsJob} from "../../jobs/updateCountUnreadAdminChats";
+import {updateCountUnreadAdminMessagesJob} from "../../jobs/updateCountUnreadAdminMessages"
 import {resetUnreadCountMessagesOfAdminMemberJob} from "../../jobs/resetUnreadCountMessagesOfAdminMember";
 import {incrementUnreadCountMessageOfAdminMembersJob} from "../../jobs/incrementUnreadCountMessageOfAdminMembers";
 
@@ -281,6 +282,12 @@ export async function addAdminsInGroupChat(r) {
     adminIds: [r.auth.credentials.id, ...adminIdsInChatWithoutSender],
   });
 
+  await markMessageAsReadJob({
+    lastUnreadMessage: { id: lastMessage.id, number: lastMessage.number },
+    chatId: r.params.chatId,
+    senderMemberId: chat.meMember.id,
+  });
+
   // r.server.app.broker.sendChatNotification({
   //   action: ChatNotificationActions.groupChatAddUser,
   //   recipients: userIdsInChatWithoutSender,
@@ -290,7 +297,7 @@ export async function addAdminsInGroupChat(r) {
   return output(messagesResult);
 }
 
-export async function removeUserFromGroupChat(r) {
+export async function removeAdminFromGroupChat(r) {
   await AdminController.adminMustExists(r.params.adminId);
 
   const chat = await Chat.findByPk(r.params.chatId, {
@@ -358,6 +365,12 @@ export async function removeUserFromGroupChat(r) {
     adminIds: [r.auth.credentials.id, ...adminIdsWithoutSender],
   });
 
+  await markMessageAsReadJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: r.params.chatId,
+    senderMemberId: chat.meMember.id,
+  });
+
   // r.server.app.broker.sendChatNotification({
   //   action: ChatNotificationActions.groupChatDeleteUser,
   //   recipients: userIdsWithoutSender,
@@ -365,4 +378,207 @@ export async function removeUserFromGroupChat(r) {
   // });
 
   return output(message);
+}
+
+export async function leaveFromGroupChat(r) {
+  const chat = await Chat.findByPk(r.params.chatId, {
+    include: [{
+      model: GroupChat,
+      as: 'groupChat',
+    }, {
+      model: ChatData,
+      as: 'chatData',
+    }, {
+      model: ChatMember,
+      as: 'members',
+      where: {
+        adminId: { [Op.ne]: r.auth.credentials.id }
+      }
+    }, {
+      model: ChatMember,
+      as: 'meMember',
+      where: { adminId: r.auth.credentials.id },
+    }]
+  });
+  const chatController = new ChatController(chat);
+
+  if (chat.groupChat.ownerMemberId === chat.meMember.id) {
+    return error(Errors.Forbidden, 'Admin is chat owner', {});
+  }
+
+  await chatController
+    .chatMustHaveType(ChatType.group)
+    .chatMustHaveMember(r.auth.credentials.id);
+
+  const transaction = await r.server.app.db.transaction();
+
+  const messageNumber = chat.chatData.lastMessage.number + 1;
+  const message = await chatController.createInfoMessage(chatController.chat.meMember.id, chatController.chat.id, messageNumber, chatController.chat.meMember.id, MessageAction.groupChatLeaveUser, transaction);
+
+  await chatController.chat.chatData.update({ lastMessageId: message.id }, { transaction });
+
+  await chatController.createChatMemberDeletionData(chat.meMember.id, message.id, message.number, transaction);
+
+  await transaction.commit();
+
+  const result = await Message.findByPk(message.id);
+  const membersWithoutSender = await ChatMember.scope('userIdsOnly').findAll({
+    where: { chatId: chat.groupChat.id, adminId: { [Op.ne]: r.auth.credentials.id } },
+  });
+  const adminIdsWithoutSender = membersWithoutSender.map((member) => member.adminId);
+
+  await incrementUnreadCountMessageOfAdminMembersJob({
+    chatId: chat.id,
+    notifierMemberId: [chat.meMember.id],
+  });
+
+  await updateCountUnreadAdminChatsJob({
+    adminIds: [r.auth.credentials.id, ...adminIdsWithoutSender],
+  });
+
+  await markMessageAsReadJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: r.params.chatId,
+    senderMemberId: chat.meMember.id,
+  });
+
+  // r.server.app.broker.sendChatNotification({
+  //   action: ChatNotificationActions.groupChatLeaveUser,
+  //   recipients: chat.members,//userIdsWithoutSender,
+  //   data: result,
+  // });
+
+  return output(result);
+}
+
+export async function setMessagesAsRead(r) {
+  const chat = await Chat.findByPk(r.params.chatId, {
+    include: [{
+      model: ChatMember,
+      as: 'meMember',
+      where: { adminId: r.auth.credentials.id }
+    }]
+  });
+  const chatController = new ChatController(chat);
+
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  const message = await Message.findByPk(r.payload.messageId);
+
+  if (!message) {
+    return error(Errors.NotFound, 'Message is not found', {});
+  }
+
+  const otherSenders = await Message.unscoped().findAll({
+    attributes: ['senderMemberId'],
+    where: {
+      chatId: chatController.chat.id,
+      senderMemberId: { [Op.ne]: chat.meMember.id },
+      senderStatus: SenderMessageStatus.unread,
+      number: { [Op.gte]: message.number },
+    },
+    group: ['senderMemberId'],
+  });
+
+  await updateCountUnreadAdminMessagesJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: chat.id,
+    readerMemberId: chat.meMember.id,
+  });
+
+  if (otherSenders.length === 0) {
+    return output();
+  }
+
+  await markMessageAsReadJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: r.params.chatId,
+    senderMemberId: chat.meMember.id,
+  });
+
+  await updateCountUnreadAdminChatsJob({
+    adminIds: [r.auth.credentials.id],
+  });
+
+  // r.server.app.broker.sendChatNotification({
+  //   action: ChatNotificationActions.messageReadByRecipient,
+  //   recipients: otherSenders.map((sender) => sender.senderMemberId),
+  //   data: message,
+  // });
+
+  return output();
+}
+
+export async function markMessageStar(r) {
+  const chat = await Chat.findByPk(r.params.chatId);
+
+  const chatController = new ChatController(chat);
+
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  await StarredMessage.findOrCreate({
+    where: {
+      userId: r.auth.credentials.id,
+      messageId: r.params.messageId,
+    },
+    defaults: {
+      userId: r.auth.credentials.id,
+      messageId: r.params.messageId,
+    }
+  });
+
+  return output();
+}
+
+export async function removeStarFromMessage(r) {
+  const starredMessage = await StarredMessage.findOne({
+    where: {
+      messageId: r.params.messageId,
+      userId: r.auth.credentials.id,
+    },
+  });
+
+  if (!starredMessage) {
+    return error(Errors.Forbidden, 'Message or message with star not fount', {});
+  }
+
+  await starredMessage.destroy();
+
+  return output();
+}
+
+export async function markChatStar(r) {
+  const chat = await Chat.findByPk(r.params.chatId);
+  const chatController = new ChatController(chat);
+
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  await StarredChat.findOrCreate({
+    where: {
+      userId: r.auth.credentials.id,
+      chatId: r.params.chatId,
+    },
+    defaults: {
+      userId: r.auth.credentials.id,
+      chatId: r.params.chatId,
+    }
+  });
+
+  return output();
+}
+
+export async function removeStarFromChat(r) {
+  await ChatController.chatMustExists(r.params.chatId);
+
+  //TODO: что делать до звёздочкой, если исключили из чата?
+  //await chat.mustHaveMember(r.auth.credentials.id);
+
+  await StarredChat.destroy({
+    where: {
+      chatId: r.params.chatId,
+      userId: r.auth.credentials.id,
+    },
+  });
+
+  return output();
 }

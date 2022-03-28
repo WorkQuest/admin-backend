@@ -9,8 +9,8 @@ import {
   MemberType,
   Message, MessageAction, MessageType, QuestChat, QuestChatStatuses,
 } from "@workquest/database-models/lib/models";
-import { error } from "../utils";
-import { Errors } from "../utils/errors";
+import { error } from "../../utils";
+import { Errors } from "../../utils/errors";
 import { Op, Transaction } from "sequelize";
 
 abstract class ChatHelper {
