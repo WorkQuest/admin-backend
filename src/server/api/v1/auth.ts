@@ -31,7 +31,7 @@ export async function login(r) {
   await saveAdminActionsMetadataJob({ adminId: admin.id, HTTPVerb: r.method, path: r.path });
 
   return output({
-    ...generateJwt({ id: session.id })
+    ...generateJwt({ id: session.id, adminId: admin.id })
   });
 
 }
@@ -46,7 +46,7 @@ export async function refreshTokens(r) {
   });
 
   const result = {
-    ...generateJwt({ id: newSession.id }),
+    ...generateJwt({ id: newSession.id, adminId: newSession.adminId }),
     userStatus: r.auth.credentials.status,
   };
 
