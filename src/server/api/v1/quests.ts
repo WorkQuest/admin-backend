@@ -82,7 +82,6 @@ export async function editQuest(r) {
   questController.quest = await questController.quest.update({
     price: r.payload.price,
     title: r.payload.title,
-    adType: r.payload.adType,
     priority: r.payload.priority,
     category: r.payload.category,
     workplace: r.payload.workplace,
