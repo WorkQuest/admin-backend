@@ -5,7 +5,19 @@ import {
   idsSchema,
   messageSchema,
   outputOkSchema,
-  messageTextSchema, chatNameSchema, chatSchema, emptyOkSchema,
+  messageTextSchema,
+  chatNameSchema,
+  chatSchema,
+  emptyOkSchema,
+  offsetSchema,
+  limitSchema,
+  messagesWithCountSchema,
+  adminSchema,
+  outputPaginationSchema,
+  chatQuerySchema,
+  chatsForGetWithCountSchema,
+  sortDirectionSchema,
+  messagesForGetWithCountSchema, chatForGetSchema,
 } from '@workquest/database-models/lib/schemes';
 import {removeAdminFromGroupChat} from "../../api/v1/chat";
 
@@ -16,7 +28,7 @@ export default [
     handler: handlers.sendMessageToAdmin,
     options: {
       auth: 'jwt-access',
-      id: 'v1.user.sendMessageToAdmin',
+      id: 'v1.admin.sendMessageToAdmin',
       description: 'Send message to admin',
       tags: ['api', 'chat'],
       validate: {
@@ -78,7 +90,7 @@ export default [
   },
   {
     method: 'POST',
-    path: '/v1/user/me/chat/group/{chatId}/add',
+    path: '/v1/admin/me/chat/group/{chatId}/add',
     handler: handlers.addAdminsInGroupChat,
     options: {
       auth: 'jwt-access',
@@ -100,7 +112,7 @@ export default [
   },
   {
     method: 'DELETE',
-    path: '/v1/user/me/chat/group/{chatId}/remove/{adminId}',
+    path: '/v1/admin/me/chat/group/{chatId}/remove/{adminId}',
     handler: handlers.removeAdminFromGroupChat,
     options: {
       auth: 'jwt-access',
@@ -120,7 +132,7 @@ export default [
   },
   {
     method: 'POST',
-    path: '/v1/user/me/chat/group/{chatId}/leave',
+    path: '/v1/admin/me/chat/group/{chatId}/leave',
     handler: handlers.leaveFromGroupChat,
     options: {
       auth: 'jwt-access',
@@ -161,7 +173,7 @@ export default [
   },
   {
     method: 'POST',
-    path: '/v1/user/me/chat/{chatId}/message/{messageId}/star',
+    path: '/v1/admin/me/chat/{chatId}/message/{messageId}/star',
     handler: handlers.markMessageStar,
     options: {
       auth: 'jwt-access',
@@ -181,7 +193,7 @@ export default [
   },
   {
     method: 'DELETE',
-    path: '/v1/user/me/chat/message/{messageId}/star',
+    path: '/v1/admin/me/chat/message/{messageId}/star',
     handler: handlers.removeStarFromMessage,
     options: {
       auth: 'jwt-access',
@@ -200,7 +212,7 @@ export default [
   },
   {
     method: 'POST',
-    path: '/v1/user/me/chat/{chatId}/star',
+    path: '/v1/admin/me/chat/{chatId}/star',
     handler: handlers.markChatStar,
     options: {
       auth: 'jwt-access',
@@ -219,7 +231,7 @@ export default [
   },
   {
     method: 'DELETE',
-    path: '/v1/user/me/chat/{chatId}/star',
+    path: '/v1/admin/me/chat/{chatId}/star',
     handler: handlers.removeStarFromChat,
     options: {
       auth: 'jwt-access',
@@ -233,6 +245,114 @@ export default [
       },
       response: {
         schema: emptyOkSchema,
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/me/chat/messages/star',
+    handler: handlers.getAdminStarredMessages,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.chat.messages.getStarredMessages',
+      description: 'Get starred messages of the admin',
+      tags: ['api', 'chat'],
+      validate: {
+        query: Joi.object({
+          offset: offsetSchema,
+          limit: limitSchema,
+        }).label('GetStarredMessagesQuery'),
+      },
+      response: {
+        schema: outputOkSchema(messagesWithCountSchema).label('GetAdminStarredMessagesResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/me/chat/group/{chatId}/members',
+    handler: handlers.getChatMembers,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.chat.group.getMembers',
+      description: 'Get members in group chat (only for chat members)',
+      tags: ['api', 'chat'],
+      validate: {
+        params: Joi.object({
+          chatId: idSchema.required(),
+        }).label('GetChatMembersParams'),
+        query: Joi.object({
+          offset: offsetSchema,
+          limit: limitSchema,
+        }).label('GetChatMembersQuery'),
+      },
+      response: {
+        schema: outputPaginationSchema('admins',adminSchema).label('GetChatMembersResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/me/chats',
+    handler: handlers.getAdminChats,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.me.getChats',
+      tags: ['api', 'chat'],
+      description: 'Get all chats',
+      validate: {
+        query: chatQuerySchema,
+      },
+      response: {
+        schema: outputOkSchema(chatsForGetWithCountSchema).label('GetChatsResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/me/chat/{chatId}/messages',
+    handler: handlers.getChatMessages,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.chat.getMessages',
+      tags: ['api', 'chat'],
+      description: 'Get all messages for chat',
+      validate: {
+        params: Joi.object({
+          chatId: idSchema.required(),
+        }).label('GetMessagesParams'),
+        query: Joi.object({
+          starred: Joi.boolean().default(false),
+          offset: offsetSchema,
+          limit: limitSchema,
+          sort: Joi.object({
+            createdAt: sortDirectionSchema.default('DESC'),
+          })
+            .default({ createdAt: 'DESC' })
+            .label('SortMessages'),
+        }).label('GetMessagesQuery'),
+      },
+      response: {
+        schema: outputOkSchema(messagesForGetWithCountSchema).label('GetMessagesResponse'),
+      },
+    },
+  },
+  {
+    method: 'GET',
+    path: '/v1/admin/me/chat/{chatId}',
+    handler: handlers.getAdminChat,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.admin.me.getChat',
+      description: 'Get chat',
+      tags: ['api', 'chat'],
+      validate: {
+        params: Joi.object({
+          chatId: idSchema.required(),
+        }).label('GetAdminChatParams'),
+      },
+      response: {
+        schema: outputOkSchema(chatForGetSchema).label('GetAdminChatResponse'),
       },
     },
   },

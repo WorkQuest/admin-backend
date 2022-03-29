@@ -1,17 +1,22 @@
-import {Op} from "sequelize";
+import {literal, Op} from "sequelize";
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {AdminController} from "../../controllers/controller.admin";
 import {MediaController} from "../../controllers/controller.media";
 import {ChatController} from "../../controllers/chat/controller.chat";
 import {
+  Admin,
   Chat,
   ChatData,
   ChatMember,
-  ChatType, GroupChat, InfoMessage, MemberStatus,
+  ChatMemberDeletionData,
+  ChatType,
+  GroupChat,
+  InfoMessage,
+  MemberStatus,
   Message,
   MessageAction,
-  QuestChatStatuses, SenderMessageStatus, StarredMessage
+  QuestChatStatuses, SenderMessageStatus, StarredChat, StarredMessage
 } from "@workquest/database-models/lib/models";
 import {markMessageAsReadJob} from "../../jobs/markMessageAsRead";
 import {updateCountUnreadAdminChatsJob} from "../../jobs/updateCountUnreadAdminChats";
@@ -19,6 +24,7 @@ import {updateCountUnreadAdminMessagesJob} from "../../jobs/updateCountUnreadAdm
 import {resetUnreadCountMessagesOfAdminMemberJob} from "../../jobs/resetUnreadCountMessagesOfAdminMember";
 import {incrementUnreadCountMessageOfAdminMembersJob} from "../../jobs/incrementUnreadCountMessageOfAdminMembers";
 
+export const searchChatFields = ['name'];
 
 export async function sendMessageToAdmin(r) {
   if (r.params.adminId === r.auth.credentials.id) {
@@ -518,11 +524,11 @@ export async function markMessageStar(r) {
 
   await StarredMessage.findOrCreate({
     where: {
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
       messageId: r.params.messageId,
     },
     defaults: {
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
       messageId: r.params.messageId,
     }
   });
@@ -534,7 +540,7 @@ export async function removeStarFromMessage(r) {
   const starredMessage = await StarredMessage.findOne({
     where: {
       messageId: r.params.messageId,
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
     },
   });
 
@@ -555,11 +561,11 @@ export async function markChatStar(r) {
 
   await StarredChat.findOrCreate({
     where: {
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
       chatId: r.params.chatId,
     },
     defaults: {
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
       chatId: r.params.chatId,
     }
   });
@@ -570,15 +576,200 @@ export async function markChatStar(r) {
 export async function removeStarFromChat(r) {
   await ChatController.chatMustExists(r.params.chatId);
 
-  //TODO: что делать до звёздочкой, если исключили из чата?
-  //await chat.mustHaveMember(r.auth.credentials.id);
-
   await StarredChat.destroy({
     where: {
       chatId: r.params.chatId,
-      userId: r.auth.credentials.id,
+      adminId: r.auth.credentials.id,
     },
   });
 
   return output();
+}
+
+export async function getAdminStarredMessages(r) {
+  const { count, rows } = await Message.findAndCountAll({
+    distinct: true,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    include: [
+      {
+        model: StarredMessage,
+        as: 'star',
+        where: { adminId: r.auth.credentials.id },
+        required: true,
+      },
+      {
+        model: Chat.unscoped(),
+        as: 'chat',
+      },
+    ],
+  });
+
+  return output({ count, messages: rows });
+}
+
+export async function getChatMembers(r) {
+  const exceptDeletedAdminsLiteral = literal(
+    '(1 = (CASE WHEN EXISTS (SELECT "chatMemberId" FROM "ChatMemberDeletionData" INNER JOIN "ChatMembers" ON "Admin"."id" = "ChatMembers"."adminId" WHERE "ChatMemberDeletionData"."chatMemberId" = "ChatMembers"."id") THEN 0 ELSE 1 END))'
+  );
+
+  const where = {};
+  where[Op.or] = exceptDeletedAdminsLiteral;
+
+  const chat = await Chat.findByPk(r.params.chatId);
+  const chatController = new ChatController(chat);
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  const { count, rows } = await Admin.findAndCountAll({
+    include: [
+      {
+        model: ChatMember,
+        attributes: [],
+        as: 'chatMember',
+        where: { chatId: chat.id },
+        include: [{
+          model: ChatMemberDeletionData,
+          as: 'chatMemberDeletionData'
+        }]
+      },
+    ],
+    where,
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count, members: rows });
+}
+
+export async function getAdminChats(r) {
+  const searchByQuestNameLiteral = literal(
+    `(SELECT "title" FROM "Quests" WHERE "id" = ` + `(SELECT "questId" FROM "QuestChats" WHERE "chatId" = "Chat"."id")) ` + `ILIKE :query`,
+  );
+  const searchByFirstAndLastNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Admins" as "adminMember" ` +
+    `INNER JOIN "ChatMembers" AS "member" ON "adminMember"."id" = "member"."adminId" AND "member"."chatId" = "Chat"."id" ` +
+    `WHERE "adminMember"."firstName" || ' ' || "adminMember"."lastName" ILIKE :query AND "adminMember"."id" <> :searcherId) THEN 1 ELSE 0 END ) `,
+  );
+
+  /**TODO: попытаться сократить запрос*/
+  const orderByMessageDateLiteral = literal(
+    '(CASE WHEN EXISTS (SELECT "Messages"."createdAt" FROM "ChatMemberDeletionData" INNER JOIN "Messages" ON "beforeDeletionMessageId" = "Messages"."id" ' +
+    'INNER JOIN "ChatMembers" ON "ChatMemberDeletionData"."beforeDeletionMessageId" = "ChatMembers"."id" WHERE "ChatMembers"."chatId" = "Chat"."id") ' +
+    'THEN (SELECT "Messages"."createdAt" FROM "ChatMemberDeletionData" INNER JOIN "Messages" ON "beforeDeletionMessageId" = "Messages"."id" INNER JOIN "ChatMembers" ON "ChatMemberDeletionData"."beforeDeletionMessageId" = "ChatMembers"."id" WHERE "ChatMembers"."chatId" = "Chat"."id") ' +
+    'ELSE (SELECT "Messages"."createdAt" FROM "ChatData" INNER JOIN "Messages" ON "lastMessageId" = "Messages"."id" WHERE "ChatData"."chatId" = "Chat"."id") END)'
+  );
+
+  const where = {};
+  const replacements = {};
+
+  const include: any[] = [{
+    model: ChatMember,
+    where: { adminId: r.auth.credentials.id },
+    include: {
+      model: ChatMemberDeletionData,
+      as: 'chatMemberDeletionData',
+      include: [{
+        model: Message.unscoped(),
+        as: 'beforeDeletionMessage'
+      }]
+    },
+    required: true,
+    as: 'meMember',
+  }, {
+    model: StarredChat,
+    where: { adminId: r.auth.credentials.id },
+    as: 'star',
+    required: r.query.starred,
+  }, {
+    model: ChatData,
+    as: 'chatData',
+    include: [{
+      model: Message,
+      as: 'lastMessage'
+    }]
+  }
+  ];
+
+  if (r.query.q) {
+    where[Op.or] = searchChatFields.map(field => ({
+      [field]: { [Op.iLike]: `%${r.query.q}%` }
+    }));
+
+    where[Op.or].push(searchByQuestNameLiteral, searchByFirstAndLastNameLiteral);
+
+    replacements['query'] = `%${r.query.q}%`;
+    replacements['searcherId'] = r.auth.credentials.id;
+  }
+
+  const { count, rows } = await Chat.findAndCountAll({
+    where,
+    include,
+    replacements,
+    distinct: true,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [[orderByMessageDateLiteral, r.query.sort.lastMessageDate]],
+  });
+
+  return output({ count, chats: rows });
+}
+
+export async function getChatMessages(r) {
+  const chat = await Chat.findByPk(r.params.chatId, {
+    include: {
+      model: ChatMember,
+      where: { adminId: r.auth.credentials.id },
+      include: [{
+        model: ChatMemberDeletionData,
+        include: [{
+          model: Message.unscoped(),
+          as: 'beforeDeletionMessage'
+        }],
+        as: 'chatMemberDeletionData'
+      }],
+      required: false,
+      as: 'meMember',
+    },
+  });
+  const chatController = new ChatController(chat);
+
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  const where = {
+    chatId: chat.id,
+    ...(chat.meMember.chatMemberDeletionData && {createdAt: {[Op.lte]: chat.meMember.chatMemberDeletionData.beforeDeletionMessage.createdAt}})
+  }
+
+  const { count, rows } = await Message.findAndCountAll({
+    where,
+    include: [
+      {
+        model: StarredMessage,
+        as: 'star',
+        where: { adminId: r.auth.credentials.id },
+        required: r.query.starred,
+      },
+    ],
+    distinct: true,
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [['createdAt', r.query.sort.createdAt]],
+  });
+
+  return output({ count, messages: rows, chat });
+}
+
+export async function getAdminChat(r) {
+  const chat = await Chat.findByPk(r.params.chatId, {
+    include: {
+      model: StarredChat,
+      as: 'star',
+      required: false,
+    },
+  });
+  const chatController = new ChatController(chat);
+
+  await chatController.chatMustHaveMember(r.auth.credentials.id);
+
+  return output(chat);
 }
