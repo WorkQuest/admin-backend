@@ -1,16 +1,23 @@
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {
+  Chat,
+  User,
   Admin,
-  DisputeStatus,
   Quest,
-  QuestDispute, QuestDisputeReview, User,
+  QuestDispute,
+  DisputeStatus,
+  QuestDisputeReview, ChatMember, QuestChat, MessageAction, ChatData, GroupChat,
 } from "@workquest/database-models/lib/models";
-
 import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
 import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
+import {ChatController} from "../../controllers/chat/controller.chat";
+import {addJob} from "../../utils/scheduler";
+import {updateCountUnreadAdminChatsJob} from "../../jobs/updateCountUnreadAdminChats";
+import {incrementUnreadCountMessageOfAdminMembersJob} from "../../jobs/incrementUnreadCountMessageOfAdminMembers";
+import {markMessageAsReadJob} from "../../jobs/markMessageAsRead";
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findOne({
@@ -50,15 +57,84 @@ export async function takeDisputeToResolve(r) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
+  const transaction = await r.server.app.db.transaction();
+
+
   await dispute.update({
     status: DisputeStatus.inProgress,
     acceptedAt: Date.now(),
     assignedAdminId: r.auth.credentials.id,
+  }, { transaction });
+
+  const questChat = await QuestChat.findOne({
+    where: {
+      questId: dispute.questId,
+    },
+    include: [{
+      model: Quest,
+      as: 'quest',
+    }, {
+      model: ChatMember,
+      as: 'employer',
+    }, {
+      model: ChatMember,
+      as: 'worker',
+    }, {
+      model: Chat,
+      as: 'chat',
+      include: [{
+        model: ChatData,
+        as: 'chatData'
+      }]
+    }],
+    transaction
+  });
+
+  const chatController = new ChatController(questChat.chat);
+
+  const newMember = await chatController.createChatMembers([r.auth.credentials.id], questChat.chatId, transaction);
+
+  const messageNumber = chatController.chat.chatData.lastMessage.number + 1;
+
+  const message = await chatController.createInfoMessage(newMember[0].id, chatController.chat.id, messageNumber, newMember[0].id, MessageAction.groupChatAddUser, transaction);
+
+  await chatController.createChatMembersData(newMember, newMember[0].id, message, transaction);
+
+  await questChat.chat.chatData.update({ lastMessageId: message.id }, { transaction } );
+
+  await questChat.update({ adminMemberId: newMember[0].id });
+
+  await transaction.commit();
+
+  await addJob('incrementUnreadCountMessageOfMembersJob',{
+    chatId: questChat.chat.id,
+    notifierMemberId: newMember, //admin adds in chat by itself
+  });
+
+  await addJob('updateCountUnreadAdminChatsJob',{
+    userIds: [questChat.employerMemberId, questChat.workerMemberId],
+  });
+
+  await addJob('resetUnreadCountMessagesOfMemberJob',{
+    chatId: questChat.chat.id,
+    lastReadMessageId: message.id,
+    memberId: newMember[0].id,
+    lastReadMessageNumber: message.number,
+  });
+
+  await addJob('setMessageAsReadJob',{
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: r.params.chatId,
+    senderMemberId: newMember[0].id,
+  });
+
+  await updateCountUnreadAdminChatsJob({
+    adminIds: [r.auth.credentials.id],
   });
 
   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
-  return output(dispute);
+  return output(questChat); //dispute
 }
 
 export async function disputeDecide(r) {
@@ -76,15 +152,74 @@ export async function disputeDecide(r) {
 
   const transaction = await r.server.app.db.transaction();
 
+  const questChat = await QuestChat.findOne({
+    where: {
+      questId: dispute.questId,
+    },
+    include: [{
+      model: Quest,
+      as: 'quest',
+    }, {
+      model: ChatMember,
+      as: 'employer',
+    }, {
+      model: ChatMember,
+      as: 'worker',
+    }, {
+      model: ChatMember,
+      as: 'admin',
+    }, {
+      model: Chat,
+      as: 'chat',
+      include: [{
+        model: ChatData,
+        as: 'chatData'
+      }]
+    }],
+    transaction
+  });
+
+  const chatController = new ChatController(questChat.chat);
+
   await dispute.update({
     resolvedAt: Date.now(),
     status: DisputeStatus.closed,
     decisionDescription: r.payload.decisionDescription,
   }, {transaction});
 
-  await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});
+  await Quest.update({ status: dispute.openOnQuestStatus }, { where: { id: dispute.questId }, transaction });
+
+  const messageNumber = questChat.chat.chatData.lastMessage.number + 1;
+
+  const message = await chatController.createInfoMessage(questChat.admin.id, chatController.chat.id, messageNumber, questChat.admin.id, MessageAction.groupChatDeleteUser, transaction);
+
+  await questChat.chat.chatData.update({ lastMessageId: message.id }, { transaction });
+
+  await chatController.createChatMemberDeletionData(questChat.admin.id, message.id, message.number, transaction);
 
   await transaction.commit();
+
+  await addJob('resetUnreadCountMessagesOfMemberJob', {
+    chatId: questChat.chat.id,
+    lastReadMessageId: message.id,
+    memberId: questChat.admin.id,
+    lastReadMessageNumber: message.number,
+  });
+
+  await addJob('incrementUnreadCountMessageOfAdminMembersJob',{
+    chatId: questChat.chat.id,
+    notifierMemberId: [questChat.admin.id],
+  });
+
+  await addJob('updateCountUnreadChatsJob', {
+    adminIds: [questChat.employerMemberId, questChat.workerMemberId],
+  });
+
+  await markMessageAsReadJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: r.params.chatId,
+    senderMemberId: questChat.admin.id,
+  });
 
   const resolutionTimeInSeconds: number = (dispute.resolvedAt.getTime() - dispute.acceptedAt.getTime())/1000;
 

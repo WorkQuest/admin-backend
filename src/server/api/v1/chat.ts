@@ -354,7 +354,6 @@ export async function removeAdminFromGroupChat(r) {
 
   const adminIdsWithoutSender = membersWithoutSender.map((member) => member.adminId);
 
-  /** TODO: refactor jobs*/
   await resetUnreadCountMessagesOfAdminMemberJob({
     chatId: chat.id,
     lastReadMessageId: message.id,
