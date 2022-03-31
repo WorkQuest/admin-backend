@@ -1,5 +1,5 @@
-import {addJob} from '../utils/scheduler';
-import {AdminActionMetadata, HTTPVerb} from '@workquest/database-models/lib/models';
+import { addJob } from '../utils/scheduler';
+import { AdminActionMetadata, HTTPVerb } from '@workquest/database-models/lib/models';
 
 export type saveAdminActionsPayload = {
   adminId: string,
@@ -8,10 +8,10 @@ export type saveAdminActionsPayload = {
 };
 
 export async function saveAdminActionsMetadataJob(payload: saveAdminActionsPayload) {
-  return addJob('saveAdminActions', payload);
+  return addJob('saveAdminActionsMetadata', payload);
 }
 
-export default async function saveAdminActionsMetadata(payload: saveAdminActionsPayload) {
+export default async function(payload: saveAdminActionsPayload) {
   await AdminActionMetadata.create({
     adminId: payload.adminId,
     HTTPVerb: payload.HTTPVerb,
