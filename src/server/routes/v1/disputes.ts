@@ -13,10 +13,11 @@ import {
   questDisputeReviewSchema,
   questDisputeDecisionDescriptionSchema, questDisputeStatusesSchema,
 } from "@workquest/database-models/lib/schemes";
+import {getQuestDisputes} from "../../api/v1/disputes";
 
 export default[{
   method: "GET",
-  path: "/v1/quest/{questId}/dispute",
+  path: "/v1/quest/dispute/{disputeId}",
   handler: handlers.getQuestDispute,
   options: {
     id: "v1.quest.getDispute",
@@ -25,7 +26,7 @@ export default[{
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
-        questId: idSchema.required(),
+        disputeId: idSchema.required(),
       }).label("GetQuestDisputeParams"),
     },
     response: {
@@ -61,7 +62,7 @@ export default[{
   options: {
     id: "v1.quest.getQuestDisputes",
     tags: ["api", "quest-dispute"],
-    description: "Get disputes",
+    description: "Get all disputes",
     plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       query: questDisputeQuerySchema
@@ -239,6 +240,24 @@ export default[{
       },
       response: {
         schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetAdminQuestDisputesResponse')
+      }
+    }
+  }, {
+    method: "GET",
+    path: "/v1/quest/{questId}/disputes",
+    handler: handlers.getQuestDisputes,
+    options: {
+      id: "v1.quest.getDisputes",
+      tags: ["api", "quest-dispute"],
+      description: "Get quest disputes",
+      plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+      validate: {
+        params: Joi.object({
+          questId: idSchema.required(),
+        }).label("GetQuestDisputesParams"),
+      },
+      response: {
+        schema: outputPaginationSchema('disputes',questDisputeSchema).label('GetQuestDisputesResponse')
       }
     }
   },]

@@ -13,9 +13,7 @@ import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
 
 export async function getQuestDispute(r) {
-  const dispute = await QuestDispute.findOne({
-    where: { questId: r.params.questId },
-  });
+  const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute not found', {});
@@ -29,6 +27,7 @@ export async function getQuestDisputes(r) {
     ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.params.userId && { [Op.or]: { opponentUserId: r.params.userId, openDisputeUserId: r.params.userId } }),
+    ...(r.params.questId && { questId: r.params.questId }),
   }
 
   const { count, rows } = await QuestDispute.findAndCountAll({
