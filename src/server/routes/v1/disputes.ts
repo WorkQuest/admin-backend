@@ -1,7 +1,7 @@
 import * as Joi from "joi";
-import {getRbacSettings} from "../../utils/auth";
+import { getRbacSettings } from "../../utils/auth";
 import * as handlers from "../../api/v1/disputes";
-import {AdminRole, DisputeStatus} from "@workquest/database-models/lib/models";
+import { AdminRole } from "@workquest/database-models/lib/models";
 import {
   idSchema,
   limitSchema,
@@ -13,7 +13,6 @@ import {
   questDisputeReviewSchema,
   questDisputeDecisionDescriptionSchema, questDisputeStatusesSchema,
 } from "@workquest/database-models/lib/schemes";
-import {getQuestDisputes} from "../../api/v1/disputes";
 
 export default[{
   method: "GET",
