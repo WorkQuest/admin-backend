@@ -51,7 +51,7 @@ export default[{
       }).label("GetUserQuestDisputesParams"),
     },
     response: {
-      schema: outputPaginationSchema('disputes ', questDisputeSchema).label('GetUserQuestDisputesResponse')
+      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetUserQuestDisputesResponse')
     }
   }
 }, {
@@ -67,7 +67,7 @@ export default[{
       query: questDisputeQuerySchema
     },
     response: {
-      schema: outputPaginationSchema('disputes ', questDisputeSchema).label('GetQuestDisputesResponse')
+      schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetQuestDisputesResponse')
     }
   }
 }, {
@@ -126,7 +126,7 @@ export default[{
       }).label('GetQuestDisputeReviewsQuery'),
     },
     response: {
-      schema: outputPaginationSchema('reviews ', questDisputeReviewSchema).label('GetQuestDisputeReviewsResponse'),
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputeReviewsResponse'),
     },
   },
 }, {
@@ -148,7 +148,7 @@ export default[{
       }).label('GetQuestDisputeReviewsForAdminQuery'),
     },
     response: {
-      schema: outputPaginationSchema('reviews ', questDisputeReviewSchema).label('GetQuestDisputeReviewsForAdminResponse')
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputeReviewsForAdminResponse')
     }
   }
 }, {
@@ -168,7 +168,7 @@ export default[{
       }).label('GetQuestDisputesAdminReviewMeQuery'),
     },
     response: {
-      schema: outputPaginationSchema('reviews ', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewMeResponse'),
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputesAdminReviewMeResponse'),
     },
   },
 }, {
@@ -191,7 +191,7 @@ export default[{
       }).label('GetQuestDisputeReviewsByDisputeQuery'),
     },
     response: {
-      schema: outputPaginationSchema('reviews ', questDisputeReviewSchema).label('GetQuestDisputeReviewsByDisputeResponse'),
+      schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputeReviewsByDisputeResponse'),
     },
   },
 },
@@ -215,7 +215,7 @@ export default[{
         }).label('GetQuestDisputeReviewsByQuestQuery'),
       },
       response: {
-        schema: outputPaginationSchema('reviews ', questDisputeReviewSchema).label('GetQuestDisputeReviewsByQuestResponse'),
+        schema: outputPaginationSchema('reviews', questDisputeReviewSchema).label('GetQuestDisputeReviewsByQuestResponse'),
       },
     },
   }, {
@@ -238,7 +238,7 @@ export default[{
         }).label("GetAdminQuestDisputesParams"),
       },
       response: {
-        schema: outputPaginationSchema('disputes ', questDisputeSchema).label('GetAdminQuestDisputesResponse')
+        schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetAdminQuestDisputesResponse')
       }
     }
   }, {
@@ -256,7 +256,7 @@ export default[{
         }).label("GetQuestDisputesParams"),
       },
       response: {
-        schema: outputPaginationSchema('disputes ',questDisputeSchema).label('GetQuestDisputesResponse')
+        schema: outputPaginationSchema('disputes', questDisputeSchema).label('GetQuestDisputesResponse')
       }
     }
   },]
