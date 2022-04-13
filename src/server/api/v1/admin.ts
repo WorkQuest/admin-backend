@@ -88,14 +88,18 @@ export async function createAdminAccount(r) {
 export async function deleteAdminAccount(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
-  if (!admin) {
-    return error(Errors.NotFound, 'Account is not found', {});
-  }
-  if (admin.role === AdminRole.main) {
+  /** TODO: controller */
+  if (r.auth.credentials.id === r.params.adminId) {
     return error(Errors.InvalidType, 'Can not delete your own account', {});
   }
 
-  await admin.destroy();
+  if (!admin) {
+    return error(Errors.NotFound, 'Account is not found', {});
+  }
+
+  await admin.update({ email: null })
+    .then(async () => await admin.destroy());
+
 
   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
