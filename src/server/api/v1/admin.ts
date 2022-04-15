@@ -1,12 +1,12 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {
   Admin,
   AdminRole,
-  AdminSession, QuestDispute, QuestDisputeReview, User,
+  AdminSession,
 } from "@workquest/database-models/lib/models"
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({

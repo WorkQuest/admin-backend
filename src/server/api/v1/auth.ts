@@ -53,7 +53,6 @@ export async function refreshTokens(r) {
   return output(result);
 }
 
-
 export async function logout(r) {
   await AdminSession.update({
     invalidating: true,

@@ -103,7 +103,7 @@ export async function changeUserRole(r) {
     const questCount = await Quest.count({
       where: {
         assignedWorkerId: user.id,
-        status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done, QuestStatus.Blocked] }
+        status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Completed, QuestStatus.Blocked] }
       }
     });
     const questsResponseCount = await QuestsResponse.count({
@@ -122,7 +122,7 @@ export async function changeUserRole(r) {
   }
   if (user.role === UserRole.Employer) {
     const questCount = await Quest.count({
-      where: { userId: user.id, status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Done] } }
+      where: { userId: user.id, status: { [Op.notIn]: [QuestStatus.Closed, QuestStatus.Completed] } }
     });
 
     if (questCount !== 0) {

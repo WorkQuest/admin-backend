@@ -1,18 +1,20 @@
+import {Op} from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
-import {
-  Admin,
-  DisputeStatus,
-  Quest,
-  QuestDispute, QuestDisputeReview, User,
-} from "@workquest/database-models/lib/models";
-
-import {Op} from 'sequelize'
 import {QuestNotificationActions} from "../../controllers/controller.broker";
 import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
+import {
+  User,
+  Admin,
+  Quest,
+  QuestDispute,
+  DisputeStatus,
+  QuestDisputeReview,
+} from "@workquest/database-models/lib/models";
 
 export async function getQuestDispute(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
@@ -23,6 +25,7 @@ export async function getQuestDispute(r) {
 }
 
 export async function getQuestDisputes(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const where = {
     ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
@@ -40,6 +43,7 @@ export async function getQuestDisputes(r) {
 }
 
 export async function takeDisputeToResolve(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
@@ -61,6 +65,7 @@ export async function takeDisputeToResolve(r) {
 }
 
 export async function disputeDecide(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
@@ -104,6 +109,7 @@ export async function disputeDecide(r) {
 }
 
 export async function getQuestDisputeReviews(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const where = {
     ...(r.params.adminId && { toAdminId: r.params.adminId }),
     ...(r.params.disputeId && { disputeId: r.params.disputeId }),
@@ -132,6 +138,7 @@ export async function getQuestDisputeReviews(r) {
 }
 
 export async function getQuestDisputeReviewsForAdminMe(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
   const include = [{
     model: User,
     as: 'fromUser',

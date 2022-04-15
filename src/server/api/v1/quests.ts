@@ -3,18 +3,18 @@ import {Errors} from "../../utils/errors";
 import {transformToGeoPostGIS} from "../../utils/postGIS";
 import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {
   User,
   Admin,
   Media,
-  QuestDispute,
-  DisputeStatus,
   Quest,
   QuestStatus,
+  QuestDispute,
+  DisputeStatus,
   QuestBlackList,
   BlackListStatus,
 } from "@workquest/database-models/lib/models";
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getQuests(r) {
   const where = {
@@ -67,26 +67,30 @@ export async function getQuest(r) {
 }
 
 export async function editQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const questController = new QuestController(await Quest.findByPk(r.params.questId));
 
   const medias = await MediaController.getMedias(r.payload.medias);
 
   questController
-    .questMustHaveStatus(QuestStatus.Created)
+    .questMustHaveStatus(QuestStatus.Pending, QuestStatus.Recruitment)
 
   const transaction = await r.server.app.db.transaction();
 
   await questController.setMedias(medias, transaction);
   await questController.setQuestSpecializations(r.payload.specializationKeys, false, transaction);
 
+  const avatarId = medias.length === 0
+    ? null
+    : medias[0].id
+
   questController.quest = await questController.quest.update({
-    price: r.payload.price,
+    avatarId,
     title: r.payload.title,
     priority: r.payload.priority,
-    category: r.payload.category,
     workplace: r.payload.workplace,
     employment: r.payload.employment,
-    description: r.payload.description,
     location: r.payload.locationFull.location,
     locationPlaceName: r.payload.locationFull.locationPlaceName,
     locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
@@ -99,25 +103,29 @@ export async function editQuest(r) {
   return output(await Quest.findByPk(questController.quest.id));
 }
 
+/** TODO: need new logic*/
 export async function deleteQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId);
-  const questController = new QuestController(quest);
-
-  questController
-    .questMustHaveStatus(QuestStatus.Created, QuestStatus.Closed)
-
-
-  // TODO: добавить удаления чатов и прочее
-  // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
-  // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
-  await quest.destroy();
-
-  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
-
-  return output();
+  return error(Errors.Forbidden, 'Not implemented', {});
+//   const quest = await Quest.findByPk(r.params.questId);
+//   const questController = new QuestController(quest);
+//
+//   questController
+//     .questMustHaveStatus(QuestStatus.Created, QuestStatus.Closed)
+//
+//
+//   // TODO: добавить удаления чатов и прочее
+//   // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
+//   // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
+//   await quest.destroy();
+//
+//   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+//
+//   return output();
 }
 
 export async function blockQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const quest = await Quest.findByPk(r.params.questId);
 
   if (quest.status === QuestStatus.Blocked) {
@@ -139,6 +147,8 @@ export async function blockQuest(r) {
 }
 
 export async function unblockQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const quest = await Quest.findByPk(r.params.questId);
 
   if (!quest) {
