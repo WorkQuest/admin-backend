@@ -40,7 +40,7 @@ export async function getAdminActions(r) {
     limit: r.query.limit,
     offset: r.query.offset,
     order: [['createdAt', 'desc']],
-    include: { model: Admin, as: 'admin' },
+    include: { model: Admin, as: 'admin', required: true },
   });
 
   return output({ count, actions: rows });
@@ -66,7 +66,7 @@ export async function getQuestDisputesStatistics(r) {
   const { count, rows } = await AdminQuestDisputesStatistic.findAndCountAll({
     where,
     replacements,
-    include: { model: Admin, as: 'admin' }
+    include: { model: Admin, as: 'admin', required: true }
   });
 
   return output({ count, statistics: rows });

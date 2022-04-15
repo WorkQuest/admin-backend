@@ -79,6 +79,7 @@ export async function getUsersSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
+    distinct: true,
     where,
     include,
     limit: r.query.limit,
