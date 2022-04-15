@@ -119,7 +119,7 @@ export class QuestController extends QuestHelper {
     try {
       this.quest = await this.quest.update({
         assignedWorkerId: assignedWorker.id,
-        status: QuestStatus.WaitWorker,
+        status: QuestStatus.WaitingForConfirmFromWorkerOnAssign,
       }, { transaction });
     } catch (e) {
       if (transaction) {
@@ -145,7 +145,7 @@ export class QuestController extends QuestHelper {
   public async completeWork(transaction?: Transaction) {
     try {
       this.quest = await this.quest.update({
-        status: QuestStatus.WaitConfirm,
+        status: QuestStatus.WaitingForEmployerConfirmationWork,
       }, { transaction });
     } catch (e) {
       if (transaction) {
@@ -158,7 +158,7 @@ export class QuestController extends QuestHelper {
   public async approveCompletedWork(transaction?: Transaction) {
     try {
       this.quest = await this.quest.update({
-        status: QuestStatus.Done,
+        status: QuestStatus.Completed,
       }, { transaction });
     } catch (e) {
       if (transaction) {
@@ -185,11 +185,11 @@ export class QuestController extends QuestHelper {
     try {
       if (acceptWork) {
         this.quest = await this.quest.update({
-          status: QuestStatus.Active,
+          status: QuestStatus.ExecutionOfWork,
         }, { transaction });
       } else {
         this.quest = await this.quest.update({
-          status: QuestStatus.Created,
+          status: QuestStatus.Pending,
           assignedWorkerId: null,
         }, { transaction });
       }
