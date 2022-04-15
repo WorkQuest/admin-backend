@@ -168,24 +168,22 @@ export default[{
       schema: emptyOkSchema
     }
   }
-},
-//   {
-//   method: "DELETE",
-//   path: "/v1/quest/{questId}",
-//   handler: handlers.deleteQuest,
-//   options: {
-//     id: "v1.quest.deleteQuest",
-//     tags: ["api", "quest"],
-//     description: "Delete quest",
-//     plugins: getRbacSettings(AdminRole.main),
-//     validate: {
-//       params: Joi.object({
-//         questId: idSchema.required(),
-//       }).label("DeleteQuestParams"),
-//     },
-//     response: {
-//       schema: emptyOkSchema
-//     }
-//   }
-// }
-];
+}, {
+  method: "DELETE",
+  path: "/v1/quest/{questId}",
+  handler: handlers.deleteQuest,
+  options: {
+    id: "v1.quest.deleteQuest",
+    tags: ["api", "quest"],
+    description: "Delete quest",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      params: Joi.object({
+        questId: idSchema.required(),
+      }).label("DeleteQuestParams"),
+    },
+    response: {
+      schema: emptyOkSchema
+    }
+  }
+}];

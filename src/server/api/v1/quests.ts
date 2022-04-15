@@ -3,18 +3,18 @@ import {Errors} from "../../utils/errors";
 import {transformToGeoPostGIS} from "../../utils/postGIS";
 import {QuestController} from "../../controllers/controller.quest";
 import {MediaController} from "../../controllers/controller.media";
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 import {
   User,
   Admin,
   Media,
-  QuestDispute,
-  DisputeStatus,
   Quest,
   QuestStatus,
+  QuestDispute,
+  DisputeStatus,
   QuestBlackList,
   BlackListStatus,
 } from "@workquest/database-models/lib/models";
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
 export async function getQuests(r) {
   const where = {
@@ -67,6 +67,8 @@ export async function getQuest(r) {
 }
 
 export async function editQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const questController = new QuestController(await Quest.findByPk(r.params.questId));
 
   const medias = await MediaController.getMedias(r.payload.medias);
@@ -102,7 +104,8 @@ export async function editQuest(r) {
 }
 
 /** TODO: need new logic*/
-// export async function deleteQuest(r) {
+export async function deleteQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
 //   const quest = await Quest.findByPk(r.params.questId);
 //   const questController = new QuestController(quest);
 //
@@ -118,9 +121,11 @@ export async function editQuest(r) {
 //   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 //
 //   return output();
-// }
+}
 
 export async function blockQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const quest = await Quest.findByPk(r.params.questId);
 
   if (quest.status === QuestStatus.Blocked) {
@@ -142,6 +147,8 @@ export async function blockQuest(r) {
 }
 
 export async function unblockQuest(r) {
+  return error(Errors.Forbidden, 'Not implemented', {});
+
   const quest = await Quest.findByPk(r.params.questId);
 
   if (!quest) {

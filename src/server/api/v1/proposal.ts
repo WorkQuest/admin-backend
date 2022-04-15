@@ -1,7 +1,7 @@
-import {literal, Op} from "sequelize";
-import {Proposal, User} from "@workquest/database-models/lib/models";
 import {output} from "../../utils";
+import {literal, Op} from "sequelize";
 import {searchProposalFields} from "./statistic";
+import {Proposal, User} from "@workquest/database-models/lib/models";
 
 export async function getProposals(r) {
   const searchByFirstAndLastNameLiteral = literal(
