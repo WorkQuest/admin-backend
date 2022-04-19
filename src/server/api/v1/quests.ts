@@ -67,8 +67,6 @@ export async function getQuest(r) {
 }
 
 export async function editQuest(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
-
   const questController = new QuestController(await Quest.findByPk(r.params.questId));
 
   const medias = await MediaController.getMedias(r.payload.medias);
