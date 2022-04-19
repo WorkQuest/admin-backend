@@ -121,6 +121,7 @@ export async function getQuestDisputeReviews(r) {
   }, {
     model: Admin,
     as: 'toAdmin',
+    required: true,
   }, {
     model: QuestDispute,
     where: {...r.params.questId && { questId: r.params.questId } },

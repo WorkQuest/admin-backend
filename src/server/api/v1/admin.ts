@@ -35,7 +35,7 @@ export async function getAdminSessions(r) {
   }
 
   const { rows, count } = await AdminSession.findAndCountAll({
-    include: { model: Admin, as: 'admin' },
+    include: { model: Admin, as: 'admin', required: true },
     limit: r.query.limit,
     offset: r.query.offset,
     where: { adminId: admin.id },
@@ -47,7 +47,7 @@ export async function getAdminSessions(r) {
 
 export async function getAdminsSessions(r) {
   const { rows, count } = await AdminSession.findAndCountAll({
-    include: { model: Admin, as: 'admin' },
+    include: { model: Admin, as: 'admin', required: true },
     limit: r.query.limit,
     offset: r.query.offset,
     order: [ ['createdAt', 'DESC'] ],

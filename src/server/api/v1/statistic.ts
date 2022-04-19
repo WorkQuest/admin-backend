@@ -75,7 +75,7 @@ export async function getQuestDisputesStatistics(r) {
 export async function getQuestDisputesAdminStatistic(r) {
   const adminQuestDisputesStatistic = await AdminQuestDisputesStatistic.findOne({
     where: { adminId: r.params.adminId },
-    include: { model: Admin, as: 'admin' }
+    include: { model: Admin, as: 'admin'}
   });
 
   return output(adminQuestDisputesStatistic);
