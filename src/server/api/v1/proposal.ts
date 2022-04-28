@@ -22,7 +22,7 @@ export async function getProposals(r) {
 
   const include = [{
     model: User.scope('shortWithWallet'),
-    as: 'author'
+    as: 'proposerUser'
   }];
 
   if (r.query.q) {
