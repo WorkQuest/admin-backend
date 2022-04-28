@@ -15,7 +15,7 @@ export async function getProposals(r) {
 
   const where = {
     ...(r.query.statuses && {status: { [Op.in]: r.query.statuses } }),
-    ...(r.params.userId && { userId: r.params.userId }),
+    ...(r.params.userId && { proposerUserId: r.params.userId }),
   }
 
   const order = [];
