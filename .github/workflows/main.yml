@@ -58,30 +58,54 @@ jobs:
         run: |
           chmod 700 ci-scripts
           cd ci-scripts
-          ansible-playbook -i "${{ secrets.DEV_REMOTE_HOST }}" -e "ansible_user=${{ secrets.DEV_REMOTE_USER }} \
-            SERVER_HOST=${{ secrets.DEV_SERVER_HOST }} \
-            SERVER_PORT=${{ secrets.DEV_SERVER_PORT }} \
-            DB_LINK=${{ secrets.DEV_DB_LINK }} \
-            JWT_ACCESS_SECRET=${{ secrets.DEV_JWT_ACCESS_SECRET }} \
-            JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET }} \
+          ansible-playbook -i "${{ secrets.REMOTE_HOST }}" -e "ansible_user=${{ secrets.REMOTE_USER }} \
+            SERVER_HOST=${{ secrets.SERVER_HOST }} \
+            SERVER_PORT=${{ secrets.SERVER_PORT }} \
+            DB_LINK=${{ secrets.DB_LINK }} \
+            DB_LINK_TestingQues=${{ secrets.DB_LINK_TESTINGQUEST }} \
+
+            JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }} \
+            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
           
-            NOTIFICATION_MESSAGE_BROKER_LINK=${{ secrets.DEV_NOTIFICATION_MESSAGE_BROKER_LINK }} \
+            NOTIFICATION_MESSAGE_BROKER_LINK=${{ secrets.NOTIFICATION_MESSAGE_BROKER_LINK }} \
 
-            SMTP_HOST=${{ secrets.DEV_SMTP_HOST }} \
-            SMTP_PORT=${{ secrets.DEV_SMTP_PORT }} \
-            SMTP_SECURE=${{ secrets.DEV_SMTP_SECURE }} \
-            SMTP_USER=${{ secrets.DEV_SMTP_USER }} \
-            SMTP_PASSWORD=${{ secrets.DEV_SMTP_PASSWORD }} \
-            SMTP_SENDER=${{ secrets.DEV_SMTP_SENDER }} \
+            FACEBOOK_CLIENT_ID=${{ secrets.FACEBOOK_CLIENT_ID }} \
+            FACEBOOK_COOKIE_PASSWORD=${{ secrets.FACEBOOK_COOKIE_PASSWORD }} \
 
-            CDN_ACCESS_KEY_ID=${{ secrets.DEV_CDN_ACCESS_KEY_ID }} \
-            CDN_SECRET_ACCESS_KEY=${{ secrets.DEV_CDN_SECRET_ACCESS_KEY }} \
-            CDN_END_POINT=${{ secrets.DEV_CDN_END_POINT }} \
-            CDN_BUCKET=${{ secrets.DEV_CDN_BUCKET }} \
-            CDN_PUB_END_POINT=${{ secrets.DEV_CDN_PUB_END_POINT }} \
-            CDN_EXPIRES_IN=${{ secrets.DEV_CDN_EXPIRES_IN }} \
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            GOOGLE_COOKIE_PASSWORD=${{ secrets.GOOGLE_COOKIE_PASSWORD }} \
+            GOOGLE_SECRET_KEY=${{ secrets.GOOGLE_SECRET_KEY }} \
 
-            BASE_URL=${{ secrets.DEV_BASE_URL }} \
+            LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID }} \
+            LINKEDIN_COOKIE_PASSWORD=${{ secrets.LINKEDIN_COOKIE_PASSWORD }} \
+            LINKEDIN_SECRET_KEY=${{ secrets.LINKEDIN_SECRET_KEY }} \
+
+            SUMSUB_APP_TOKEN=${{ secrets.SUMSUB_APP_TOKEN }} \
+            SUMSUB_BASE_URL=${{ secrets.SUMSUB_BASE_URL }} \
+            SUMSUB_SECRET_KEY=${{ secrets.SUMSUB_SECRET_KEY }} \
+
+            TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
+            TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
+            TWILIO_PHONE_NUMBER_SENDER=${{ secrets.TWILIO_PHONE_NUMBER_SENDER }} \
+            TWITTER_CLIENT_ID=${{ secrets.TWITTER_CLIENT_ID }} \
+            TWITTER_COOKIE_PASSWORD=${{ secrets.TWITTER_COOKIE_PASSWORD }} \
+            TWITTER_SECRET_KEY=${{ secrets.TWITTER_SECRET_KEY }} \
+
+            SMTP_HOST=${{ secrets.SMTP_HOST }} \
+            SMTP_PORT=${{ secrets.SMTP_PORT }} \
+            SMTP_SECURE=${{ secrets.SMTP_SECURE }} \
+            SMTP_USER=${{ secrets.SMTP_USER }} \
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+            SMTP_SENDER=${{ secrets.SMTP_SENDER }} \
+
+            CDN_ACCESS_KEY_ID=${{ secrets.CDN_ACCESS_KEY_ID }} \
+            CDN_SECRET_ACCESS_KEY=${{ secrets.CDN_SECRET_ACCESS_KEY }} \
+            CDN_END_POINT=${{ secrets.CDN_END_POINT }} \
+            CDN_BUCKET=${{ secrets.CDN_BUCKET }} \
+            CDN_PUB_END_POINT=${{ secrets.CDN_PUB_END_POINT }} \
+            CDN_EXPIRES_IN=${{ secrets.CDN_EXPIRES_IN }} \
+
+            BASE_URL=${{ secrets.BASE_URL }} \
 
             SRC_DIR=${{ github.workspace }}/" backend-update.yml;
 
