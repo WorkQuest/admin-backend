@@ -71,6 +71,7 @@ jobs:
 
             FACEBOOK_CLIENT_ID=${{ secrets.FACEBOOK_CLIENT_ID }} \
             FACEBOOK_COOKIE_PASSWORD=${{ secrets.FACEBOOK_COOKIE_PASSWORD }} \
+            FACEBOOK_SECRET_KEY=${{ secrets.FACEBOOK_SECRET_KEY }} \
 
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             GOOGLE_COOKIE_PASSWORD=${{ secrets.GOOGLE_COOKIE_PASSWORD }} \
