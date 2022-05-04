@@ -35,7 +35,7 @@ jobs:
 
   deploy-dev:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
     environment: develop
     needs: [build]
