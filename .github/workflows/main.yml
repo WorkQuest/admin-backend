@@ -37,6 +37,7 @@ jobs:
 
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
+    environment: develop
     needs: [build]
     steps:
       - name: Copy code files to container
