@@ -62,7 +62,7 @@ jobs:
             SERVER_HOST=${{ secrets.SERVER_HOST }} \
             SERVER_PORT=${{ secrets.SERVER_PORT }} \
             DB_LINK=${{ secrets.DB_LINK }} \
-            DB_LINK_TestingQues=${{ secrets.DB_LINK_TESTINGQUEST }} \
+            DB_LINK_TESTINGQUEST=${{ secrets.DB_LINK_TESTINGQUEST }} \
 
             JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }} \
             JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
