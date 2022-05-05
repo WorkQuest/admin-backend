@@ -1,20 +1,19 @@
 import * as Joi from "joi";
 import * as handlers from "../../api/v1/users";
-import {getRbacSettings} from "../../utils/auth";
-import {AdminRole} from "@workquest/database-models/lib/models";
+import { getRbacSettings } from "../../utils/auth";
+import { AdminRole, UserRole } from "@workquest/database-models/lib/models";
 import {
+  emptyOkSchema,
   idSchema,
-  userSchema,
-  phoneSchema,
   limitSchema,
   offsetSchema,
-  emptyOkSchema,
   outputOkSchema,
-  userRoleSchema,
-  userSessionsSchema,
-  userBlackListSchema,
   outputPaginationSchema,
-  userBlackListReasonSchema, searchSchema,
+  searchSchema,
+  userBlackListReasonSchema,
+  userBlackListSchema,
+  userSchema,
+  userSessionsSchema, userStatusesSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -38,7 +37,7 @@ export default [{
 }, {
   method: "GET",
   path: "/v1/users",
-  handler: handlers.getUsers,
+  handler: handlers.getAllUsers,
   options: {
     id: "v1.getUsers",
     tags: ["api", "user"],
@@ -46,12 +45,56 @@ export default [{
     plugins: getRbacSettings(AdminRole.main),
     validate: {
       query: Joi.object({
+        q: searchSchema,
+        statuses: userStatusesSchema.default(null),
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetUsersQuery'),
     },
     response: {
       schema: outputPaginationSchema('users', userSchema).label('GetUsersResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/employers",
+  handler: handlers.getUsers(UserRole.Employer),
+  options: {
+    id: "v1.getEmployers",
+    tags: ["api", "user"],
+    description: "Get employers",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      query: Joi.object({
+        q: searchSchema,
+        statuses: userStatusesSchema.default(null),
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetEmployersQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('users', userSchema).label('GetEmployersResponse')
+    }
+  }
+}, {
+  method: "GET",
+  path: "/v1/workers",
+  handler: handlers.getUsers(UserRole.Worker),
+  options: {
+    id: "v1.getWorkers",
+    tags: ["api", "user"],
+    description: "Get workers",
+    plugins: getRbacSettings(AdminRole.main),
+    validate: {
+      query: Joi.object({
+        q: searchSchema,
+        statuses: userStatusesSchema.default(null),
+        limit: limitSchema,
+        offset: offsetSchema,
+      }).label('GetWorkersQuery'),
+    },
+    response: {
+      schema: outputPaginationSchema('users', userSchema).label('GetWorkersResponse')
     }
   }
 }, {
