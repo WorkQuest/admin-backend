@@ -1,3 +1,4 @@
+import {literal, Op} from "sequelize"
 import {error, output} from "../../utils";
 import {Errors} from "../../utils/errors";
 import {transformToGeoPostGIS} from "../../utils/postGIS";
@@ -16,11 +17,31 @@ import {
   BlackListStatus,
 } from "@workquest/database-models/lib/models";
 
+export const searchQuestFields = [
+  'title',
+  'locationPlaceName'
+];
+
 export async function getQuests(r) {
+  const userSearchLiteral = literal(
+    `(SELECT "firstName" FROM "Users" WHERE "id" = "Quest"."userId") ILIKE '%${r.query.q}%'` +
+    `OR (SELECT "lastName" FROM "Users" WHERE "id" = "Quest"."userId") ILIKE '%${r.query.q}%'`
+  );
+
   const where = {
     ...(r.params.userId && { userId: r.params.userId }),
     ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
+    ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
+    ...(r.query.priorities && { priority: { [Op.in]:  r.query.priorities } }),
   };
+
+  if (r.query.q) {
+    where[Op.or] = searchQuestFields.map(field => ({
+      [field]: { [Op.iLike]: `%${r.query.q}%` }
+    }));
+
+    where[Op.or].push(userSearchLiteral)
+  }
 
   const include = [{
     model: Media.scope('urlOnly'),

@@ -19,9 +19,11 @@ import {
   questForAdminsGetSchema,
   specializationKeysSchema,
   questBlackListSchema,
-  questBlackListReasonSchema
+  questBlackListReasonSchema,
+  questStatusesSchema,
+  prioritiesSchema,
+  searchSchema,
 } from "@workquest/database-models/lib/schemes";
-
 export default[{
   method: "GET",
   path: "/v1/quests",
@@ -32,6 +34,9 @@ export default[{
     description: "Get quests",
     validate: {
       query: Joi.object({
+        q: searchSchema,
+        statuses: questStatusesSchema,
+        priorities: prioritiesSchema,
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetQuestsQuery'),
@@ -72,6 +77,8 @@ export default[{
         userId: idSchema.required(),
       }).label("GetUsersQuestsParams"),
       query: Joi.object({
+        statuses: questStatusesSchema,
+        priorities: prioritiesSchema,
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetUsersQuestsQuery'),
