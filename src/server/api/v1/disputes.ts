@@ -1,21 +1,35 @@
-import {Op} from 'sequelize'
+import { literal, Op } from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
-import {QuestNotificationActions} from "../../controllers/controller.broker";
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
-import {incrementAdminDisputeStatisticJob} from "../../jobs/incrementAdminDisputeStatistic";
+import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 import {
   User,
   Admin,
   Quest,
+  QuestChat,
   QuestDispute,
   DisputeStatus,
   QuestDisputeReview,
 } from "@workquest/database-models/lib/models";
 
 export async function getQuestDispute(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
-  const dispute = await QuestDispute.findByPk(r.params.disputeId);
+  const dispute = await QuestDispute.findByPk(r.params.disputeId, {
+    include: [{
+      model: Quest,
+      as: 'quest',
+      include: [{
+        model: QuestChat.scope('idsOnly'),
+        as: 'questChat',
+        on: literal('"QuestDispute"."assignedAdminId" = $adminId'),
+        attributes: {
+          include: [[literal('CASE WHEN "chatId" IS NULL THEN NULL ELSE "chatId" END'), 'chatId']],
+          exclude: ['id', 'status', 'createdAt', 'updatedAt']
+        },
+        required: false
+      }]
+    }],
+    bind: { adminId: r.auth.credentials.id }
+  });
 
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute not found', {});
@@ -25,7 +39,6 @@ export async function getQuestDispute(r) {
 }
 
 export async function getQuestDisputes(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
   const where = {
     ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
@@ -43,18 +56,17 @@ export async function getQuestDisputes(r) {
 }
 
 export async function takeDisputeToResolve(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
-  if (dispute.status !== DisputeStatus.pending) {
+  if (dispute.status !== DisputeStatus.Created) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
   await dispute.update({
-    status: DisputeStatus.inProgress,
+    status: DisputeStatus.InProgress,
     acceptedAt: Date.now(),
     assignedAdminId: r.auth.credentials.id,
   });
@@ -65,7 +77,6 @@ export async function takeDisputeToResolve(r) {
 }
 
 export async function disputeDecide(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
   const dispute = await QuestDispute.findByPk(r.params.disputeId);
 
   if (!dispute) {
@@ -74,33 +85,12 @@ export async function disputeDecide(r) {
   if (dispute.assignedAdminId !== r.auth.credentials.id) {
     throw error(Errors.Forbidden, 'You are not an assigned administrator', {});
   }
-  if (dispute.status !== DisputeStatus.inProgress) {
+  if (dispute.status !== DisputeStatus.InProgress) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
-  const transaction = await r.server.app.db.transaction();
-
   await dispute.update({
-    resolvedAt: Date.now(),
-    status: DisputeStatus.closed,
     decisionDescription: r.payload.decisionDescription,
-  }, {transaction});
-
-  await Quest.update({status: dispute.openOnQuestStatus}, {where: {id: dispute.questId}, transaction});
-
-  await transaction.commit();
-
-  const resolutionTimeInSeconds: number = (dispute.resolvedAt.getTime() - dispute.acceptedAt.getTime())/1000;
-
-  await incrementAdminDisputeStatisticJob({
-    adminId: dispute.assignedAdminId,
-    resolutionTimeInSeconds,
-  });
-
-  r.server.app.broker.sendQuestNotification({
-    action: QuestNotificationActions.DisputeDecision,
-    recipients: [dispute.openDisputeUserId, dispute.opponentUserId],
-    data: dispute
   });
 
   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
@@ -109,7 +99,6 @@ export async function disputeDecide(r) {
 }
 
 export async function getQuestDisputeReviews(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
   const where = {
     ...(r.params.adminId && { toAdminId: r.params.adminId }),
     ...(r.params.disputeId && { disputeId: r.params.disputeId }),
@@ -139,20 +128,7 @@ export async function getQuestDisputeReviews(r) {
 }
 
 export async function getQuestDisputeReviewsForAdminMe(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
-  const include = [{
-    model: User,
-    as: 'fromUser',
-  }, {
-    model: Admin,
-    as: 'toAdmin',
-  }, {
-    model: QuestDispute,
-    as: 'dispute',
-  }];
-
-  const {count, rows} = await QuestDisputeReview.findAndCountAll({
-    include,
+  const { count, rows } = await QuestDisputeReview.findAndCountAll({
     limit: r.query.limit,
     offset: r.query.offset,
     where: { toAdminId: r.auth.credentials.id },
