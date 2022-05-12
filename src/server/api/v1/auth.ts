@@ -9,11 +9,11 @@ export async function login(r) {
   const admin = await Admin.scope("withPassword").findOne({ where: { email: { [Op.iLike]: r.payload.email } } });
 
   if (!admin) {
-    return error(Errors.NotFound, "Account not found", {});
+    return error(Errors.NotFound, "User not found or password does not match", {});
   }
 
   if (!await admin.passwordCompare(r.payload.password)) {
-    return error(Errors.NotFound, "Invalid password", {});
+    return error(Errors.NotFound, "User not found or password does not match", {});
   }
 
   if(!await admin.validateTOTP(r.payload.totp)) {
