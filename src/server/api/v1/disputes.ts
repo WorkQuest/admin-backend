@@ -22,8 +22,8 @@ export async function getQuestDispute(r) {
         as: 'questChat',
         on: literal('"QuestDispute"."assignedAdminId" = $adminId'),
         attributes: {
+          exclude: ['id', 'status', 'createdAt', 'updatedAt'],
           include: [[literal('CASE WHEN "chatId" IS NULL THEN NULL ELSE "chatId" END'), 'chatId']],
-          exclude: ['id', 'status', 'createdAt', 'updatedAt']
         },
         required: false
       }]
@@ -40,10 +40,10 @@ export async function getQuestDispute(r) {
 
 export async function getQuestDisputes(r) {
   const where = {
+    ...(r.params.questId && { questId: r.params.questId }),
     ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.params.userId && { [Op.or]: { opponentUserId: r.params.userId, openDisputeUserId: r.params.userId } }),
-    ...(r.params.questId && { questId: r.params.questId }),
   }
 
   const { count, rows } = await QuestDispute.findAndCountAll({
@@ -71,7 +71,11 @@ export async function takeDisputeToResolve(r) {
     assignedAdminId: r.auth.credentials.id,
   });
 
-  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({
+    path: r.path,
+    HTTPVerb: r.method,
+    adminId: r.auth.credentials.id,
+  });
 
   return output(dispute);
 }
@@ -93,7 +97,11 @@ export async function disputeDecide(r) {
     decisionDescription: r.payload.decisionDescription,
   });
 
-  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+  await saveAdminActionsMetadataJob({
+    path: r.path,
+    HTTPVerb: r.method,
+    adminId: r.auth.credentials.id,
+  });
 
   return output(await QuestDispute.findByPk(dispute.id));
 }
