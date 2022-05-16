@@ -1,6 +1,6 @@
 import * as Joi from "joi";
-import { getRbacSettings } from "../../utils/auth";
 import * as handlers from "../../api/v1/disputes";
+import { getRbacSettings } from "../../utils/auth";
 import { AdminRole } from "@workquest/database-models/lib/models";
 import {
   idSchema,

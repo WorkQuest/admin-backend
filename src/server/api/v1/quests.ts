@@ -57,7 +57,7 @@ export async function getQuests(r) {
     model: QuestDispute,
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+    where: { status: [DisputeStatus.Pending, DisputeStatus.InProgress] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -76,7 +76,7 @@ export async function getQuest(r) {
       model: QuestDispute,
       as: 'openDispute',
       required: false,
-      where: { status: [DisputeStatus.pending, DisputeStatus.inProgress] }
+      where: { status: [DisputeStatus.Pending, DisputeStatus.InProgress] }
     }
   });
 
