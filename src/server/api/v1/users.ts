@@ -19,6 +19,12 @@ import {
 import {addJob} from "../../utils/scheduler";
 import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
 
+export const searchFields = [
+  "firstName",
+  "lastName",
+  "email",
+];
+
 export async function getUser(r) {
   const user = await User.findByPk(r.params.userId);
 
@@ -29,8 +35,19 @@ export async function getUser(r) {
   return output(user);
 }
 
-export async function getUsers(r) {
+export async function getAllUsers(r) {
+  const where = {
+    ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+  }
+
+  if (r.query.q) {
+    where[Op.or] = searchFields.map(
+      field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
+    );
+  }
+
   const { rows, count } = await User.findAndCountAll({
+    where,
     distinct: true,
     col: '"User"."id"',
     limit: r.query.limit,
@@ -39,6 +56,32 @@ export async function getUsers(r) {
   });
 
   return output({ count, users: rows });
+}
+
+export function getUsers(role: UserRole) {
+  return async function(r) {
+    const where = {
+      role,
+      ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
+    };
+
+    if (r.query.q) {
+      where[Op.or] = searchFields.map(
+        field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
+      );
+    }
+
+    const { rows, count } = await User.findAndCountAll({
+      where,
+      distinct: true,
+      col: '"User"."id"',
+      limit: r.query.limit,
+      offset: r.query.offset,
+      order: [ ['createdAt', 'DESC'] ],
+    });
+
+      return output({ count, users: rows });
+    };
 }
 
 export async function getUserSessions(r) {
