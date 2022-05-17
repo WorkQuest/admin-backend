@@ -182,7 +182,7 @@ export async function changeUserRole(r) {
     userId: user.id,
     movedFromRole: user.role,
     additionalInfo: user.additionalInfo,
-    wagePerHour: user.wagePerHour,
+    costPerHour: user.costPerHour,
     workplace: user.workplace,
     priority: user.priority,
   }, { transaction });
