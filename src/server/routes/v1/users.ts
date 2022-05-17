@@ -13,7 +13,8 @@ import {
   userBlackListReasonSchema,
   userBlackListSchema,
   userSchema,
-  userSessionsSchema, userStatusesSchema,
+  userSessionsSchema,
+  userStatusesSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
