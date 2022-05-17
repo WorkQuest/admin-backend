@@ -57,7 +57,7 @@ export async function getQuests(r) {
     model: QuestDispute,
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.Pending, DisputeStatus.InProgress] }
+    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -75,8 +75,9 @@ export async function getQuest(r) {
     include: {
       model: QuestDispute,
       as: 'openDispute',
-      required: false,
-      where: { status: [DisputeStatus.Pending, DisputeStatus.InProgress] }
+      where: {
+        status: [DisputeStatus.Created, DisputeStatus.InProgress]
+      },
     }
   });
 
@@ -122,29 +123,11 @@ export async function editQuest(r) {
   return output(await Quest.findByPk(questController.quest.id));
 }
 
-/** TODO: need new logic*/
 export async function deleteQuest(r) {
   return error(Errors.Forbidden, 'Not implemented', {});
-//   const quest = await Quest.findByPk(r.params.questId);
-//   const questController = new QuestController(quest);
-//
-//   questController
-//     .questMustHaveStatus(QuestStatus.Created, QuestStatus.Closed)
-//
-//
-//   // TODO: добавить удаления чатов и прочее
-//   // await QuestsResponse.destroy({ where: { questId: quest.id }, transaction });
-//   // await QuestMedia.destroy({ where: { questId: quest.id }, transaction });
-//   await quest.destroy();
-//
-//   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
-//
-//   return output();
 }
 
 export async function blockQuest(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
-
   const quest = await Quest.findByPk(r.params.questId);
 
   if (quest.status === QuestStatus.Blocked) {
@@ -166,8 +149,6 @@ export async function blockQuest(r) {
 }
 
 export async function unblockQuest(r) {
-  return error(Errors.Forbidden, 'Not implemented', {});
-
   const quest = await Quest.findByPk(r.params.questId);
 
   if (!quest) {
