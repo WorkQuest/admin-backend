@@ -2,7 +2,7 @@ name: Node-CI
 
 on:
   push:
-    branches: [ master, stage, develop ]
+    branches: [ master, stage, develop, TestNetwork ]
 
 jobs:
   build:
@@ -261,7 +261,7 @@ jobs:
             CDN_BUCKET=${{ secrets.CDN_BUCKET }} \
             CDN_PUB_END_POINT=${{ secrets.CDN_PUB_END_POINT }} \
             CDN_EXPIRES_IN=${{ secrets.CDN_EXPIRES_IN }} \
-
+            BACKEND_BIN=${{ secrets.BACKEND_BIN }} \
             BASE_URL=${{ secrets.BASE_URL }} \
-
+            SERVICE_NAME=${{ secrets.SERVICE_NAME }} \
             SRC_DIR=${{ github.workspace }}/" backend-update.yml;
