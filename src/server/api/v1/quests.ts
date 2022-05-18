@@ -78,6 +78,7 @@ export async function getQuest(r) {
       where: {
         status: [DisputeStatus.Created, DisputeStatus.InProgress]
       },
+      required: false,
     }
   });
 
