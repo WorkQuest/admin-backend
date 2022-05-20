@@ -1,12 +1,15 @@
 import * as Joi from "joi";
 import * as handlers from "../../api/v1/auth";
 import {
-  jwtTokens,
   totpSchema,
   emptyOkSchema,
   outputOkSchema,
   adminEmailSchema,
-  adminPasswordSchema, tokensWithStatus,
+  adminPasswordSchema,
+  tokensWithStatus,
+  walletPublicKeySchema,
+  walletAddressSchema,
+  tokensWithWalletSchema
 } from "@workquest/database-models/lib/schemes";
 import {refreshTokens} from "../../api/v1/auth";
 
@@ -39,7 +42,7 @@ export default[{
       }).label("AuthLoginPayload")
     },
     response: {
-      schema: outputOkSchema(jwtTokens).label("TokensResponse")
+      schema: outputOkSchema(tokensWithWalletSchema).label("TokensResponse")
     }
   }
 }, {
@@ -54,4 +57,22 @@ export default[{
       schema: outputOkSchema(tokensWithStatus).label("TokensWithStatusResponse")
     }
   }
-},]
+}, {
+  method: 'POST',
+  path: '/v1/auth/register/wallet',
+  handler: handlers.registerWallet,
+  options: {
+    id: 'v1.auth.registerWallet',
+    tags: ['api', 'auth'],
+    description: 'Register wallet',
+    validate: {
+      payload: Joi.object({
+        publicKey: walletPublicKeySchema.required(),
+        address: walletAddressSchema.required(),
+      }).label('RegisterWalletPayload'),
+    },
+    response: {
+      schema: outputOkSchema(walletAddressSchema).label('RegisterWalletResponse'),
+    }
+  }
+}];
