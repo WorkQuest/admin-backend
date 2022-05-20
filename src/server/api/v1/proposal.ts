@@ -34,11 +34,13 @@ export async function getProposals(r) {
     replacements['query'] = `%${r.query.q}%`;
   }
 
+
   for (const [key, value] of Object.entries(r.query.sort || {})) {
     order.push([key, value]);
   }
 
   const {count, rows} = await Proposal.findAndCountAll({
+    distinct: true,
     where,
     include,
     order,
