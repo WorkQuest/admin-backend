@@ -188,7 +188,7 @@ export default [{
     id: "v1.blockUser",
     tags: ["api", "user"],
     description: "Block user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
