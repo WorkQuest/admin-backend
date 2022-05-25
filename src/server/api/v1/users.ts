@@ -23,6 +23,7 @@ export const searchFields = [
   "firstName",
   "lastName",
   "email",
+  "locationPlaceName",
 ];
 
 export async function getUser(r) {
