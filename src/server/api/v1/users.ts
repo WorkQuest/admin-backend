@@ -1,7 +1,7 @@
-import {literal, Op} from 'sequelize'
-import {error, output} from "../../utils";
-import {Errors} from "../../utils/errors";
-import {UserController} from "../../controllers/controller.user";
+import { literal, Op } from 'sequelize'
+import { error, output } from "../../utils";
+import { Errors } from "../../utils/errors";
+import { UserController } from "../../controllers/controller.user";
 import {
   Admin,
   BlackListStatus,
@@ -10,14 +10,15 @@ import {
   QuestsResponseStatus,
   QuestStatus,
   Session,
+  StatusKYC,
   User,
   UserBlackList,
   UserChangeRoleData,
   UserRole,
   UserStatus
 } from "@workquest/database-models/lib/models";
-import {addJob} from "../../utils/scheduler";
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
+import { addJob } from "../../utils/scheduler";
+import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 
 export const searchFields = [
   "firstName",
@@ -39,6 +40,12 @@ export async function getUser(r) {
 export async function getAllUsers(r) {
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+    ...(r.query.role && { role: r.query.role }),
+    ...(r.query.smsVerification && { phone: { [Op.ne]: null } }),
+  }
+
+  if (r.query.statusKYC === StatusKYC.Unconfirmed || r.query.statusKYC === StatusKYC.Confirmed) {
+    where[Op.and] = { statusKYC: r.query.statusKYC };
   }
 
   if (r.query.q) {
@@ -62,9 +69,19 @@ export async function getAllUsers(r) {
 export function getUsers(role: UserRole) {
   return async function(r) {
     const where = {
+      [Op.and]: [],
       role,
       ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
+      ...(r.query.smsVerification && { phone: { [Op.ne]: null } }),
     };
+
+    if (r.query.statusKYC === StatusKYC.Unconfirmed || r.query.statusKYC === StatusKYC.Confirmed) {
+      where[Op.and].push({ statusKYC: r.query.statusKYC });
+    }
+
+    if (role === UserRole.Worker && r.query.payPeriod) {
+      where[Op.and].push({ payPeriod: r.query.payPeriod});
+    }
 
     if (r.query.q) {
       where[Op.or] = searchFields.map(

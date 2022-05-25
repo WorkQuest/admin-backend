@@ -8,13 +8,13 @@ import {
   limitSchema,
   offsetSchema,
   outputOkSchema,
-  outputPaginationSchema,
+  outputPaginationSchema, payPeriodSchema,
   searchSchema,
   userBlackListReasonSchema,
-  userBlackListSchema,
+  userBlackListSchema, userRoleSchema,
   userSchema,
   userSessionsSchema,
-  userStatusesSchema,
+  userStatusesSchema, userStatusKycSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -47,6 +47,9 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        statusKYC: userStatusKycSchema,
+        role: userRoleSchema,
+        smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         statuses: userStatusesSchema.default(null),
         limit: limitSchema,
         offset: offsetSchema,
@@ -68,6 +71,8 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        statusKYC: userStatusKycSchema,
+        smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         statuses: userStatusesSchema.default(null),
         limit: limitSchema,
         offset: offsetSchema,
@@ -89,6 +94,9 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        statusKYC: userStatusKycSchema,
+        smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
+        payPeriod: payPeriodSchema,
         statuses: userStatusesSchema.default(null),
         limit: limitSchema,
         offset: offsetSchema,
