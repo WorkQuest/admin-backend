@@ -24,12 +24,9 @@ export class MediaValidator {
 
   public HasCompleteSetValidate(medias: Media[], mediaIds: string[]) {
     if (medias.length !== mediaIds.length) {
-      const notFountAdminIds = medias.map(admin => {
-        if (!mediaIds.includes(admin.id)) {
-          return admin.id
-        }
-      });
-      throw error(Errors.NotFound, 'Admins not found', { adminIds: notFountAdminIds });
+      const userFindingIds = medias.map(media => { return media.id });
+      const notFountMediaIds = mediaIds.filter(mediaId => !userFindingIds.includes(mediaId));
+      throw error(Errors.NotFound, 'Medias not found', { userIds: notFountMediaIds });
     }
   }
 }

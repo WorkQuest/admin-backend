@@ -12,12 +12,9 @@ export class AdminValidator {
   }
   public HasCompleteSetValidate(admins: Admin[], adminIds: string[]) {
     if (admins.length !== adminIds.length) {
-      const notFountAdminIds = admins.map(admin => {
-        if (!adminIds.includes(admin.id)) {
-          return admin.id
-        }
-      });
-      throw error(Errors.NotFound, 'Admins not found', { adminIds: notFountAdminIds });
+      const adminFindingIds = admins.map(admin => { return admin.id });
+      const notFoundAdminIds = adminIds.filter(adminId => !adminFindingIds.includes(adminId));
+      throw error(Errors.NotFound, 'Admins not found', { adminIds: notFoundAdminIds });
     }
   }
 }
