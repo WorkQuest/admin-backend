@@ -38,6 +38,10 @@ export async function getUser(r) {
 }
 
 export async function getAllUsers(r) {
+  const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.query.role && { role: r.query.role }),
@@ -52,6 +56,8 @@ export async function getAllUsers(r) {
     where[Op.or] = searchFields.map(
       field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
     );
+
+    where[Op.or].push(searchByFullNameLiteral);
   }
 
   const { rows, count } = await User.findAndCountAll({
@@ -68,6 +74,10 @@ export async function getAllUsers(r) {
 
 export function getUsers(role: UserRole) {
   return async function(r) {
+    const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
     const where = {
       [Op.and]: [],
       role,
@@ -87,6 +97,8 @@ export function getUsers(role: UserRole) {
       where[Op.or] = searchFields.map(
         field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
       );
+
+      where[Op.or].push(searchByFullNameLiteral);
     }
 
     const { rows, count } = await User.findAndCountAll({
