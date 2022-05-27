@@ -259,7 +259,7 @@ export async function getChatMembers(r) {
 
   return output({ count, members: rows });
 }
-//TODO updateCountUnreadChatsJob
+
 export async function createGroupChat(r) {
   const chatName: string = r.payload.name;
   const chatCreator: Admin = r.auth.credentials;
@@ -277,11 +277,6 @@ export async function createGroupChat(r) {
     invitedAdmins,
   });
 
-  // await updateCountUnreadChatsJob({
-  //   //chatId: message.chatId,
-  //   adminIds: [...adminIds, chatCreator.id],
-  // });
-
   // r.server.app.broker.sendChatNotification({
   //   recipients: adminMemberIds.filter((id) => id !== adminChatOwner.id),
   //   action: ChatNotificationActions.groupChatCreate,
@@ -290,7 +285,7 @@ export async function createGroupChat(r) {
 
   return output(chat);
 }
-//TODO updateCountUnreadChatsJob
+
 export async function sendMessageToAdmin(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -316,22 +311,6 @@ export async function sendMessageToAdmin(r) {
 
   const meMember = await new GetChatMemberByAdminHandler().Handle({ admin: meAdmin, chat: message.getDataValue('chat') });
 
-  // await incrementUnreadCountMessageOfMembersJob({
-  //   chatId: message.chatId,
-  //   skipMemberIds: [meMember.id],
-  // });
-  // await setMessageAsReadJob({
-  //   chatId: message.chatId,
-  //   lastUnreadMessage: { id: message.id, number: message.number },
-  //   senderMemberId: meMember.id,
-  // });
-  //
-  // //TODO
-  // await updateCountUnreadChatsJob({
-  //   //chatId: message.chatId,
-  //   adminIds: [adminId, meAdmin.id],
-  // });
-
   // r.server.app.broker.sendChatNotification({
   //   data: message,
   //   action: ChatNotificationActions.newMessage,
@@ -340,7 +319,7 @@ export async function sendMessageToAdmin(r) {
 
   return output(message);
 }
-//TODO updateCountUnreadChatsJob
+
 export async function sendMessageToChat(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -368,21 +347,6 @@ export async function sendMessageToChat(r) {
     sender: meMember,
   });
 
-  // await resetUnreadCountMessagesOfMemberJob({
-  //   memberId: meMember.id,
-  //   chatId: chat.id,
-  //   lastReadMessage: { id: message.id, number: message.number },
-  // });
-  // await incrementUnreadCountMessageOfMembersJob({
-  //   chatId: chat.id,
-  //   skipMemberIds: [meMember.id],
-  // });
-  // await setMessageAsReadJob({
-  //   chatId: r.params.chatId,
-  //   senderMemberId: meMember.id,
-  //   lastUnreadMessage: { id: message.id, number: message.number },
-  // });
-
   //TODO: переделать
   const members = await ChatMember.findAll({ where: {
       chatId,
@@ -401,7 +365,7 @@ export async function sendMessageToChat(r) {
 
   return output(message);
 }
-//TODO updateCountUnreadChatsJob
+
 export async function removeMemberFromGroupChat(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -429,31 +393,6 @@ export async function removeMemberFromGroupChat(r) {
     )
   ).Handle({ member, groupChat, deletionInitiator: meMember });
 
-  // await resetUnreadCountMessagesOfMemberJob({
-  //   chatId: groupChat.id,
-  //   memberId: meMember.id,
-  //   lastReadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
-  // });
-  // await incrementUnreadCountMessageOfMembersJob({
-  //   skipMemberIds: [meMember.id],
-  //   chatId: groupChat.id,
-  // });
-  // await setMessageAsReadJob({
-  //   senderMemberId: meMember.id,
-  //   chatId: groupChat.id,
-  //   lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
-  // });
-
-  //TODO: переделать
-  const members = await ChatMember.findAll({ where: {
-      chatId,
-      status: MemberStatus.Active,
-    }
-  });
-  const adminIds = members.map(member => { return member.adminId });
-
-  // await updateCountUnreadChatsJob({ adminIds });
-
   // r.server.app.broker.sendChatNotification({
   //   action: ChatNotificationActions.groupChatDeleteAdmin,
   //   recipients: adminIdsWithoutSender,
@@ -462,7 +401,7 @@ export async function removeMemberFromGroupChat(r) {
 
   return output(messageWithInfo);
 }
-//TODO updateCountUnreadChatsJob
+
 export async function leaveFromGroupChat(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -512,7 +451,7 @@ export async function leaveFromGroupChat(r) {
 
   return output(messageWithInfo);
 }
-//TODO updateCountUnreadChatsJob
+
 export async function addAdminsInGroupChat(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -579,7 +518,7 @@ export async function addAdminsInGroupChat(r) {
 
   return output(messagesWithInfo);
 }
-//сheck updateCountUnreadMessagesJob
+
 export async function setMessagesAsRead(r) {
   const meAdmin: Admin = r.auth.credentials
   const { chatId } = r.params as { chatId: string };
@@ -637,7 +576,7 @@ export async function setMessagesAsRead(r) {
 
   return output();
 }
-//check
+
 export async function getAdminStarredMessages(r) {
   const { count, rows } = await Message.findAndCountAll({
     distinct: true,
@@ -659,7 +598,7 @@ export async function getAdminStarredMessages(r) {
 
   return output({ count, messages: rows });
 }
-//check
+
 export async function markMessageStar(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -683,7 +622,7 @@ export async function markMessageStar(r) {
 
   return output();
 }
-//check
+
 export async function removeStarFromMessage(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -693,7 +632,7 @@ export async function removeStarFromMessage(r) {
 
   return output();
 }
-//check
+
 export async function markChatStar(r) {
   const meAdmin: Admin = r.auth.credentials;
 
@@ -713,7 +652,7 @@ export async function markChatStar(r) {
 
   return output();
 }
-//check
+
 export async function removeStarFromChat(r) {
   const meAdmin: Admin = r.auth.credentials;
 
