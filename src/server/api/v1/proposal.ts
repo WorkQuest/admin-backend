@@ -1,7 +1,7 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
 import {searchProposalFields} from "./statistic";
-import { Proposal, ProposalCreatedEvent, User } from "@workquest/database-models/lib/models";
+import { Proposal, ProposalCreatedEvent, ProposalVoteCastEvent, User } from "@workquest/database-models/lib/models";
 
 export async function getProposals(r) {
   const searchByFirstAndLastNameLiteral = literal(
@@ -27,6 +27,10 @@ export async function getProposals(r) {
     model: ProposalCreatedEvent,
     as: 'createdEvent',
     attributes: ["votingPeriod"],
+  }, {
+    model: ProposalVoteCastEvent,
+    as: 'voteCastEvents',
+    attributes: ["voter", "support", "votes"]
   }];
 
   if (r.query.q) {
