@@ -111,11 +111,6 @@ export class CreateGroupChatHandler implements IHandler<CreateGroupChatCommand, 
   }
 
   private static async createChatDataAndChatMemberData(payload: CreateChatDataAndChatMemberDataPayload, options: Options = {}) {
-    const chatData = await ChatData.create({
-      chatId: payload.chat.id,
-      lastMessageId: payload.message.id,
-    }, { transaction: options.tx });
-
     const chatMemberData = ChatMemberData.bulkBuild(
       payload.chat.getDataValue('members').map(member => ({
         chatMemberId: member.id,
