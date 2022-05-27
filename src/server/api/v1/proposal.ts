@@ -1,7 +1,7 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
 import {searchProposalFields} from "./statistic";
-import {Proposal, User} from "@workquest/database-models/lib/models";
+import { Proposal, ProposalCreatedEvent, User } from "@workquest/database-models/lib/models";
 
 export async function getProposals(r) {
   const searchByFirstAndLastNameLiteral = literal(
@@ -23,6 +23,10 @@ export async function getProposals(r) {
   const include = [{
     model: User.scope('shortWithWallet'),
     as: 'proposerUser'
+  }, {
+    model: ProposalCreatedEvent,
+    as: 'createdEvent',
+    attributes: ["votingPeriod"],
   }];
 
   if (r.query.q) {
