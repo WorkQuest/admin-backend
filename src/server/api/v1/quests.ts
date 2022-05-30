@@ -71,7 +71,7 @@ export async function getQuests(r) {
 }
 
 export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId, {
+  const quest = await Quest.unscoped().findByPk(r.params.questId, {
     include: {
       model: QuestDispute,
       as: 'openDispute',
@@ -80,7 +80,6 @@ export async function getQuest(r) {
       },
       required: false,
     },
-    attributes: ["updatedAt"],
   });
 
   if (!quest) {
