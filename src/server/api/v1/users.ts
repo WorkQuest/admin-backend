@@ -42,6 +42,7 @@ export async function getAllUsers(r) {
     concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
   `);
 
+  const order = [];
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.query.role && { role: r.query.role }),
@@ -60,13 +61,23 @@ export async function getAllUsers(r) {
     where[Op.or].push(searchByFullNameLiteral);
   }
 
+  if (r.query.sort) {
+    for (const [key, value] of Object.entries(r.query.sort || {})) {
+      order.push([key, value]);
+    }
+  }
+
+  if (order.length === 0) {
+    order.push(['createdAt', 'DESC'])
+  }
+
   const { rows, count } = await User.findAndCountAll({
     where,
     distinct: true,
     col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
-    order: [ ['createdAt', 'DESC'] ],
+    order,
   });
 
   return output({ count, users: rows });
@@ -77,6 +88,8 @@ export function getUsers(role: UserRole) {
     const searchByFullNameLiteral = literal(`
     concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
   `);
+
+    const order = [];
 
     const where = {
       [Op.and]: [],
@@ -101,13 +114,22 @@ export function getUsers(role: UserRole) {
       where[Op.or].push(searchByFullNameLiteral);
     }
 
+    if (r.query.sort) {
+      for (const [key, value] of Object.entries(r.query.sort || {})) {
+        order.push([key, value]);
+      }
+    }
+
+    if (order.length === 0) {
+      order.push(['createdAt', 'DESC'])
+    }
+
     const { rows, count } = await User.findAndCountAll({
       where,
       distinct: true,
       col: '"User"."id"',
       limit: r.query.limit,
       offset: r.query.offset,
-      order: [ ['createdAt', 'DESC'] ],
     });
 
       return output({ count, users: rows });
