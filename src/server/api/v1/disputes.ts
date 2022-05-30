@@ -71,6 +71,16 @@ export async function takeDisputeToResolve(r) {
     assignedAdminId: r.auth.credentials.id,
   });
 
+  const questChat = await QuestChat.findOne({
+    where: {
+      questId: dispute.questId,
+      employerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+      workerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+    }
+  });
+
+
+
   await saveAdminActionsMetadataJob({
     path: r.path,
     HTTPVerb: r.method,
