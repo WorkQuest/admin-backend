@@ -63,6 +63,7 @@ export async function getQuests(r) {
   const { rows, count } = await Quest.unscoped().findAndCountAll({
     include, where,
     distinct: true,
+    attributes: ["updatedAt"],
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -79,7 +80,8 @@ export async function getQuest(r) {
         status: [DisputeStatus.Created, DisputeStatus.InProgress]
       },
       required: false,
-    }
+    },
+    attributes: ["updatedAt"],
   });
 
   if (!quest) {

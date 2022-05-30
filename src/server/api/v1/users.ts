@@ -122,6 +122,7 @@ export async function getUserSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
+    distinct: true,
     include: { model: User, as: 'user' },
     limit: r.query.limit,
     offset: r.query.offset,
