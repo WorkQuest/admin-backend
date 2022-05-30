@@ -17,7 +17,7 @@ import {
 
 export interface AddAdminInQuestChatCommand {
   readonly questChat: Chat;
-  readonly addAdmin: Admin;
+  readonly disputeAdmin: Admin;
 }
 
 interface AddAdminsPayload {
@@ -96,16 +96,11 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
   }
 
   public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
-    const admin = command.admin;
-
-    const newMemberAdminIds = adminIds.filter(adminId => !deletedMemberAdminIds.includes(adminId));
-
-    const newMembers = ChatMember.bulkBuild(
-      newMemberAdminIds.map(adminId => ({
-        adminId,
-        type: MemberType.Admin,
-      }))
-    );
+    const newMembers = ChatMember.build({
+      chatId: command.questChat.id,
+      adminId: command.disputeAdmin.id,
+      type: MemberType.Admin,
+    });
 
     return await this.dbContext.transaction(async (tx) => {
       const lastMessage = await AddAdminsInGroupChatHandler.getLastMessage(command.groupChat, { tx });
