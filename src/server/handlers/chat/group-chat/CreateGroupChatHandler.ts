@@ -123,8 +123,6 @@ export class CreateGroupChatHandler implements IHandler<CreateGroupChatCommand, 
     await Promise.all(
       chatMemberData.map(async chatMemberData => chatMemberData.save({ transaction: options.tx })),
     );
-
-    payload.chat.setDataValue('chatData', chatData);
   }
 
   public async Handle(command: CreateGroupChatCommand): Promise<[Chat, Message]> {

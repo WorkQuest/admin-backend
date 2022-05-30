@@ -82,17 +82,17 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminsInGroupCha
     const infoMessages = InfoMessage.bulkBuild(
       messages.map((message, number) => ({
         messageId: message.id,
-        memberId: payload.newMembers[number],
+        memberId: payload.newMembers[number].id,
         messageAction: MessageAction.GroupChatAddMember,
       }))
     )
 
-    await Promise.all([
+    await Promise.all(
       messages.map(async message => message.save({ transaction: options.tx })),
-    ]);
-    await Promise.all([
+    );
+    await Promise.all(
       infoMessages.map(async infoMessage => infoMessage.save({ transaction: options.tx })),
-    ]);
+    );
 
     messages.forEach((message, number) => {
       message.setDataValue('infoMessage', infoMessages[number]);
