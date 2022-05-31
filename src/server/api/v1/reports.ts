@@ -1,7 +1,16 @@
+import { ReportNotificationActions } from "../../controllers/controller.broker";
 import { BindOrReplacements, literal, Op, WhereOptions } from 'sequelize';
-import { Admin, DiscussionComment, Quest, Report, ReportStatus, User } from "@workquest/database-models/lib/models";
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
+import {
+  DiscussionComment,
+  reportEntities,
+  ReportStatus,
+  Report,
+  Admin,
+  Quest,
+  User,
+} from "@workquest/database-models/lib/models";
 
 const searchReportFields = [
   'title',
@@ -70,7 +79,7 @@ export async function getReport(r) {
       model: User.scope('short'),
       as: 'entityUser',
     }, {
-      model: Quest.scope('short'),
+      model: Quest,
       as: 'entityQuest',
     }, {
       model: DiscussionComment,
@@ -85,7 +94,7 @@ export async function getReport(r) {
   return output(report);
 }
 
-export async function closeReport(r) {
+export async function rejectReport(r) {
   const report = await Report.findByPk(r.params.reportId);
 
   if (!report) {
@@ -97,15 +106,21 @@ export async function closeReport(r) {
   }
 
   await report.update({
-    status: ReportStatus.Rejected
+    status: ReportStatus.Rejected,
+    resolvedByAdminId: r.auth.credentials.id,
+    resolvedAt: new Date()
   });
 
-  // TODO: отправить нотификации
+  await r.server.app.broker.sendReportNotification({
+    recipients: [report.authorId],
+    action: ReportNotificationActions.ReportRejected,
+    data: { reportId: report.id }
+  })
 
   return output();
 }
 
-export async function blockEntity(r) {
+export async function decideReport(r) {
   const report = await Report.findByPk(r.params.reportId);
 
   if (!report) {
@@ -116,5 +131,44 @@ export async function blockEntity(r) {
     return error(Errors.InvalidStatus, 'Invalid report status', {});
   }
 
-  
+  const entityObject = reportEntities[report.entityType];
+
+  if (!entityObject) {
+    return error(Errors.NotFound, 'Entity not found', {});
+  }
+
+  const entityModel: any = entityObject.entity;
+
+  const entity = await entityModel.findByPk(report.entityId);
+
+  if (!entity) {
+    return error(Errors.NotFound, 'Entity not found', {});
+  }
+
+  if (entity.status && entity.status === entityObject.statuses.Blocked) {
+    await report.update({ status: ReportStatus.Decided });
+
+    return error(Errors.InvalidStatus, 'Invalid entity status', {});
+  }
+
+  await r.server.app.db.transaction(async transaction => {
+    await report.update({
+        status: ReportStatus.Decided,
+        resolvedByAdminId: r.auth.credentials.id,
+        resolvedAt: new Date()
+      }, { transaction }
+    );
+
+    await entity.update({
+      status: entityObject.statuses.Blocked
+    }, { transaction });
+  });
+
+  await r.server.app.broker.sendReportNotification({
+    recipients: [report.authorId],
+    action: ReportNotificationActions.ReportDecided,
+    data: { reportId: report.id }
+  })
+
+  return output();
 }

@@ -3,11 +3,17 @@ import config from "../config/config";
 import { Buffer } from "buffer";
 
 export const enum AdminBrokerQueues {
-  Quest = 'quest'
+  Quest = 'quest',
+  Report = 'report'
 }
 
 export const enum QuestNotificationActions {
   DisputeDecision = 'disputeDecision'
+}
+
+export const enum ReportNotificationActions {
+  ReportDecided = 'ReportDecided',
+  ReportRejected = 'ReportRejected'
 }
 
 type Notification<Action> = {
@@ -60,10 +66,22 @@ export class ControllerBroker {
   }
 
   public sendQuestNotification(notification: Notification<QuestNotificationActions>) {
-    if (!this.channel) return;
+    if (!this.channel) {
+      return;
+    }
 
     const convertedData = ControllerBroker.convertData(notification);
 
     this.channel.sendToQueue(AdminBrokerQueues.Quest, convertedData);
+  }
+
+  public sendReportNotification(notification: Notification<ReportNotificationActions>) {
+    if (!this.channel) {
+      return;
+    }
+
+    const convertedData = ControllerBroker.convertData(notification);
+
+    this.channel.sendToQueue(AdminBrokerQueues.Report, convertedData);
   }
 }
