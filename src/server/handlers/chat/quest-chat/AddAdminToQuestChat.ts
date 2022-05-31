@@ -20,8 +20,7 @@ export interface AddAdminInQuestChatCommand {
   readonly disputeAdmin: Admin;
 }
 
-interface AddAdminsPayload {
-  readonly groupChat: Chat;
+interface AddAdminsPayload extends AddAdminInQuestChatCommand{
   readonly lastMessage: Message;
 }
 
@@ -71,7 +70,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
     });
   }
 
-  private static async addMembers(payload: AddAdminsPayload, options: Options = {}) {
+  private static async addAdminMember(payload: AddAdminsPayload, options: Options = {}) {
     payload.newMembers.forEach(member => {
       member.chatId = payload.groupChat.id;
       member.status = MemberStatus.Active;
@@ -96,30 +95,24 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
   }
 
   public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
-    const newMembers = ChatMember.build({
+    const newMember = ChatMember.build({
       chatId: command.questChat.id,
       adminId: command.disputeAdmin.id,
       type: MemberType.Admin,
     });
 
     return await this.dbContext.transaction(async (tx) => {
-      const lastMessage = await AddAdminsInGroupChatHandler.getLastMessage(command.groupChat, { tx });
+      const lastMessage = await AddAdminsInGroupChatHandler.getLastMessage(command.questChat, { tx });
 
       await Promise.all([
-        AddAdminsInGroupChatHandler.addMembers({ lastMessage, newMembers, groupChat: command.groupChat }, { tx }),
+        AddAdminsInGroupChatHandler.addAdminMember({ lastMessage, newMember, groupChat: command.questChat }, { tx }),
       ]);
 
-      let messages = [];
-
-      if (newMembers.length !== 0) {
-        const messagesWithInfoAddAdmin = await AddAdminsInGroupChatHandler.sendInfoMessageAboutAddMember({
-          admin,
-          groupChat: command.groupChat,
-          lastMessage,
-        }, { tx });
-      }
-
-      return messagesWithInfoAddAdmin;
+      return await AddAdminsInGroupChatHandler.sendInfoMessageAboutAddMember({
+        disputeAdmin: newMember,
+        groupChat: command.questChat,
+        lastMessage,
+      }, { tx });
     });
   }
 }
