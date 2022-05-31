@@ -57,12 +57,8 @@ export async function getQuests(r) {
     as: "raiseView",
     attributes: ['status', 'duration', 'type', 'endedAt'],
   }, {
-    model: Media.scope('urlOnly'),
-    as: 'medias',
-    through: { attributes: [] }
-  }, {
     model: User.scope('short'),
-    as: 'user'
+    as: 'user',
   }, {
     model: User.scope('short'),
     as: 'assignedWorker'
@@ -75,7 +71,6 @@ export async function getQuests(r) {
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
-
     include, where,
     distinct: true,
     limit: r.query.limit,
