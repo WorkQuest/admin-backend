@@ -47,6 +47,8 @@ export async function getQuestDisputes(r) {
   }
 
   const { count, rows } = await QuestDispute.findAndCountAll({
+    distinct: true,
+    col: "QuestDispute.id",
     where,
     limit: r.query.limit,
     offset: r.query.offset,

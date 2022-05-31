@@ -38,6 +38,11 @@ export async function getUser(r) {
 }
 
 export async function getAllUsers(r) {
+  const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
+  const order = [];
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.query.role && { role: r.query.role }),
@@ -52,6 +57,18 @@ export async function getAllUsers(r) {
     where[Op.or] = searchFields.map(
       field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
     );
+
+    where[Op.or].push(searchByFullNameLiteral);
+  }
+
+  if (r.query.sort) {
+    for (const [key, value] of Object.entries(r.query.sort || {})) {
+      order.push([key, value]);
+    }
+  }
+
+  if (order.length === 0) {
+    order.push(['createdAt', 'DESC'])
   }
 
   const { rows, count } = await User.findAndCountAll({
@@ -60,7 +77,7 @@ export async function getAllUsers(r) {
     col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
-    order: [ ['createdAt', 'DESC'] ],
+    order,
   });
 
   return output({ count, users: rows });
@@ -68,6 +85,12 @@ export async function getAllUsers(r) {
 
 export function getUsers(role: UserRole) {
   return async function(r) {
+    const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
+    const order = [];
+
     const where = {
       [Op.and]: [],
       role,
@@ -87,6 +110,18 @@ export function getUsers(role: UserRole) {
       where[Op.or] = searchFields.map(
         field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
       );
+
+      where[Op.or].push(searchByFullNameLiteral);
+    }
+
+    if (r.query.sort) {
+      for (const [key, value] of Object.entries(r.query.sort || {})) {
+        order.push([key, value]);
+      }
+    }
+
+    if (order.length === 0) {
+      order.push(['createdAt', 'DESC'])
     }
 
     const { rows, count } = await User.findAndCountAll({
@@ -95,7 +130,6 @@ export function getUsers(role: UserRole) {
       col: '"User"."id"',
       limit: r.query.limit,
       offset: r.query.offset,
-      order: [ ['createdAt', 'DESC'] ],
     });
 
       return output({ count, users: rows });
@@ -110,6 +144,7 @@ export async function getUserSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
+    distinct: true,
     include: { model: User, as: 'user' },
     limit: r.query.limit,
     offset: r.query.offset,

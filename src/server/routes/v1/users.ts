@@ -9,7 +9,7 @@ import {
   offsetSchema,
   outputOkSchema,
   outputPaginationSchema, payPeriodSchema,
-  searchSchema,
+  searchSchema, sortDirectionSchema,
   userBlackListReasonSchema,
   userBlackListSchema, userRoleSchema,
   userSchema,
@@ -47,6 +47,13 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         role: userRoleSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
@@ -71,6 +78,13 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         statuses: userStatusesSchema.default(null),
@@ -94,6 +108,13 @@ export default [{
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         payPeriod: payPeriodSchema,
