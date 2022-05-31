@@ -18,48 +18,24 @@ export class QuestChatAccessPermission {
     }
   }
 
-  public async AdminIsNotMemberAccess(questChat: Chat, admins: Admin[]) {
-    const adminIds = admins.map(admin => { return admin.id });
-
-    const activeMembers = await ChatMember.findAll({
+  public async AdminIsNotMemberAccess(questChat: Chat, admin: Admin) {
+    const activeMember = await ChatMember.findOne({
       where: {
         chatId: questChat.id,
-        adminId: adminIds,
+        adminId: admin.id,
         status: MemberStatus.Active,
       }
     });
 
-    if (activeMembers.length !== 0) {
-      const existingAdminIds = activeMembers.map(chatMember => {
-        if (adminIds.includes(chatMember.adminId)) {
-          return chatMember.adminId
-        }
-      });
-
-      throw error(Errors.AlreadyExists, "Admins already exist in the chat", {
+    if (activeMember) {
+      throw error(Errors.AlreadyExists, "Admin already exists in the chat", {
         chatId: questChat.id,
-        adminIds: existingAdminIds
+        adminIds: admin.id
       });
     }
   }
 
   public async AdminIsNotLeftAccess(questChat: Chat, admins: Admin[]) {
-    const adminIds = admins.map(admin => { return admin.id });
-
-    const leveChatMembers = await ChatMemberDeletionData.findAll({
-      where: {
-        reason: ReasonForRemovingFromChat.Left,
-      },
-      include: [{
-        model: ChatMember,
-        as: 'chatMember',
-        where: {
-          chatId: questChat.id,
-          adminId: adminIds
-        }
-      }]
-    });
-
     if (leveChatMembers.length !== 0) {
       const leftAdminIds = leveChatMembers.map(chatMember => {
         if (adminIds.includes(chatMember.chatMember.adminId)) {

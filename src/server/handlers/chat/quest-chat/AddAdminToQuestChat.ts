@@ -107,8 +107,8 @@ export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecor
   public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
     const admin: Admin = command.admin as Admin;
 
-    await this.accessPermission.AdminIsNotMemberAccess(command.groupChat, admins);
-    await this.accessPermission.AdminIsNotLeftAccess(command.groupChat, admins);
+    await this.accessPermission.AdminIsNotMemberAccess(command.questChat, admin);
+    await this.accessPermission.AdminIsNotLeftAccess(command.questChat, admin);
 
     this.accessPermission.MemberHasAccess(command.groupChat, command.addInitiator);
     this.accessPermission.MemberHasOwnerAccess(command.groupChat, command.addInitiator);
