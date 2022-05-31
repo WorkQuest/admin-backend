@@ -17,10 +17,10 @@ import {
 
 export interface AddAdminInQuestChatCommand {
   readonly questChat: Chat;
-  readonly disputeAdmin: Admin;
+  readonly disputeAdminMember: ChatMember;
 }
 
-interface AddAdminsPayload extends AddAdminInQuestChatCommand{
+interface AddAdminsInQuestChatPayload extends AddAdminInQuestChatCommand{
   readonly lastMessage: Message;
 }
 
@@ -30,7 +30,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
   ) {
   }
 
-  private static async sendInfoMessageAboutAddMember(payload: AddAdminsPayload, options: Options = {}): Promise<Message[]> {
+  private static async sendInfoMessageAboutAddMember(payload: AddAdminsInQuestChatPayload, options: Options = {}): Promise<Message[]> {
     const messages = Message.bulkBuild(
       payload.newMembers.map((member, number) => ({
         type: MemberType.Admin,
@@ -70,34 +70,23 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
     });
   }
 
-  private static async addAdminMember(payload: AddAdminsPayload, options: Options = {}) {
-    payload.newMembers.forEach(member => {
-      member.chatId = payload.groupChat.id;
-      member.status = MemberStatus.Active;
-    });
+  private static async addAdminMemberAndCreateAdminData(payload: AddAdminsInQuestChatPayload, options: Options = {}) {
+    payload.disputeAdminMember.chatId = payload.questChat.id;
+    payload.disputeAdminMember.status = MemberStatus.Active;
 
-    const membersData = ChatMemberData.bulkBuild(
-      payload.newMembers.map(member => ({
-        chatMemberId: member.id,
-        chatId: payload.groupChat.id,
+    const membersData = ChatMemberData.create({
+        chatMemberId: payload.disputeAdminMember.id,
+        chatId: payload.questChat.id,
         unreadCountMessages: 0,
         lastReadMessageId: payload.lastMessage.id,
         lastReadMessageNumber: payload.lastMessage.number,
-      }))
-    );
-
-    await Promise.all(
-      payload.newMembers.map(async member => member.save({ transaction: options.tx }))
-    );
-    await Promise.all(
-      membersData.map(async member => member.save({ transaction: options.tx }))
-    );
+    });
   }
 
   public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
-    const newMember = ChatMember.build({
+    const disputeAdminMember = await ChatMember.create({
       chatId: command.questChat.id,
-      adminId: command.disputeAdmin.id,
+      adminId: command.disputeAdminMember.id,
       type: MemberType.Admin,
     });
 
@@ -105,7 +94,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
       const lastMessage = await AddAdminsInGroupChatHandler.getLastMessage(command.questChat, { tx });
 
       await Promise.all([
-        AddAdminsInGroupChatHandler.addAdminMember({ lastMessage, newMember, groupChat: command.questChat }, { tx }),
+        AddAdminsInGroupChatHandler.addAdminMember({ lastMessage, disputeAdminMember, questChat: command.questChat }, { tx }),
       ]);
 
       return await AddAdminsInGroupChatHandler.sendInfoMessageAboutAddMember({
@@ -117,7 +106,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
   }
 }
 
-export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddAdminsInGroupChatCommand, Promise<Message[]>> {
+export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
 
   private readonly accessPermission: GroupChatAccessPermission;
 
@@ -142,7 +131,7 @@ export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecor
   }
 }
 
-export class AddAdminsInGroupChatPreValidateHandler extends HandlerDecoratorBase<AddAdminsInGroupChatCommand, Promise<Message[]>> {
+export class AddAdminsInGroupChatPreValidateHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
 
   private readonly validator: GroupChatValidator;
 
