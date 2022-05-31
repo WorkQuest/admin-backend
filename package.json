@@ -26,7 +26,7 @@
     "@types/joi": "^14.3.4",
     "@types/validator": "^13.1.0",
     "amqplib": "^0.8.0",
-    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#7c57b0840ddf1fc61049add7d7573b72cc6aaa07",
+    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#61a07099310786478befd912f628861ebac157b5",
     "aws-sdk": "^2.963.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
