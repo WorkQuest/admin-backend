@@ -41,7 +41,7 @@ export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChat
     const infoMessages = await InfoMessage.create({
       messageId: message.id,
       memberId: payload.disputeAdminMember.id,
-      messageAction: MessageAction.GroupChatAddMember,
+      messageAction: MessageAction.QuestChatAddDisputeAdmin,
     }, { transaction: options.tx })
 
     message.setDataValue('infoMessage', infoMessages);
