@@ -9,15 +9,6 @@ import {
 } from "@workquest/database-models/lib/models";
 
 export class QuestChatAccessPermission {
-  public MemberHasAccess(questChat: Chat, member: ChatMember) {
-    if (member.chatId !== questChat.id) {
-      throw error(Errors.Forbidden, 'Admin is not a member of this chat', {
-        chatId: questChat.id,
-        adminId: member.adminId,
-      });
-    }
-  }
-
   public async AdminIsNotMemberAccess(questChat: Chat, admin: Admin) {
     const activeMember = await ChatMember.findOne({
       where: {
@@ -34,21 +25,4 @@ export class QuestChatAccessPermission {
       });
     }
   }
-
-  public async AdminIsNotLeftAccess(questChat: Chat, admins: Admin[]) {
-    if (leveChatMembers.length !== 0) {
-      const leftAdminIds = leveChatMembers.map(chatMember => {
-        if (adminIds.includes(chatMember.chatMember.adminId)) {
-          return chatMember.chatMember.adminId
-        }
-      });
-
-      throw error(Errors.AdminLeaveChat, "Can't add admin that left from the chat", {
-        chatId: questChat.id,
-        adminIds: leftAdminIds
-      });
-    }
-  }
-
-
 }
