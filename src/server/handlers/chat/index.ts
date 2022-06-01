@@ -25,5 +25,6 @@ export * from "./message/MessageValidator";
 export * from "./message/GetMessageByIdHandler";
 
 export * from "./quest-chat/QuestChatValidator";
-export * from "./quest-chat/AddAdminToQuestChat";
+export * from "./quest-chat/LeaveFromQuestChatHandler";
 export * from "./quest-chat/QuestChatAccessPermission";
+export * from "./quest-chat/AddAdminToQuestChatHandler";

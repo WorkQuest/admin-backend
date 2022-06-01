@@ -3,8 +3,14 @@ import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 import {
+  LeaveFromQuestChatHandler,
+  GetChatMemberByAdminHandler,
   AddAdminsInQuestChatHandler,
+  GetChatMemberPostValidationHandler,
+  LeaveFromQuestChatPreValidateHandler,
   AddAdminsInQuestChatPreValidateHandler,
+  GetChatMemberPostFullAccessPermissionHandler,
+  LeaveFromQuestChatPreAccessPermissionHandler,
   AddAdminsInQuestChatPreAccessPermissionHandler,
 } from "../../handlers";
 import {
@@ -112,12 +118,38 @@ export async function disputeDecide(r) {
   if (!dispute) {
     return error(Errors.NotFound, 'Dispute is not found', {});
   }
+
   if (dispute.assignedAdminId !== r.auth.credentials.id) {
     throw error(Errors.Forbidden, 'You are not an assigned administrator', {});
   }
+
   if (dispute.status !== DisputeStatus.InProgress) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
+
+  const questChat = await QuestChat.findOne({
+    where: {
+      questId: dispute.questId,
+      employerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+      workerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+    },
+    include: {
+      model: Chat,
+      as: 'chat',
+    }
+  });
+
+  const meMember = await new GetChatMemberPostFullAccessPermissionHandler(
+    new GetChatMemberPostValidationHandler(
+      new GetChatMemberByAdminHandler()
+    )
+  ).Handle({ chat: questChat.chat, admin: r.auth.credentials });
+
+  const messageWithInfo = await new LeaveFromQuestChatPreValidateHandler(
+    new LeaveFromQuestChatPreAccessPermissionHandler(
+      new LeaveFromQuestChatHandler(r.server.app.db)
+    )
+  ).Handle({ member: meMember, questChat: questChat.chat });
 
   await dispute.update({
     decisionDescription: r.payload.decisionDescription,
