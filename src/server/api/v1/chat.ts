@@ -478,7 +478,7 @@ export async function addAdminsInGroupChat(r) {
     new AddAdminsInGroupChatPreAccessPermissionHandler(
       new AddAdminsInGroupChatHandler(r.server.app.db)
     )
-  ).Handle({ groupChat, admins, addInitiator: meMember })
+  ).Handle({ groupChat, admins, addInitiator: meMember });
 
   const lastMessage = messagesWithInfo[messagesWithInfo.length - 1];
 

@@ -3,14 +3,20 @@ import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 import {
+  AddAdminsInQuestChatHandler,
+  AddAdminsInQuestChatPreValidateHandler,
+  AddAdminsInQuestChatPreAccessPermissionHandler,
+} from "../../handlers";
+import {
   User,
   Admin,
   Quest,
   QuestChat,
   QuestDispute,
   DisputeStatus,
-  QuestDisputeReview,
+  QuestDisputeReview, Chat,
 } from "@workquest/database-models/lib/models";
+
 
 export async function getQuestDispute(r) {
   const dispute = await QuestDispute.findByPk(r.params.disputeId, {
@@ -67,21 +73,29 @@ export async function takeDisputeToResolve(r) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
-  await dispute.update({
-    status: DisputeStatus.InProgress,
-    acceptedAt: Date.now(),
-    assignedAdminId: r.auth.credentials.id,
-  });
-
   const questChat = await QuestChat.findOne({
     where: {
       questId: dispute.questId,
       employerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
       workerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+    },
+    include: {
+      model: Chat,
+      as: 'chat',
     }
   });
 
+  const messagesWithInfo = await new AddAdminsInQuestChatPreValidateHandler(
+    new AddAdminsInQuestChatPreAccessPermissionHandler(
+      new AddAdminsInQuestChatHandler(r.server.app.db)
+    )
+  ).Handle({ questChat: questChat.chat, admin: r.auth.credentials as Admin });
 
+  await dispute.update({
+    status: DisputeStatus.InProgress,
+    acceptedAt: Date.now(),
+    assignedAdminId: r.auth.credentials.id,
+  });
 
   await saveAdminActionsMetadataJob({
     path: r.path,
