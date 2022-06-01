@@ -24,7 +24,7 @@ interface AddAdminsInQuestChatPayload {
   readonly lastMessage: Message;
 }
 
-export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChatCommand, Promise<Message[]>>{
+export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChatCommand, Promise<Message[]>>{
   constructor(
     private readonly dbContext: any,
   ) {
@@ -35,7 +35,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
       type: MemberType.Admin,
       chatId: payload.questChat.id,
       number: payload.lastMessage.number + 1, //'cause starts from 0
-      senderMemberId: payload.disputeAdminMember,
+      senderMemberId: payload.disputeAdminMember.id,
     }, { transaction: options.tx });
 
     const infoMessages = await InfoMessage.create({
@@ -68,22 +68,21 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
         unreadCountMessages: 0,
         lastReadMessageId: payload.lastMessage.id,
         lastReadMessageNumber: payload.lastMessage.number,
-    });
+    }, { transaction: options.tx });
   }
 
   public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
-    const disputeAdminMember = await ChatMember.create({
-      chatId: command.questChat.id,
-      adminId: command.admin.id,
-      type: MemberType.Admin,
-    });
-
     return await this.dbContext.transaction(async (tx) => {
-      const lastMessage = await AddAdminsInGroupChatHandler.getLastMessage(command.questChat, { tx });
+      const disputeAdminMember = await ChatMember.create({
+        chatId: command.questChat.id,
+        adminId: command.admin.id,
+        type: MemberType.Admin,
+      }, { transaction: tx });
+      const lastMessage = await AddAdminsInQuestChatHandler.getLastMessage(command.questChat, { tx });
 
-      await AddAdminsInGroupChatHandler.addAdminMemberAndCreateAdminData({ lastMessage, disputeAdminMember, questChat: command.questChat }, { tx });
+      await AddAdminsInQuestChatHandler.addAdminMemberAndCreateAdminData({ lastMessage, disputeAdminMember, questChat: command.questChat }, { tx });
 
-      return await AddAdminsInGroupChatHandler.sendInfoMessageAboutAddMember({
+      return await AddAdminsInQuestChatHandler.sendInfoMessageAboutAddMember({
         questChat: command.questChat,
         disputeAdminMember,
         lastMessage,
@@ -92,7 +91,7 @@ export class AddAdminsInGroupChatHandler implements IHandler<AddAdminInQuestChat
   }
 }
 
-export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
+export class AddAdminsInQuestChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
 
   private readonly accessPermission: QuestChatAccessPermission;
 
@@ -108,29 +107,25 @@ export class AddAdminsInGroupChatPreAccessPermissionHandler extends HandlerDecor
     const admin: Admin = command.admin as Admin;
 
     await this.accessPermission.AdminIsNotMemberAccess(command.questChat, admin);
-    await this.accessPermission.AdminIsNotLeftAccess(command.questChat, admin);
-
-    this.accessPermission.MemberHasAccess(command.groupChat, command.addInitiator);
-    this.accessPermission.MemberHasOwnerAccess(command.groupChat, command.addInitiator);
 
     return this.decorated.Handle(command);
   }
 }
 
-export class AddAdminsInGroupChatPreValidateHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
+export class AddAdminsInQuestChatPreValidateHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message[]>> {
 
   private readonly validator: QuestChatValidator;
 
   constructor(
-    protected readonly decorated: IHandler<AddAdminsInGroupChatCommand, Promise<Message[]>>,
+    protected readonly decorated: IHandler<AddAdminInQuestChatCommand, Promise<Message[]>>,
   ) {
     super(decorated);
 
     this.validator = new QuestChatValidator();
   }
 
-  public async Handle(command: AddAdminsInGroupChatCommand): Promise<Message[]> {
-    this.validator.GroupChatValidate(command.groupChat);
+  public async Handle(command: AddAdminInQuestChatCommand): Promise<Message[]> {
+    this.validator.QuestChatValidate(command.questChat);
 
     return this.decorated.Handle(command);
   }
