@@ -1,11 +1,11 @@
 import { addJob } from "../utils/scheduler";
 
-export type UpdateCountUnreadChatsPayload = {
+export type UpdateChatDataPayload = {
   chatId: string;
   lastMessageId: string;
 };
 
-export async function updateChatDataJob(payload: UpdateCountUnreadChatsPayload) {
+export async function updateChatDataJob(payload: UpdateChatDataPayload) {
   return addJob('updateChatData', payload);
 }
 
