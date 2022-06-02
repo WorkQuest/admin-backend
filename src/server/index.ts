@@ -58,12 +58,12 @@ const init = async () => {
 
   server.app.broker = new ControllerBroker();
   server.app.db = await initDatabase(config.dbLink, false, true);
-  server.app.scheduler = await run({
-    connectionString: config.dbLink,
-    concurrency: 5,
-    pollInterval: 1000,
-    taskDirectory: `${__dirname}/jobs` // Папка с исполняемыми тасками.
-  });
+  // server.app.scheduler = await run({
+  //   connectionString: config.dbLink,
+  //   concurrency: 5,
+  //   pollInterval: 1000,
+  //   taskDirectory: `${__dirname}/jobs` // Папка с исполняемыми тасками.
+  // });
 
   // JWT Auth
   server.auth.strategy('jwt-access', 'bearer-access-token', {

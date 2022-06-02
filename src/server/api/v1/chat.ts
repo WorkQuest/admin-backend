@@ -6,7 +6,7 @@ import { output } from '../../utils';
 // import { updateCountUnreadMessagesJob } from '../../jobs/updateCountUnreadMessages';
 // //import { listOfAdminsByChatsCountQuery, listOfAdminsByChatsQuery } from '../../queries';
 // import { resetUnreadCountMessagesOfMemberJob } from '../../jobs/resetUnreadCountMessagesOfMember';
-// import { incrementUnreadCountMessageOfMembersJob } from '../../jobs/incrementUnreadCountMessageOfMembers';
+
 import {
   Chat,
   User,
@@ -423,15 +423,6 @@ export async function leaveFromGroupChat(r) {
     )
   ).Handle({ member: meMember, groupChat });
 
-  // await incrementUnreadCountMessageOfMembersJob({
-  //   chatId: groupChat.id,
-  //   skipMemberIds: [meMember.id],
-  // });
-  // await setMessageAsReadJob({
-  //   chatId: groupChat.id,
-  //   senderMemberId: meMember.id,
-  //   lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
-  // });
 
   //TODO: переделать
   const members = await ChatMember.findAll({ where: {
@@ -482,21 +473,6 @@ export async function addAdminsInGroupChat(r) {
 
   const lastMessage = messagesWithInfo[messagesWithInfo.length - 1];
 
-  // await resetUnreadCountMessagesOfMemberJob({
-  //   chatId: groupChat.id,
-  //   memberId: meMember.id,
-  //   lastReadMessage: { id: lastMessage.id, number: lastMessage.number },
-  // });
-  // await incrementUnreadCountMessageOfMembersJob({
-  //   chatId: groupChat.id,
-  //   skipMemberIds: [meMember.id],
-  // });
-  //
-  // await setMessageAsReadJob({
-  //   chatId: groupChat.id,
-  //   senderMemberId: meMember.id,
-  //   lastUnreadMessage: { id: lastMessage.id, number: lastMessage.number }
-  // });
 
   //TODO: переделать
   const members = await ChatMember.findAll({ where: {
