@@ -3,18 +3,21 @@ import * as handlers from "../../api/v1/users";
 import { getRbacSettings } from "../../utils/auth";
 import { AdminRole, UserRole } from "@workquest/database-models/lib/models";
 import {
-  emptyOkSchema,
   idSchema,
-  limitSchema,
-  offsetSchema,
-  outputOkSchema,
-  outputPaginationSchema, payPeriodSchema,
-  searchSchema,
-  userBlackListReasonSchema,
-  userBlackListSchema, userRoleSchema,
   userSchema,
+  limitSchema,
+  searchSchema,
+  offsetSchema,
+  emptyOkSchema,
+  userRoleSchema,
+  outputOkSchema,
+  payPeriodSchema,
+  userStatusesSchema,
   userSessionsSchema,
-  userStatusesSchema, userStatusKycSchema,
+  userBlackListSchema,
+  userStatusKycSchema,
+  outputPaginationSchema,
+  userBlackListReasonSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -25,7 +28,7 @@ export default [{
     id: "v1.getUser",
     tags: ["api", "user"],
     description: "Get user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.support),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -43,7 +46,7 @@ export default [{
     id: "v1.getUsers",
     tags: ["api", "user"],
     description: "Get all users",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.main, AdminRole.support),
     validate: {
       query: Joi.object({
         q: searchSchema,
