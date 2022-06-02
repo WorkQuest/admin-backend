@@ -25,7 +25,7 @@ export default [{
     id: "v1.getUser",
     tags: ["api", "user"],
     description: "Get user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -43,7 +43,7 @@ export default [{
     id: "v1.getUsers",
     tags: ["api", "user"],
     description: "Get all users",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
@@ -74,7 +74,7 @@ export default [{
     id: "v1.getEmployers",
     tags: ["api", "user"],
     description: "Get employers",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
@@ -104,7 +104,7 @@ export default [{
     id: "v1.getWorkers",
     tags: ["api", "user"],
     description: "Get workers",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
@@ -135,7 +135,7 @@ export default [{
     id: "v1.user.getBlockHistory",
     tags: ["api", "user"],
     description: "Show user block story",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required()
@@ -157,7 +157,7 @@ export default [{
     id: "v1.user.getUserSessions",
     tags: ["api", "user"],
     description: "Get user sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required()
@@ -179,7 +179,7 @@ export default [{
     id: "v1.user.getUsersSessions",
     tags: ["api", "user"],
     description: "Get users sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
@@ -199,7 +199,7 @@ export default [{
     id: "v1.user.changeRole",
     tags: ["api", "user"],
     description: "Change role of the user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -217,7 +217,7 @@ export default [{
     id: "v1.blockUser",
     tags: ["api", "user"],
     description: "Block user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -238,7 +238,7 @@ export default [{
     id: "v1.unblockUser",
     tags: ["api", "user"],
     description: "Unblock user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
