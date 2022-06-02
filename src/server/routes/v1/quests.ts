@@ -1,29 +1,30 @@
 import * as Joi from "joi";
 import * as handlers from "../../api/v1/quests";
-import {getRbacSettings} from "../../utils/auth";
-import {AdminRole} from "@workquest/database-models/lib/models";
+import { getRbacSettings } from "../../utils/auth";
+import { AdminRole } from "@workquest/database-models/lib/models";
 import {
+  emptyOkSchema,
   idSchema,
   idsSchema,
-  questSchema,
   limitSchema,
-  offsetSchema,
-  emptyOkSchema,
-  prioritySchema,
-  outputOkSchema,
-  workPlaceSchema,
-  questTitleSchema,
   locationFullSchema,
-  questEmploymentSchema,
+  offsetSchema,
+  outputOkSchema,
   outputPaginationSchema,
-  questForAdminsGetSchema,
-  specializationKeysSchema,
-  questBlackListSchema,
-  questBlackListReasonSchema,
-  questStatusesSchema,
   prioritiesSchema,
+  prioritySchema,
+  questBlackListReasonSchema,
+  questBlackListSchema,
+  questEmploymentSchema,
+  questForAdminsGetSchema,
+  questSchema,
+  questStatusesSchema,
+  questTitleSchema,
   searchSchema,
+  specializationKeysSchema,
+  workPlaceSchema,
 } from "@workquest/database-models/lib/schemes";
+
 export default[{
   method: "GET",
   path: "/v1/quests",
@@ -53,7 +54,7 @@ export default[{
     id: "v1.quest.info",
     tags: ["api", "quest"],
     description: "Get info about quest",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -71,7 +72,7 @@ export default[{
     id: "v1.user.getQuests",
     tags: ["api", "quest"],
     description: "Get info about quests of the user",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),

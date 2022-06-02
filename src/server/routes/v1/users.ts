@@ -8,13 +8,17 @@ import {
   limitSchema,
   offsetSchema,
   outputOkSchema,
-  outputPaginationSchema, payPeriodSchema,
-  searchSchema, sortDirectionSchema,
+  outputPaginationSchema,
+  payPeriodSchema,
+  searchSchema,
+  sortDirectionSchema,
   userBlackListReasonSchema,
-  userBlackListSchema, userRoleSchema,
+  userBlackListSchema,
+  userRoleSchema,
   userSchema,
   userSessionsSchema,
-  userStatusesSchema, userStatusKycSchema,
+  userStatusesSchema,
+  userStatusKycSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -25,7 +29,7 @@ export default [{
     id: "v1.getUser",
     tags: ["api", "user"],
     description: "Get user",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -43,7 +47,7 @@ export default [{
     id: "v1.getUsers",
     tags: ["api", "user"],
     description: "Get all users",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       query: Joi.object({
         q: searchSchema,
