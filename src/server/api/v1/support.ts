@@ -80,7 +80,7 @@ export async function ticketDecide(r) {
   const ticket = await SupportTicketForUser.findByPk(r.params.ticketId);
 
   if (!ticket) {
-    return error(Errors.NotFound, 'Dispute is not found', {});
+    return error(Errors.NotFound, 'Ticket is not found', {});
   }
   if (ticket.resolvedByAdminId !== r.auth.credentials.id) {
     throw error(Errors.NoRole, 'In processing by another admin', {});
