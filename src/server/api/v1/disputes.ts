@@ -31,6 +31,10 @@ import { updateChatDataJob } from "../../jobs/updateChatData";
 import { updateCountUnreadMessagesJob } from "../../jobs/updateCountUnreadMessages";
 import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
 import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
+import {
+  GetQuestDisputeByIdHandler,
+  GetQuestDisputeByIdPostValidationHandler
+} from "../../handlers/quest/dispute/GetQuestDisputeByIdHandler";
 
 
 export async function getQuestDispute(r) {
@@ -79,14 +83,18 @@ export async function getQuestDisputes(r) {
 }
 
 export async function takeDisputeToResolve(r) {
-  const dispute = await QuestDispute.findByPk(r.params.disputeId);
+  const { disputeId } = r.params as { disputeId: string }
 
-  if (!dispute) {
-    return error(Errors.NotFound, 'Dispute is not found', {});
-  }
-  if (dispute.status !== DisputeStatus.Created) {
-    throw error(Errors.InvalidStatus, 'Invalid status', {});
-  }
+  const dispute = await new GetQuestDisputeByIdPostValidationHandler(
+    new GetQuestDisputeByIdHandler()
+  ).Handle({ disputeId })
+
+  // if (!dispute) {
+  //   return error(Errors.NotFound, 'Dispute is not found', {});
+  // }
+  // if (dispute.status !== DisputeStatus.Created) {
+  //   throw error(Errors.InvalidStatus, 'Invalid status', {});
+  // }
 
   const questChat = await QuestChat.findOne({
     where: {
@@ -114,8 +122,8 @@ export async function takeDisputeToResolve(r) {
 
   const meMember = await ChatMember.findOne({
     where: {
-      adminId: r.auth.credentials.id,
       chatId: questChat.chat.id,
+      adminId: r.auth.credentials.id,
     }
   });
 

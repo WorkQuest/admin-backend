@@ -1,6 +1,6 @@
-import { HandlerDecoratorBase, IHandler } from "../types";
-import { Chat, ChatMember, Media } from "@workquest/database-models/lib/models";
 import { MediaValidator } from "./MediaValidator";
+import { HandlerDecoratorBase, IHandler } from "../types";
+import { Media } from "@workquest/database-models/lib/models";
 
 export interface GetMediaByIdCommand {
   readonly mediaId: string;
