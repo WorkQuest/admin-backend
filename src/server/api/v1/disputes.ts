@@ -15,13 +15,22 @@ import {
 } from "../../handlers";
 import {
   User,
+  Chat,
   Admin,
   Quest,
   QuestChat,
+  ChatMember,
   QuestDispute,
+  MemberStatus,
   DisputeStatus,
-  QuestDisputeReview, Chat,
+  QuestDisputeReview,
 } from "@workquest/database-models/lib/models";
+import { resetUnreadCountMessagesOfMemberJob } from "../../jobs/resetUnreadCountMessagesOfMember";
+import { incrementUnreadCountMessageOfMembersJob } from "../../jobs/incrementUnreadCountMessageOfMembers";
+import { updateChatDataJob } from "../../jobs/updateChatData";
+import { updateCountUnreadMessagesJob } from "../../jobs/updateCountUnreadMessages";
+import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
+import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
 
 
 export async function getQuestDispute(r) {
@@ -103,6 +112,50 @@ export async function takeDisputeToResolve(r) {
     assignedAdminId: r.auth.credentials.id,
   });
 
+  const meMember = await ChatMember.findOne({
+    where: {
+      adminId: r.auth.credentials.id,
+      chatId: questChat.chat.id,
+    }
+  });
+
+  await resetUnreadCountMessagesOfMemberJob({
+    chatId: questChat.chat.id,
+    memberId: meMember.id,
+    lastReadMessage: { id: messagesWithInfo.id, number: messagesWithInfo.number },
+  });
+
+  await incrementUnreadCountMessageOfMembersJob({
+    chatId: questChat.chat.id,
+    skipMemberIds: [meMember.id],
+  });
+
+  await updateChatDataJob({
+    chatId: questChat.chat.id,
+    lastMessageId: messagesWithInfo.id,
+  });
+
+  await updateCountUnreadMessagesJob({
+    lastUnreadMessage: { id: messagesWithInfo.id, number: messagesWithInfo.number },
+    chatId: questChat.chat.id,
+    readerMemberId: meMember.id,
+  });
+
+  await setMessageAsReadJob({
+    chatId: questChat.chat.id,
+    senderMemberId: meMember.id,
+    lastUnreadMessage: { id: messagesWithInfo.id, number: messagesWithInfo.number }
+  });
+
+  //TODO: переделать
+  const members = await ChatMember.findAll({ where: {
+      chatId: questChat.chat.id,
+      status: MemberStatus.Active,
+    }
+  });
+
+  await updateCountUnreadChatsJob({ members });
+
   await saveAdminActionsMetadataJob({
     path: r.path,
     HTTPVerb: r.method,
@@ -154,6 +207,37 @@ export async function disputeDecide(r) {
   await dispute.update({
     decisionDescription: r.payload.decisionDescription,
   });
+
+  await incrementUnreadCountMessageOfMembersJob({
+    chatId: questChat.chat.id,
+    skipMemberIds: [meMember.id],
+  });
+
+  await updateChatDataJob({
+    chatId: questChat.chat.id,
+    lastMessageId: messageWithInfo.id,
+  });
+
+  await updateCountUnreadMessagesJob({
+    lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
+    chatId: messageWithInfo.chatId,
+    readerMemberId: meMember.id,
+  });
+
+  await setMessageAsReadJob({
+    chatId: questChat.chat.id,
+    senderMemberId: meMember.id,
+    lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
+  });
+
+  //TODO: переделать
+  const members = await ChatMember.findAll({ where: {
+      chatId: questChat.chat.id,
+      status: MemberStatus.Active,
+    }
+  });
+
+  await updateCountUnreadChatsJob({ members });
 
   await saveAdminActionsMetadataJob({
     path: r.path,
