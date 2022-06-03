@@ -218,12 +218,6 @@ export async function disputeDecide(r) {
     lastMessageId: messageWithInfo.id,
   });
 
-  await updateCountUnreadMessagesJob({
-    lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
-    chatId: messageWithInfo.chatId,
-    readerMemberId: meMember.id,
-  });
-
   await setMessageAsReadJob({
     chatId: questChat.chat.id,
     senderMemberId: meMember.id,
