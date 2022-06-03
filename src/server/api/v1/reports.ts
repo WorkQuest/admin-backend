@@ -14,8 +14,8 @@ import {
 
 const searchReportFields = [
   'title',
-  'description'
-]
+  'description',
+];
 
 export async function getReports(r) {
   const userSearchLiteral = literal(
@@ -49,8 +49,8 @@ export async function getReports(r) {
 
   const { rows, count } = await Report.findAndCountAll({
     attributes: { exclude: ['updatedAt'] },
-    replacements,
     where,
+    replacements,
     include: [{
       model: User.scope('short'),
       as: 'user',

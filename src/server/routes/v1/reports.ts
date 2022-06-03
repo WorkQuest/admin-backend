@@ -1,12 +1,17 @@
-import { AdminRole } from "@workquest/database-models/lib/models";
-import { getRbacSettings } from "../../utils/auth";
-import * as handlers from '../../api/v1/reports';
 import * as Joi from 'joi';
+import * as handlers from '../../api/v1/reports';
+import { getRbacSettings } from "../../utils/auth";
+import { AdminRole } from "@workquest/database-models/lib/models";
 import {
-  reportEntityTypeSchema,
-  reportStatusSchema,
+  idSchema,
   searchSchema,
-  idSchema, emptyOkSchema, outputPaginationSchema, reportSchema, outputOkSchema, reportWithEntitiesSchema,
+  reportSchema,
+  emptyOkSchema,
+  outputOkSchema,
+  reportStatusSchema,
+  reportEntityTypeSchema,
+  outputPaginationSchema,
+  reportWithEntitiesSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -20,10 +25,10 @@ export default [{
     description: 'Get all reports',
     validate: {
       query: Joi.object({
+        q: searchSchema,
+        adminId: idSchema,
         statuses: Joi.array().items(reportStatusSchema),
         entities: Joi.array().items(reportEntityTypeSchema),
-        adminId: idSchema,
-        q: searchSchema,
       }).label('GetReportsQuery')
     },
     response: {
