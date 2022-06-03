@@ -19,7 +19,7 @@ import {
   MemberStatus,
   StarredMessage,
   SenderMessageStatus,
-  ChatMemberDeletionData, ChatType,
+  ChatMemberDeletionData, ChatType, GroupChat,
 } from '@workquest/database-models/lib/models';
 import {
   GetChatByIdHandler,
@@ -142,6 +142,9 @@ export async function getAdminChats(r) {
       as: 'quest',
       attributes: ["id", "title"],
     }
+  }, {
+    model: GroupChat,
+    as: 'groupChat',
   }];
 
   if (r.query.q) {
@@ -295,7 +298,7 @@ export async function createGroupChat(r) {
   //   data: chatDto,
   // });
 
-  return output(chat);
+  return output({ chat, infoMessage: messageWithInfo });
 }
 
 export async function sendMessageToAdmin(r) {
