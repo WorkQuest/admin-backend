@@ -22,7 +22,7 @@ import {
   questBlackListReasonSchema,
   questStatusesSchema,
   prioritiesSchema,
-  searchSchema,
+  searchSchema, payPeriodSchema,
 } from "@workquest/database-models/lib/schemes";
 export default[{
   method: "GET",
@@ -102,10 +102,10 @@ export default[{
       }).label("EditQuestParams"),
       payload: Joi.object({
         workplace: workPlaceSchema.required(),
-        employment: questEmploymentSchema.required(),
+        typeOfEmployment: questEmploymentSchema.required(),
+        payPeriod: payPeriodSchema.required(),
         priority: prioritySchema.required(),
         locationFull: locationFullSchema.required(),
-        title: questTitleSchema.required(),
         medias: idsSchema.unique().required(),
         specializationKeys: specializationKeysSchema.unique().required(),
       }).label('EditQuestPayload'),
