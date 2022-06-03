@@ -86,12 +86,6 @@ export async function takeDisputeToResolve(r) {
     disputeId,
   });
 
-  await dispute.update({
-    status: DisputeStatus.InProgress,
-    acceptedAt: Date.now(),
-    assignedAdminId: r.auth.credentials.id,
-  });
-
   const meMember = await ChatMember.findOne({
     where: {
       chatId: chat.id,
