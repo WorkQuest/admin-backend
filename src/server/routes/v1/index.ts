@@ -8,6 +8,7 @@ import storageService from "./storageService";
 import skillFilters from "./skillFilters";
 import statistic from "./statistic";
 import proposal from "./proposal";
+import reports from "./reports";
 import support from "./support";
 
 export default [
@@ -21,5 +22,6 @@ export default [
   ...skillFilters,
   ...statistic,
   ...proposal,
+  ...reports,
   ...support
 ];
