@@ -14,7 +14,9 @@ import {
   QuestDispute,
   DisputeStatus,
   QuestBlackList,
+  QuestRaiseView,
   BlackListStatus,
+  QuestSpecializationFilter
 } from "@workquest/database-models/lib/models";
 
 export const searchQuestFields = [
@@ -45,19 +47,27 @@ export async function getQuests(r) {
 
   const include = [{
     model: Media.scope('urlOnly'),
-    as: 'medias',
-    through: { attributes: [] }
+    as: 'avatar',
+  }, {
+    model: QuestSpecializationFilter,
+    as: 'questSpecializations',
+    attributes: ['path'],
+  }, {
+    model: QuestRaiseView,
+    as: "raiseView",
+    attributes: ['status', 'duration', 'type', 'endedAt'],
   }, {
     model: User.scope('short'),
-    as: 'user'
+    as: 'user',
   }, {
     model: User.scope('short'),
     as: 'assignedWorker'
   }, {
-    model: QuestDispute,
+    model: QuestDispute.unscoped(),
+    attributes: ["id", "status", "number"],
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress] }
+    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] }
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
@@ -71,15 +81,37 @@ export async function getQuests(r) {
 }
 
 export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId, {
-    include: {
-      model: QuestDispute,
-      as: 'openDispute',
-      where: {
-        status: [DisputeStatus.Created, DisputeStatus.InProgress]
-      },
-      required: false,
-    }
+  const include = [{
+    model: Media.scope('urlOnly'),
+    as: 'avatar',
+  }, {
+    model: QuestSpecializationFilter,
+    as: 'questSpecializations',
+    attributes: ['path'],
+  }, {
+    model: QuestRaiseView,
+    as: "raiseView",
+    attributes: ['status', 'duration', 'type', 'endedAt'],
+  }, {
+    model: Media.scope('urlOnly'),
+    as: 'medias',
+    through: { attributes: [] }
+  }, {
+    model: User.scope('short'),
+    as: 'user'
+  }, {
+    model: User.scope('short'),
+    as: 'assignedWorker'
+  }, {
+    model: QuestDispute.unscoped(),
+    attributes: ["id", "status", "number"],
+    as: 'openDispute',
+    required: false,
+    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] }
+  }];
+
+  const quest = await Quest.unscoped().findByPk(r.params.questId, {
+    include
   });
 
   if (!quest) {
@@ -108,10 +140,10 @@ export async function editQuest(r) {
 
   questController.quest = await questController.quest.update({
     avatarId,
-    title: r.payload.title,
     priority: r.payload.priority,
     workplace: r.payload.workplace,
-    employment: r.payload.employment,
+    payPeriod: r.payload.payPeriod,
+    typeOfEmployment: r.payload.employment,
     location: r.payload.locationFull.location,
     locationPlaceName: r.payload.locationFull.locationPlaceName,
     locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),

@@ -27,7 +27,7 @@ export default[{
     id: "v1.getAdmins",
     tags: ["api", "admin"],
     description: "Get all admins. Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -46,7 +46,7 @@ export default[{
     id: "v1.getAdmin",
     tags: ["api", "admin"],
     description: "Get admin",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -64,7 +64,7 @@ export default[{
     id: "v1.user.getAdminSessions",
     tags: ["api", "admin"],
     description: "Get admin sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required()
@@ -86,7 +86,7 @@ export default[{
     id: "v1.user.getAdminsSessions",
     tags: ["api", "admin"],
     description: "Get admins sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -105,7 +105,7 @@ export default[{
     id: "v1.admin.create",
     tags: ["api", "admin"],
     description: "Create new admin account (not main admin). Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       payload: Joi.object({
         firstName: adminFirstNameSchema.required(),
@@ -127,7 +127,7 @@ export default[{
     id: "v1.admin.activateAdmin",
     tags: ["api", "admin"],
     description: "Activate admin account (forbidden activate main admin). Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -145,7 +145,7 @@ export default[{
     id: "v1.admin.deactivateAdmin",
     tags: ["api", "admin"],
     description: "Deactivate admin account (forbidden deactivate main admin). Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -163,7 +163,7 @@ export default[{
     id: "v1.admin.changeEmail",
     tags: ["api", "admin"],
     description: "Change admin login (forbidden to change main admin). Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -184,7 +184,7 @@ export default[{
     id: "v1.admin.changePassword",
     tags: ["api", "admin"],
     description: "Change admin password (forbidden to change main admin). Allow admins: main.",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -205,7 +205,7 @@ export default[{
     id: "v1.admin.deleteAdmin",
     tags: ["api", "admin"],
     description: "Delete admin account (forbidden delete main admin). Allow admins: main",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),

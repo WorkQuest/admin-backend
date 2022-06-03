@@ -23,7 +23,7 @@ export default[{
     id: "v1.quest.getDispute",
     tags: ["api", "quest-dispute"],
     description: "Get quest dispute",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
@@ -41,7 +41,7 @@ export default[{
     id: "v1.user.quest.getUserQuestDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get info about disputes of the user",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -63,7 +63,7 @@ export default[{
     id: "v1.quest.getQuestDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get all disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       query: questDisputeQuerySchema
     },
@@ -79,7 +79,7 @@ export default[{
     id: "v1.quest.disputes.takeDispute",
     tags: ["api", "quest-dispute"],
     description: "Admin take dispute",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
@@ -97,7 +97,7 @@ export default[{
     id: "v1.quest.dispute.decide",
     tags: ["api", "quest-dispute"],
     description: "Admin resolve dispute",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         disputeId: idSchema.required(),
@@ -116,7 +116,7 @@ export default[{
   handler: handlers.getQuestDisputeReviews,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.quest.dispute.getQuestDisputeReviews',
     tags: ['api', "quest-dispute"],
     description: 'Get quest disputes admins reviews',
@@ -138,7 +138,7 @@ export default[{
     id: "v1.admin.quest.dispute.getQuestDisputeReviewsForAdmin",
     tags: ["api", "quest-dispute"],
     description: "Get quest disputes admin reviews",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         adminId: idSchema.required(),
@@ -158,7 +158,7 @@ export default[{
   handler: handlers.getQuestDisputeReviewsForAdminMe,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     id: 'v1.admin.me.quest.dispute.getQuestDisputeAdminReviewMe',
     tags: ['api', "quest-dispute"],
     description: 'Get questDisputes admin (me) review',
@@ -178,7 +178,7 @@ export default[{
   handler: handlers.getQuestDisputeReviews,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     id: 'v1.admin.quest.dispute.getQuestDisputeReviewsByDispute',
     tags: ['api', "quest-dispute"],
     description: 'Get quest dispute reviews by dispute',
@@ -201,7 +201,7 @@ export default[{
   handler: handlers.getQuestDisputeReviews,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     id: 'v1.admin.quest.dispute.getQuestDisputeReviewsByQuest',
     tags: ['api', "quest-dispute"],
     description: 'Get questDispute reviews by quest',
@@ -226,7 +226,7 @@ export default[{
     id: "v1.admin.quest.getAdminQuestDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get info about disputes of the admin",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       query: Joi.object({
         statuses: questDisputeStatusesSchema,
@@ -249,7 +249,7 @@ export default[{
     id: "v1.quest.getDisputes",
     tags: ["api", "quest-dispute"],
     description: "Get quest disputes",
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),

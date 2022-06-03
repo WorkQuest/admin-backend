@@ -1,28 +1,30 @@
-import {literal, Op} from 'sequelize'
-import {error, output} from "../../utils";
-import {Errors} from "../../utils/errors";
-import {UserController} from "../../controllers/controller.user";
+import { literal, Op } from 'sequelize'
+import { error, output } from "../../utils";
+import { Errors } from "../../utils/errors";
+import { UserController } from "../../controllers/controller.user";
 import {
   Admin,
   BlackListStatus,
   Quest,
   QuestsResponse,
   QuestsResponseStatus,
-  QuestStatus,
+  QuestStatus, RatingStatistic,
   Session,
+  StatusKYC,
   User,
   UserBlackList,
   UserChangeRoleData,
   UserRole,
   UserStatus
 } from "@workquest/database-models/lib/models";
-import {addJob} from "../../utils/scheduler";
-import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
+import { addJob } from "../../utils/scheduler";
+import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 
 export const searchFields = [
   "firstName",
   "lastName",
   "email",
+  "locationPlaceName",
 ];
 
 export async function getUser(r) {
@@ -36,23 +38,57 @@ export async function getUser(r) {
 }
 
 export async function getAllUsers(r) {
+  const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
+  const order = [];
+  const include = [];
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+    ...(r.query.role && { role: r.query.role }),
+    ...(r.query.smsVerification && { phone: { [Op.ne]: null } }),
+  }
+
+  if (r.query.statusKYC === StatusKYC.Unconfirmed || r.query.statusKYC === StatusKYC.Confirmed) {
+    where[Op.and] = { statusKYC: r.query.statusKYC };
   }
 
   if (r.query.q) {
     where[Op.or] = searchFields.map(
       field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
     );
+
+    where[Op.or].push(searchByFullNameLiteral);
+  }
+
+  if (r.query.sort) {
+    for (const [key, value] of Object.entries(r.query.sort || {})) {
+      order.push([key, value]);
+    }
+  }
+
+  if (r.query.ratingStatuses) {
+    include.push({
+      model: RatingStatistic,
+      as: 'ratingStatistic',
+      required: true,
+      where: { status: r.query.ratingStatuses },
+    });
+  }
+
+  if (order.length === 0) {
+    order.push(['createdAt', 'DESC'])
   }
 
   const { rows, count } = await User.findAndCountAll({
     where,
+    include,
     distinct: true,
-    col: '"User"."id"',
+    //col: '"Users"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
-    order: [ ['createdAt', 'DESC'] ],
+    order,
   });
 
   return output({ count, users: rows });
@@ -60,15 +96,43 @@ export async function getAllUsers(r) {
 
 export function getUsers(role: UserRole) {
   return async function(r) {
+    const searchByFullNameLiteral = literal(`
+    concat("User"."firstName", "User"."lastName") ILIKE replace('%${r.query.q}%', ' ', '')
+  `);
+
+    const order = [];
+
     const where = {
+      [Op.and]: [],
       role,
       ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
+      ...(r.query.smsVerification && { phone: { [Op.ne]: null } }),
     };
+
+    if (r.query.statusKYC === StatusKYC.Unconfirmed || r.query.statusKYC === StatusKYC.Confirmed) {
+      where[Op.and].push({ statusKYC: r.query.statusKYC });
+    }
+
+    if (role === UserRole.Worker && r.query.payPeriod) {
+      where[Op.and].push({ payPeriod: r.query.payPeriod});
+    }
 
     if (r.query.q) {
       where[Op.or] = searchFields.map(
         field => ({ [field]: { [Op.iLike]: `%${r.query.q}%` }})
       );
+
+      where[Op.or].push(searchByFullNameLiteral);
+    }
+
+    if (r.query.sort) {
+      for (const [key, value] of Object.entries(r.query.sort || {})) {
+        order.push([key, value]);
+      }
+    }
+
+    if (order.length === 0) {
+      order.push(['createdAt', 'DESC'])
     }
 
     const { rows, count } = await User.findAndCountAll({
@@ -77,7 +141,6 @@ export function getUsers(role: UserRole) {
       col: '"User"."id"',
       limit: r.query.limit,
       offset: r.query.offset,
-      order: [ ['createdAt', 'DESC'] ],
     });
 
       return output({ count, users: rows });
@@ -92,6 +155,7 @@ export async function getUserSessions(r) {
   }
 
   const { rows, count } = await Session.findAndCountAll({
+    distinct: true,
     include: { model: User, as: 'user' },
     limit: r.query.limit,
     offset: r.query.offset,

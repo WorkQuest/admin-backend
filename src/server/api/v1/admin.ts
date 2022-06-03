@@ -112,7 +112,7 @@ export async function activateAdminAccount(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
+  if (admin.role === AdminRole.Main) {
     return error(Errors.InvalidType, 'Can not activate your own account', {});
   }
 
@@ -129,7 +129,7 @@ export async function deactivateAdminAccount(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
+  if (admin.role === AdminRole.Main) {
     return error(Errors.InvalidType, 'Can not deactivate your own account', {});
   }
 

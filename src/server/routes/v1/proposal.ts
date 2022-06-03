@@ -15,7 +15,7 @@ export default [{
   handler: handlers.getProposals,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.getProposals',
     tags: ['api', 'proposal'],
     description: 'Get proposals',
@@ -32,7 +32,7 @@ export default [{
   handler: handlers.getProposals,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.getUserProposals',
     tags: ['api', 'proposal'],
     description: 'Get proposals by user',
