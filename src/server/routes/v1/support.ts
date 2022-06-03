@@ -10,8 +10,10 @@ import {
   supportTicketSchema,
   outputPaginationSchema,
   supportTicketQuerySchema,
+  statusSupportTicketSchema,
   descriptionSupportTicketSchema,
   postedDecisionSupportTicketSchema,
+  supportTicketsForGetSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -51,13 +53,13 @@ export default [{
       }).label("GetUserSupportTicketsParams"),
     },
     response: {
-      schema: outputPaginationSchema('tickets',supportTicketSchema).label('GetSupportUserTicketsResponse')
+      schema: outputPaginationSchema('tickets',supportTicketsForGetSchema).label('GetSupportUserTicketsResponse')
     }
   }
 }, {
   method: "GET",
   path: "/v1/support/tickets",
-  handler: handlers.getSupportTickets,
+  handler: handlers.getTickets,
   options: {
     id: "v1.support.getTickets",
     tags: ["api", "support"],
@@ -67,7 +69,7 @@ export default [{
       query: supportTicketQuerySchema.required()
     },
     response: {
-      schema: outputPaginationSchema('tickets',supportTicketSchema).label('GetSupportTicketsResponse')
+      schema: outputPaginationSchema('tickets',supportTicketsForGetSchema).label('GetSupportTicketsResponse')
     }
   }
 }, {
@@ -104,6 +106,7 @@ export default [{
       payload: Joi.object({
         decisionPostedIn: postedDecisionSupportTicketSchema.required(),
         decisionDescription: descriptionSupportTicketSchema.required(),
+        status: statusSupportTicketSchema.required()
       }).label('SupportTicketSchema')
     },
     response: {

@@ -30,7 +30,7 @@ export async function getSupportUserTickets(r) {
   return output({ count, tickets: rows });
 }
 
-export async function getSupportTickets(r) {
+export async function getTickets(r) {
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
     where: {
       status: r.query.status
@@ -78,7 +78,8 @@ export async function ticketDecide(r) {
   await ticket.update({
     completionAt: Date.now(),
     decisionPostedIn: r.payload.decisionPostedIn,
-    decisionDescription: r.payload.decisionDescription
+    decisionDescription: r.payload.decisionDescription,
+    status: r.payload.status
   });
 
   await saveAdminActionsMetadataJob({
