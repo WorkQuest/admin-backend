@@ -16,7 +16,7 @@ export default [{
   options: {
     id: 'v1.reports.getReports',
     tags: ['api', 'reports'],
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     description: 'Get all reports',
     validate: {
       query: Joi.object({
@@ -37,7 +37,7 @@ export default [{
   options: {
     id: 'v1.reports.getReport',
     tags: ['api', 'reports'],
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     description: 'Get report by report id',
     validate: {
       params: Joi.object({
@@ -55,7 +55,7 @@ export default [{
   options: {
     id: 'v1.report.decideReport',
     tags: ['api', 'reports'],
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     description: 'Decide report and block entity',
     validate: {
       params: Joi.object({
@@ -73,7 +73,7 @@ export default [{
   options: {
     id: 'v1.report.rejectReport',
     tags: ['api', 'reports'],
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     description: 'Reject report',
     validate: {
       params: Joi.object({
