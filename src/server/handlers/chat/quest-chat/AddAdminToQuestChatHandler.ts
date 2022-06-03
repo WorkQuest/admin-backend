@@ -10,7 +10,7 @@ import {
   InfoMessage,
   MemberStatus,
   MessageAction,
-  ChatMemberData,
+  ChatMemberData, MessageType,
 } from '@workquest/database-models/lib/models';
 
 export interface AddAdminInQuestChatCommand {
@@ -32,7 +32,7 @@ export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChat
 
   private static async sendInfoMessageAboutAddMember(payload: AddAdminsInQuestChatPayload, options: Options = {}): Promise<Message> {
     const message = await Message.create({
-      type: MemberType.Admin,
+      type: MessageType.Info,
       chatId: payload.questChat.id,
       number: payload.lastMessage.number + 1, //'cause starts from 0
       senderMemberId: payload.disputeAdminMember.id,
