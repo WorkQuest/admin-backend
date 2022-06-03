@@ -10,7 +10,7 @@ import {
   MemberStatus,
   MessageAction,
   ChatMemberDeletionData,
-  ReasonForRemovingFromChat,
+  ReasonForRemovingFromChat, ChatMemberData,
 } from '@workquest/database-models/lib/models';
 
 export interface DeleteMemberFromGroupChatCommand {
@@ -44,6 +44,13 @@ export class DeletedMemberFromGroupChatHandler implements IHandler<DeleteMemberF
       beforeDeletionMessageId: payload.lastMessage?.id,
       reason: ReasonForRemovingFromChat.Removed,
       beforeDeletionMessageNumber: payload.lastMessage?.number,
+    });
+
+    await ChatMemberData.destroy({
+      where: {
+        chatMemberId: payload.member.id,
+      },
+      transaction: options.tx
     });
 
     return Promise.all([
