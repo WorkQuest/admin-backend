@@ -1,5 +1,5 @@
 import { QuestChatValidator } from './QuestChatValidator';
-import { HandlerDecoratorBase, IHandler, Options } from '../../types';
+import {BaseDomainHandler, HandlerDecoratorBase, IHandler, Options} from '../../types';
 import { QuestChatAccessPermission } from './QuestChatAccessPermission';
 import {
   Chat,
@@ -13,52 +13,47 @@ import {
   ChatMemberData, MessageType,
 } from '@workquest/database-models/lib/models';
 
-export interface AddAdminInQuestChatCommand {
+export interface AddDisputeAdminInQuestChatCommand {
   readonly questChat: Chat;
-  readonly admin: Admin;
+  readonly disputeAdmin: Admin;
 }
 
-interface AddAdminsInQuestChatPayload {
+interface AddDisputeAdminInQuestChatPayload {
   readonly questChat: Chat;
-  readonly disputeAdminMember: ChatMember;
   readonly lastMessage: Message;
+  readonly disputeAdminMember: ChatMember;
 }
 
-export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChatCommand, Promise<Message>>{
-  constructor(
-    private readonly dbContext: any,
-  ) {
-  }
-
-  private static async sendInfoMessageAboutAddMember(payload: AddAdminsInQuestChatPayload, options: Options = {}): Promise<Message> {
+export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisputeAdminInQuestChatCommand, Promise<Message>>{
+  private async sendInfoMessageAboutAddMember(payload: AddDisputeAdminInQuestChatPayload): Promise<Message> {
     const message = await Message.create({
       type: MessageType.Info,
       chatId: payload.questChat.id,
       number: payload.lastMessage.number + 1, //'cause starts from 0
       senderMemberId: payload.disputeAdminMember.id,
-    }, { transaction: options.tx });
+    }, { transaction: this.options.tx });
 
     const infoMessages = await InfoMessage.create({
       messageId: message.id,
       memberId: payload.disputeAdminMember.id,
       messageAction: MessageAction.QuestChatAddDisputeAdmin,
-    }, { transaction: options.tx })
+    }, { transaction: this.options.tx })
 
     message.setDataValue('infoMessage', infoMessages);
 
     return message;
   }
 
-  private static getLastMessage(chat: Chat, options: Options = {}): Promise<Message> {
+  private getLastMessage(chat: Chat): Promise<Message> {
     return Message.findOne({
       where: { chatId: chat.id },
       order: [['number', 'DESC']],
       lock: 'UPDATE' as any,
-      transaction: options.tx,
+      transaction: this.options.tx,
     });
   }
 
-  private static async addAdminMemberAndCreateAdminData(payload: AddAdminsInQuestChatPayload, options: Options = {}) {
+  private async addAdminMemberAndCreateAdminData(payload: AddDisputeAdminInQuestChatPayload) {
     payload.disputeAdminMember.chatId = payload.questChat.id;
     payload.disputeAdminMember.status = MemberStatus.Active;
 
@@ -68,43 +63,41 @@ export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChat
       unreadCountMessages: 0,
       lastReadMessageId: payload.lastMessage.id,
       lastReadMessageNumber: payload.lastMessage.number,
-    }, { transaction: options.tx });
+    }, { transaction: this.options.tx });
   }
 
-  public async Handle(command: AddAdminInQuestChatCommand): Promise<Message> {
-    return await this.dbContext.transaction(async (tx) => {
-      const disputeAdminMember = await ChatMember.create({
-        chatId: command.questChat.id,
-        adminId: command.admin.id,
-        type: MemberType.Admin,
-      }, { transaction: tx });
-      const lastMessage = await AddAdminsInQuestChatHandler.getLastMessage(command.questChat, { tx });
+  public async Handle(command: AddDisputeAdminInQuestChatCommand): Promise<Message> {
+    const disputeAdminMember = await ChatMember.create({
+      chatId: command.questChat.id,
+      adminId: command.disputeAdmin.id,
+      type: MemberType.Admin,
+    }, { transaction: this.options.tx });
+    const lastMessage = await this.getLastMessage(command.questChat);
 
-      await AddAdminsInQuestChatHandler.addAdminMemberAndCreateAdminData({ lastMessage, disputeAdminMember, questChat: command.questChat }, { tx });
+    await this.addAdminMemberAndCreateAdminData({ lastMessage, disputeAdminMember, questChat: command.questChat });
 
-      return await AddAdminsInQuestChatHandler.sendInfoMessageAboutAddMember({
-        questChat: command.questChat,
-        disputeAdminMember,
-        lastMessage,
-      }, { tx });
+    return await this.sendInfoMessageAboutAddMember({
+      questChat: command.questChat,
+      disputeAdminMember,
+      lastMessage,
     });
   }
 }
 
-export class AddAdminsInQuestChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message>> {
+export class AddDisputeAdminInQuestChatPreAccessPermissionHandler extends HandlerDecoratorBase<AddDisputeAdminInQuestChatCommand, Promise<Message>> {
 
   private readonly accessPermission: QuestChatAccessPermission;
 
   constructor(
-    protected readonly decorated: IHandler<AddAdminInQuestChatCommand, Promise<Message>>,
+    protected readonly decorated: IHandler<AddDisputeAdminInQuestChatCommand, Promise<Message>>,
   ) {
     super(decorated);
 
     this.accessPermission = new QuestChatAccessPermission();
   }
 
-  public async Handle(command: AddAdminInQuestChatCommand): Promise<Message> {
-    const admin: Admin = command.admin as Admin;
+  public async Handle(command: AddDisputeAdminInQuestChatCommand): Promise<Message> {
+    const admin: Admin = command.disputeAdmin as Admin;
 
     await this.accessPermission.AdminIsNotMemberAccess(command.questChat, admin);
 
@@ -112,19 +105,19 @@ export class AddAdminsInQuestChatPreAccessPermissionHandler extends HandlerDecor
   }
 }
 
-export class AddAdminsInQuestChatPreValidateHandler extends HandlerDecoratorBase<AddAdminInQuestChatCommand, Promise<Message>> {
+export class AddDisputeAdminInQuestChatPreValidateHandler extends HandlerDecoratorBase<AddDisputeAdminInQuestChatCommand, Promise<Message>> {
 
   private readonly validator: QuestChatValidator;
 
   constructor(
-    protected readonly decorated: IHandler<AddAdminInQuestChatCommand, Promise<Message>>,
+    protected readonly decorated: IHandler<AddDisputeAdminInQuestChatCommand, Promise<Message>>,
   ) {
     super(decorated);
 
     this.validator = new QuestChatValidator();
   }
 
-  public async Handle(command: AddAdminInQuestChatCommand): Promise<Message> {
+  public async Handle(command: AddDisputeAdminInQuestChatCommand): Promise<Message> {
     this.validator.QuestChatValidate(command.questChat);
 
     return this.decorated.Handle(command);

@@ -11,7 +11,7 @@ export interface IHandler<TIn, TOut> {
 export abstract class BaseDomainHandler<TIn, TOut> implements IHandler<TIn, TOut> {
   protected options: Options = {};
 
-  public setOptions(options: Options) { this.options = options; }
+  public setOptions(options: Options): this { this.options = options; return this; }
 
   public abstract Handle(input: TIn): TOut;
 }

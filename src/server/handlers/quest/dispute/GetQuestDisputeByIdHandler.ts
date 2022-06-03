@@ -1,6 +1,6 @@
 import {QuestDisputeValidator} from "./QuestDisputeValidator";
-import {BaseDomainHandler, HandlerDecoratorBase, IHandler} from "../../types";
 import {QuestDispute} from "@workquest/database-models/lib/models";
+import {BaseDomainHandler, HandlerDecoratorBase, IHandler} from "../../types";
 
 export interface GetQuestDisputeByIdCommand {
   readonly disputeId: string;
