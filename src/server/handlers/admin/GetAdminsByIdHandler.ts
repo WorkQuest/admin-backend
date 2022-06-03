@@ -8,7 +8,7 @@ export interface GetAdminsByIdCommand {
 }
 
 export interface GetAdminsByIdsCommand {
-  readonly adminIds: Array<string>;
+  readonly adminIds: ReadonlyArray<string>;
 }
 
 export class GetAdminsByIdHandler implements IHandler<GetAdminsByIdCommand, Promise<Admin>> {
@@ -19,7 +19,7 @@ export class GetAdminsByIdHandler implements IHandler<GetAdminsByIdCommand, Prom
 
 export class GetAdminsByIdsHandler implements IHandler<GetAdminsByIdsCommand, Promise<Admin[]>> {
   public async Handle(command: GetAdminsByIdsCommand): Promise<Admin[]> {
-    return await Admin.findAll({ where: { id: command.adminIds } });
+    return await Admin.findAll({ where: { id: command.adminIds as string[] } });
   }
 }
 
