@@ -140,7 +140,6 @@ export async function editQuest(r) {
 
   questController.quest = await questController.quest.update({
     avatarId,
-    title: r.payload.title,
     priority: r.payload.priority,
     workplace: r.payload.workplace,
     payPeriod: r.payload.payPeriod,
