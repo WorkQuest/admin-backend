@@ -88,27 +88,6 @@ export default [
     },
   },
   {
-    method: 'GET',
-    path: '/v1/admin/me/chat/members/admins-by-chats',
-    handler: handlers.listOfAdminsByChats,
-    options: {
-      auth: 'jwt-access',
-      id: 'v1.admin.me.group-chat.members.getAdminsByChats',
-      description: 'Get list of admins by chats',
-      tags: ['api', 'chat'],
-      validate: {
-        query: Joi.object({
-          excludeMembersChatId: idSchema,
-          offset: offsetSchema,
-          limit: limitSchema,
-        }).label('GetAdminsByChatsQuery'),
-      },
-      response: {
-        schema: outputPaginationSchema('admins', adminSchema).label('GetAdminsByChatsResponse'),
-      },
-    },
-  },
-  {
     method: 'POST',
     path: '/v1/admin/me/chat/group/create',
     handler: handlers.createGroupChat,
