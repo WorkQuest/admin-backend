@@ -19,7 +19,7 @@ export default [{
   handler: handlers.getAdminActions,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.admin.statistic.getAdminsActions',
     tags: ['api', 'statistic'],
     description: 'Get admins actions statistic',
@@ -40,7 +40,7 @@ export default [{
   handler: handlers.getAdminActions,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.admin.statistic.getAdminActions',
     tags: ['api', 'statistic'],
     description: 'Get admin actions statistic',
@@ -63,7 +63,7 @@ export default [{
   handler: handlers.getQuestDisputesStatistics,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.admin.statistic.quest.getQuestDisputeStatistics',
     tags: ['api', 'statistic'],
     description: 'Get quest dispute statistics',
@@ -84,7 +84,7 @@ export default [{
   handler: handlers.getQuestDisputesAdminStatistic,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     id: 'v1.admin.statistic.quest.getQuestDisputesAdminStatistic',
     tags: ['api', 'statistic'],
     description: 'Get quest dispute admin statistic',
@@ -103,7 +103,7 @@ export default [{
   handler: handlers.getQuestDisputesAdminMeStatistic,
   options: {
     auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.main, AdminRole.dispute),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     id: 'v1.admin.statistic.quest.getQuestDisputesAdminMeStatistic',
     tags: ['api', 'statistic'],
     description: 'Get questDisputes admin (me) statistic',

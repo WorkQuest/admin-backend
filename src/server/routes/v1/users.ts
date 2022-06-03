@@ -9,9 +9,9 @@ import {
   offsetSchema,
   outputOkSchema,
   outputPaginationSchema, payPeriodSchema,
-  searchSchema,
+  searchSchema, sortDirectionSchema,
   userBlackListReasonSchema,
-  userBlackListSchema, userRoleSchema,
+  userBlackListSchema, userRatingStatusesSchema, userRoleSchema,
   userSchema,
   userSessionsSchema,
   userStatusesSchema, userStatusKycSchema,
@@ -25,7 +25,7 @@ export default [{
     id: "v1.getUser",
     tags: ["api", "user"],
     description: "Get user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -43,14 +43,22 @@ export default [{
     id: "v1.getUsers",
     tags: ["api", "user"],
     description: "Get all users",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         role: userRoleSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         statuses: userStatusesSchema.default(null),
+        ratingStatuses: userRatingStatusesSchema,
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetUsersQuery'),
@@ -67,10 +75,17 @@ export default [{
     id: "v1.getEmployers",
     tags: ["api", "user"],
     description: "Get employers",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         statuses: userStatusesSchema.default(null),
@@ -90,10 +105,17 @@ export default [{
     id: "v1.getWorkers",
     tags: ["api", "user"],
     description: "Get workers",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
+        sort: Joi.object({
+          firstName: sortDirectionSchema.default('DESC'),
+          lastName: sortDirectionSchema.default('DESC'),
+          email: sortDirectionSchema.default('DESC'),
+          locationPlaceName: sortDirectionSchema.default('DESC'),
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).label('SortQuerySchema'),
         statusKYC: userStatusKycSchema,
         smsVerification: Joi.boolean().example(true).label('SmsVerificationSchema'),
         payPeriod: payPeriodSchema,
@@ -114,7 +136,7 @@ export default [{
     id: "v1.user.getBlockHistory",
     tags: ["api", "user"],
     description: "Show user block story",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required()
@@ -136,7 +158,7 @@ export default [{
     id: "v1.user.getUserSessions",
     tags: ["api", "user"],
     description: "Get user sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required()
@@ -158,7 +180,7 @@ export default [{
     id: "v1.user.getUsersSessions",
     tags: ["api", "user"],
     description: "Get users sessions",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       query: Joi.object({
         q: searchSchema,
@@ -178,7 +200,7 @@ export default [{
     id: "v1.user.changeRole",
     tags: ["api", "user"],
     description: "Change role of the user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -196,7 +218,7 @@ export default [{
     id: "v1.blockUser",
     tags: ["api", "user"],
     description: "Block user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -217,7 +239,7 @@ export default [{
     id: "v1.unblockUser",
     tags: ["api", "user"],
     description: "Unblock user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
