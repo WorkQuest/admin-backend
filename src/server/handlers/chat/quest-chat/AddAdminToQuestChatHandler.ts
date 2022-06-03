@@ -63,11 +63,11 @@ export class AddAdminsInQuestChatHandler implements IHandler<AddAdminInQuestChat
     payload.disputeAdminMember.status = MemberStatus.Active;
 
     await ChatMemberData.create({
-        chatMemberId: payload.disputeAdminMember.id,
-        chatId: payload.questChat.id,
-        unreadCountMessages: 0,
-        lastReadMessageId: payload.lastMessage.id,
-        lastReadMessageNumber: payload.lastMessage.number,
+      chatMemberId: payload.disputeAdminMember.id,
+      chatId: payload.questChat.id,
+      unreadCountMessages: 0,
+      lastReadMessageId: payload.lastMessage.id,
+      lastReadMessageNumber: payload.lastMessage.number,
     }, { transaction: options.tx });
   }
 
