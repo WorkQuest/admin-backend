@@ -1,13 +1,17 @@
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
-import {
-  TicketStatus,
-  SupportTicketForUser
-} from "@workquest/database-models/lib/models";
+import { Admin, SupportTicketForUser, TicketStatus, User } from "@workquest/database-models/lib/models";
 
 export async function getSupportTicket(r) {
   const ticket = await SupportTicketForUser.findByPk(r.params.ticketId, {
+    include: [{
+      model: User.scope('short'),
+      as: 'authorUser'
+    }, {
+      model: Admin.scope('defaultScope'),
+      as: 'resolvedByAdmin'
+    }],
     bind: { adminId: r.auth.credentials.id }
   });
 
@@ -19,10 +23,17 @@ export async function getSupportTicket(r) {
 }
 
 export async function getSupportUserTickets(r) {
-  const { count, rows } = await SupportTicketForUser.findAndCountAll({
+  const { count, rows } = await SupportTicketForUser.scope('defaultScope').findAndCountAll({
     where: {
       authorUserId: r.params.userId
     },
+    include: [{
+      model: User.scope('short'),
+      as: 'authorUser'
+    }, {
+      model: Admin.scope('defaultScope'),
+      as: 'resolvedByAdmin'
+    }],
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -33,7 +44,7 @@ export async function getSupportUserTickets(r) {
 export async function getTickets(r) {
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
     where: {
-      status: r.query.status
+      ...(r.query.status !== undefined && { status: r.query.status })
     },
     limit: r.query.limit,
     offset: r.query.offset,
@@ -42,10 +53,10 @@ export async function getTickets(r) {
 }
 
 export async function takeTicketToResolve(r) {
-  const ticket = await SupportTicketForUser.findByPk(r.params.disputeId);
+  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId);
 
   if (!ticket) {
-    return error(Errors.NotFound, 'Dispute is not found', {});
+    return error(Errors.NotFound, 'Ticket is not found', {});
   }
   if (ticket.status !== TicketStatus.Pending) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
@@ -73,6 +84,9 @@ export async function ticketDecide(r) {
   }
   if (ticket.resolvedByAdminId !== r.auth.credentials.id) {
     throw error(Errors.NoRole, 'In processing by another admin', {});
+  }
+  if (ticket.status === TicketStatus.Pending) {
+    throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
   await ticket.update({

@@ -9,11 +9,12 @@ import {
   outputOkSchema,
   supportTicketSchema,
   outputPaginationSchema,
+  supportOnlyTicketSchema,
   supportTicketQuerySchema,
   statusSupportTicketSchema,
+  supportTicketsForGetSchema,
   descriptionSupportTicketSchema,
   postedDecisionSupportTicketSchema,
-  supportTicketsForGetSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -66,7 +67,7 @@ export default [{
     description: "Get all support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
-      query: supportTicketQuerySchema.required()
+      query: supportTicketQuerySchema
     },
     response: {
       schema: outputPaginationSchema('tickets',supportTicketsForGetSchema).label('GetSupportTicketsResponse')
@@ -87,7 +88,7 @@ export default [{
       }).label("TakeSupportTicketParams"),
     },
     response: {
-      schema: outputOkSchema(supportTicketSchema).label('TakeSupportTicketResponse')
+      schema: outputOkSchema(supportOnlyTicketSchema).label('TakeSupportTicketResponse')
     }
   }
 }, {
@@ -110,7 +111,7 @@ export default [{
       }).label('SupportTicketSchema')
     },
     response: {
-      schema: outputOkSchema(supportTicketSchema).label('SupportTicketDecideResponse')
+      schema: outputOkSchema(supportOnlyTicketSchema).label('SupportTicketDecideResponse')
     }
   }
 },]
