@@ -9,10 +9,8 @@ import {
   outputOkSchema,
   supportTicketSchema,
   outputPaginationSchema,
-  supportOnlyTicketSchema,
   supportTicketQuerySchema,
   statusSupportTicketSchema,
-  supportTicketsForGetSchema,
   descriptionSupportTicketSchema,
   postedDecisionSupportTicketSchema,
 } from "@workquest/database-models/lib/schemes";
@@ -54,7 +52,7 @@ export default [{
       }).label("GetUserSupportTicketsParams"),
     },
     response: {
-      schema: outputPaginationSchema('tickets',supportTicketsForGetSchema).label('GetSupportUserTicketsResponse')
+      schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportUserTicketsResponse')
     }
   }
 }, {
@@ -70,7 +68,7 @@ export default [{
       query: supportTicketQuerySchema
     },
     response: {
-      schema: outputPaginationSchema('tickets',supportTicketsForGetSchema).label('GetSupportTicketsResponse')
+      schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportTicketsResponse')
     }
   }
 }, {
@@ -88,7 +86,7 @@ export default [{
       }).label("TakeSupportTicketParams"),
     },
     response: {
-      schema: outputOkSchema(supportOnlyTicketSchema).label('TakeSupportTicketResponse')
+      schema: outputOkSchema(supportTicketSchema).label('TakeSupportTicketResponse')
     }
   }
 }, {
@@ -111,7 +109,7 @@ export default [{
       }).label('SupportTicketSchema')
     },
     response: {
-      schema: outputOkSchema(supportOnlyTicketSchema).label('SupportTicketDecideResponse')
+      schema: outputOkSchema(supportTicketSchema).label('SupportTicketDecideResponse')
     }
   }
 }]
