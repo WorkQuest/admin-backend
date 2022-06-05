@@ -32,5 +32,3 @@ export class GetQuestDisputeByIdPostValidationHandler<Tin extends { disputeId: s
     return dispute;
   }
 }
-
-

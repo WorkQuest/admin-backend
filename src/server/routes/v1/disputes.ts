@@ -14,6 +14,7 @@ import {
   questDisputeStatusesSchema,
   questDisputeDecisionDescriptionSchema,
 } from "@workquest/database-models/lib/schemes";
+import {questDisputeDecisionSchema} from "@workquest/database-models/src/schemes/quest";
 
 export default[{
   method: "GET",
@@ -103,6 +104,7 @@ export default[{
         disputeId: idSchema.required(),
       }).label("QuestDisputeDecideParams"),
       payload: Joi.object({
+        decision: questDisputeDecisionSchema,
         decisionDescription: questDisputeDecisionDescriptionSchema.required(),
       }).label('DisputeDecisionSchema')
     },
