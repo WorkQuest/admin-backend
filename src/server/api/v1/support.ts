@@ -61,7 +61,7 @@ export async function takeTicketToResolve(r) {
   }
 
   await ticket.update({
-    acceptedAt: Date.now(),
+    takenAt: Date.now(),
     resolvedByAdminId: r.auth.credentials.id,
   });
 
@@ -88,7 +88,7 @@ export async function ticketDecide(r) {
   }
 
   await ticket.update({
-    completionAt: Date.now(),
+    decidedAt: Date.now(),
     status: r.payload.status,
     decisionPostedIn: r.payload.decisionPostedIn,
     decisionDescription: r.payload.decisionDescription,
