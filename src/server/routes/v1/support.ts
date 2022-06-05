@@ -22,7 +22,7 @@ export default [{
   path: "/v1/support/user-ticket/{ticketId}",
   handler: handlers.getSupportTicket,
   options: {
-    id: "v1.support.getTicket",
+    id: "v1.support.userTicket.getTicket",
     tags: ["api", "support"],
     description: "Get support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
@@ -40,7 +40,7 @@ export default [{
   path: "/v1/support/user-ticket/{userId}/tickets",
   handler: handlers.getSupportUserTickets,
   options: {
-    id: "v1.user.support.getUserTickets",
+    id: "v1.support.userTicket.getUserTickets",
     tags: ["api", "support"],
     description: "Get info about support tickets of the user",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
@@ -62,7 +62,7 @@ export default [{
   path: "/v1/support/user-ticket/tickets",
   handler: handlers.getTickets,
   options: {
-    id: "v1.support.getTickets",
+    id: "v1.support.userTicket.getTickets",
     tags: ["api", "support"],
     description: "Get all support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
@@ -78,7 +78,7 @@ export default [{
   path: "/v1/support/user-ticket/{ticketId}/take",
   handler: handlers.takeTicketToResolve,
   options: {
-    id: "v1.support.ticket.takeTicket",
+    id: "v1.support.userTicket.takeTicket",
     tags: ["api", "support"],
     description: "Admin take support ticket",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
@@ -96,7 +96,7 @@ export default [{
   path: "/v1/support/user-ticket/{ticketId}/decide",
   handler: handlers.ticketDecide,
   options: {
-    id: "v1.support.ticket.decide",
+    id: "v1.support.userTicket.decide",
     tags: ["api", "support"],
     description: "Admin resolve support ticket",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
