@@ -19,7 +19,7 @@ import {
 
 export default [{
   method: "GET",
-  path: "/v1/support/ticket/{ticketId}",
+  path: "/v1/support/user-ticket/{ticketId}",
   handler: handlers.getSupportTicket,
   options: {
     id: "v1.support.getTicket",
@@ -37,7 +37,7 @@ export default [{
   }
 }, {
   method: "GET",
-  path: "/v1/support/{userId}/tickets",
+  path: "/v1/support/user-ticket/{userId}/tickets",
   handler: handlers.getSupportUserTickets,
   options: {
     id: "v1.user.support.getUserTickets",
@@ -59,7 +59,7 @@ export default [{
   }
 }, {
   method: "GET",
-  path: "/v1/support/tickets",
+  path: "/v1/support/user-ticket/tickets",
   handler: handlers.getTickets,
   options: {
     id: "v1.support.getTickets",
@@ -75,7 +75,7 @@ export default [{
   }
 }, {
   method: "POST",
-  path: "/v1/support/ticket/{ticketId}/take",
+  path: "/v1/support/user-ticket/{ticketId}/take",
   handler: handlers.takeTicketToResolve,
   options: {
     id: "v1.support.ticket.takeTicket",
@@ -93,7 +93,7 @@ export default [{
   }
 }, {
   method: "POST",
-  path: "/v1/support/ticket/{ticketId}/decide",
+  path: "/v1/support/user-ticket/{ticketId}/decide",
   handler: handlers.ticketDecide,
   options: {
     id: "v1.support.ticket.decide",
@@ -114,4 +114,4 @@ export default [{
       schema: outputOkSchema(supportOnlyTicketSchema).label('SupportTicketDecideResponse')
     }
   }
-},]
+}]

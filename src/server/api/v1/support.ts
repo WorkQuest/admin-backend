@@ -9,10 +9,9 @@ export async function getSupportTicket(r) {
       model: User.scope('short'),
       as: 'authorUser'
     }, {
-      model: Admin.scope('defaultScope'),
-      as: 'resolvedByAdmin'
+      model: Admin.scope('short'),
+      as: 'resolvedByAdmin',
     }],
-    bind: { adminId: r.auth.credentials.id }
   });
 
   if (!ticket) {
@@ -23,15 +22,13 @@ export async function getSupportTicket(r) {
 }
 
 export async function getSupportUserTickets(r) {
-  const { count, rows } = await SupportTicketForUser.scope('defaultScope').findAndCountAll({
-    where: {
-      authorUserId: r.params.userId
-    },
+  const { count, rows } = await SupportTicketForUser.findAndCountAll({
+    where: { authorUserId: r.params.userId },
     include: [{
       model: User.scope('short'),
       as: 'authorUser'
     }, {
-      model: Admin.scope('defaultScope'),
+      model: Admin.scope('short'),
       as: 'resolvedByAdmin'
     }],
     limit: r.query.limit,
@@ -44,11 +41,12 @@ export async function getSupportUserTickets(r) {
 export async function getTickets(r) {
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
     where: {
-      ...(r.query.status !== undefined && { status: r.query.status })
+      ...(r.query.status && { status: r.query.status }),
     },
     limit: r.query.limit,
     offset: r.query.offset,
   });
+
   return output({ count, tickets: rows });
 }
 
@@ -91,9 +89,9 @@ export async function ticketDecide(r) {
 
   await ticket.update({
     completionAt: Date.now(),
+    status: r.payload.status,
     decisionPostedIn: r.payload.decisionPostedIn,
     decisionDescription: r.payload.decisionDescription,
-    status: r.payload.status
   });
 
   await saveAdminActionsMetadataJob({
