@@ -1,50 +1,63 @@
+import {Op} from "sequelize";
 import {BaseCompositeHandler} from "../types";
-import { TakeQuestDisputeHandler } from "../quest/dispute/TakeQuestDisputeHandler";
-import {Message, Admin, QuestChat, QuestDispute, Chat} from "@workquest/database-models/lib/models";
+import {TakeQuestDisputeComposCommand, TakeQuestDisputeComposResults} from "./types";
+import {QuestChat, Message, InfoMessage, ChatMember, Chat} from "@workquest/database-models/lib/models";
+import {
+  TakeQuestDisputeHandler,
+  TakeQuestDisputePreAccessPermissionHandler,
+} from "../quest/dispute/TakeQuestDisputeHandler";
+import {
+  GetQuestDisputeByIdHandler,
+  GetQuestDisputeByIdPostValidationHandler,
+} from "../quest/dispute/GetQuestDisputeByIdHandler";
 import {
   AddDisputeAdminInQuestChatHandler,
   AddDisputeAdminInQuestChatPreValidateHandler,
   AddDisputeAdminInQuestChatPreAccessPermissionHandler,
 } from "../chat";
-import {
-  GetQuestDisputeByIdHandler,
-  GetQuestDisputeByIdPostValidationHandler
-} from "../quest/dispute/GetQuestDisputeByIdHandler";
-import { GetQuestChatByIdHandler, GetQuestChatByIdPostValidationHandler } from "../chat/quest-chat/GetQuestChatById";
 
-export interface TakeQuestDisputeComposCommand {
-  readonly meAdmin: Admin;
-  readonly disputeId: string;
-}
-
-export class TakeQuestDisputeComposHandler extends BaseCompositeHandler<TakeQuestDisputeComposCommand, Promise<[Chat, Message, QuestDispute]>> {
+export class TakeQuestDisputeComposHandler extends BaseCompositeHandler<TakeQuestDisputeComposCommand, TakeQuestDisputeComposResults> {
   constructor(
     protected readonly dbContext: any,
   ) {
     super(dbContext);
   }
 
-  public async Handle(command: TakeQuestDisputeComposCommand): Promise<[Chat, Message, QuestDispute]> {
+  public async Handle(command: TakeQuestDisputeComposCommand): TakeQuestDisputeComposResults {
     const dispute = await new GetQuestDisputeByIdPostValidationHandler(
       new GetQuestDisputeByIdHandler()
     ).Handle({ disputeId: command.disputeId });
 
-    const questChat = new GetQuestChatByIdPostValidationHandler(
-      new GetQuestChatByIdHandler()
-    ).Handle({ chatId: dispute.c, questId: dispute.questId });
+    // TODO в хендлер
+    const { chat } = await QuestChat.findOne({
+      where: {
+        questId: dispute.questId,
+        employerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+        workerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+      },
+      include: {
+        model: Chat,
+        as: 'chat',
+      }
+    });
 
-    const messageWithInfo: Message = await this.dbContext.transaction(async (tx) => {
-      await new TakeQuestDisputeHandler()
-        .setOptions({ tx })
-        .Handle({ disputeAdmin: command.meAdmin, dispute })
+    const [meAdminChatMember, [message, infoMessage]] = await this.dbContext.transaction(async (tx) => {
+      await new TakeQuestDisputePreAccessPermissionHandler(
+        new TakeQuestDisputeHandler().setOptions({ tx })
+      ).Handle({ disputeAdmin: command.meAdmin, dispute })
 
-      return await new AddDisputeAdminInQuestChatPreValidateHandler(
+      await new AddDisputeAdminInQuestChatPreValidateHandler(
         new AddDisputeAdminInQuestChatPreAccessPermissionHandler(
           new AddDisputeAdminInQuestChatHandler().setOptions({ tx })
         )
-      ).Handle({ disputeAdmin: command.meAdmin, questChat: questChat.chat });
-    });
+      ).Handle({ admin: command.meAdmin, questChat: chat });
+    }) as [ChatMember, [Message, InfoMessage]];
 
-    return [questChat.chat, messageWithInfo, dispute];
+    return [
+      dispute,
+      chat,
+      meAdminChatMember,
+      [message, infoMessage],
+    ];
   }
 }
