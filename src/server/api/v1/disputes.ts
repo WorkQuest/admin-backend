@@ -188,9 +188,7 @@ export async function disputeDecide(r) {
     }
   });
 
-  const { taskScheduler } = r.app as { taskScheduler: QueueClient }
-
-  await taskScheduler.publisher({
+  await r.server.app.taskScheduler.publisher({
     name: 'ResolveDisputeByAdmin',
     payload: {
       decision,
