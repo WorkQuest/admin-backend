@@ -1,7 +1,7 @@
 import { literal, Op } from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
-import {QueueClient} from "@workquest/workers-queue/client";
+import {QueueClient} from "@workquest/workers-queue-client/lib/client";
 import { updateChatDataJob } from "../../jobs/updateChatData";
 import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
 import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
