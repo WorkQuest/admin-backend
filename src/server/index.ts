@@ -15,7 +15,7 @@ import { tokenValidate, } from './utils/auth';
 import SwaggerOptions from './config/swagger';
 import { pinoConfig, } from './config/pino';
 import { initDatabase } from "@workquest/database-models/lib/models";
-import { run } from "graphile-worker";
+import {QueueClient} from "@workquest/workers-queue/client";
 import {ControllerBroker} from "./controllers/controller.broker";
 const HapiSwagger = require('hapi-swagger');
 const Package = require('../../package.json');
@@ -56,6 +56,7 @@ const init = async () => {
     { plugin: require('hapi-rbac'), options: { } }
   ]);
 
+  server.app.taskScheduler = new QueueClient(config.taskScheduler.link);
   server.app.broker = new ControllerBroker();
   server.app.db = await initDatabase(config.dbLink, false, true);
   // server.app.scheduler = await run({

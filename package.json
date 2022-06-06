@@ -27,6 +27,7 @@
     "@types/validator": "^13.1.0",
     "amqplib": "^0.8.0",
     "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#6c65142d3e91d36a101da8692c7378d5773c21a5",
+    "@workquest/workers-queue": "git+https://github.com/WorkQuest/workers-queue-server-client.git#d4e6d7ec3de25e52b6820ebf74880e7667f5004c",
     "aws-sdk": "^2.963.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.0",

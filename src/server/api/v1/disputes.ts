@@ -1,6 +1,7 @@
 import { literal, Op } from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
+import {QueueClient} from "@workquest/workers-queue/client";
 import { updateChatDataJob } from "../../jobs/updateChatData";
 import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
 import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
@@ -187,6 +188,25 @@ export async function disputeDecide(r) {
     }
   });
 
+  const { taskScheduler } = r.app as { taskScheduler: QueueClient }
+  const taskDecision = (decision: DisputeDecision) => {
+    if (decision === DisputeDecision.Rework) {
+      return 'Rework'
+    } else if (decision === DisputeDecision.AcceptWork) {
+      return 'AcceptWork';
+    } else if (decision === DisputeDecision.RejectWork) {
+      return 'RejectWork';
+    }
+  }
+
+  await taskScheduler.publisher({
+    name: 'ResolveDisputeByAdmin',
+    payload: {
+      disputeId: questDispute.id,
+      questId: questDispute.questId,
+      decision: taskDecision(decision),
+    }
+  });
   await saveAdminActionsMetadataJob({
     path: r.path,
     HTTPVerb: r.method,
