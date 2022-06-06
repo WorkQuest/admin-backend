@@ -85,7 +85,7 @@ export async function getAllUsers(r) {
     where,
     include,
     distinct: true,
-    //col: '"Users"."id"',
+    col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
     order,
