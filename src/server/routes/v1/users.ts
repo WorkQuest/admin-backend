@@ -8,13 +8,18 @@ import {
   limitSchema,
   offsetSchema,
   outputOkSchema,
-  outputPaginationSchema, payPeriodSchema,
-  searchSchema, sortDirectionSchema,
+  outputPaginationSchema,
+  payPeriodSchema,
+  searchSchema,
+  sortDirectionSchema,
   userBlackListReasonSchema,
-  userBlackListSchema, userRatingStatusesSchema, userRoleSchema,
+  userBlackListSchema,
+  userRatingStatusesSchema,
+  userRoleSchema,
   userSchema,
   userSessionsSchema,
-  userStatusesSchema, userStatusKycSchema,
+  userStatusesSchema,
+  userStatusKycSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -218,7 +223,7 @@ export default [{
     id: "v1.blockUser",
     tags: ["api", "user"],
     description: "Block user",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),

@@ -3,27 +3,28 @@ import * as handlers from "../../api/v1/quests";
 import { getRbacSettings } from "../../utils/auth";
 import { AdminRole } from "@workquest/database-models/lib/models";
 import {
+  emptyOkSchema,
   idSchema,
   idsSchema,
-  questSchema,
   limitSchema,
-  offsetSchema,
-  emptyOkSchema,
-  prioritySchema,
-  outputOkSchema,
-  workPlaceSchema,
-  questTitleSchema,
   locationFullSchema,
-  questEmploymentSchema,
+  offsetSchema,
+  outputOkSchema,
   outputPaginationSchema,
-  questForAdminsGetSchema,
-  specializationKeysSchema,
-  questBlackListSchema,
-  questBlackListReasonSchema,
-  questStatusesSchema,
+  payPeriodSchema,
   prioritiesSchema,
-  searchSchema, payPeriodSchema,
+  prioritySchema,
+  questBlackListReasonSchema,
+  questBlackListSchema,
+  questEmploymentSchema,
+  questForAdminsGetSchema,
+  questSchema,
+  questStatusesSchema,
+  searchSchema,
+  specializationKeysSchema,
+  workPlaceSchema,
 } from "@workquest/database-models/lib/schemes";
+
 export default[{
   method: "GET",
   path: "/v1/quests",
@@ -144,7 +145,7 @@ export default[{
     id: "v1.quest.blockQuest",
     tags: ["api", "quest"],
     description: "Block quest",
-    plugins: getRbacSettings(AdminRole.Main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
