@@ -6,6 +6,9 @@ export default {
   dbLink: process.env.DB_LINK,
   baseUrl: process.env.BASE_URL,
   baseURLMainBackend: process.env.BASE_URL_MAIN_BACKEND,
+  taskScheduler: {
+    link: process.env.SCHEDULER_LINK,
+  },
   notificationMessageBroker: {
     link: process.env.NOTIFICATION_MESSAGE_BROKER_LINK
   },
