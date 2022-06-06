@@ -6,7 +6,6 @@ export interface MessageAsReadPayload {
   lastUnreadMessage: { id: string; number: number };
 }
 
-
 export async function setMessageAsReadJob(payload: MessageAsReadPayload) {
   return addJob('setMessageAsRead', payload);
 }

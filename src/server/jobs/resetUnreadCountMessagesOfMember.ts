@@ -6,7 +6,6 @@ export type ResetUnreadCountMessagesPayload = {
   lastReadMessage: { id: string, number: number },
 };
 
-
 export async function resetUnreadCountMessagesOfMemberJob(payload: ResetUnreadCountMessagesPayload) {
   return addJob('resetUnreadCountMessagesOfMember', payload);
 }

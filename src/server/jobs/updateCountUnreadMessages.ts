@@ -7,7 +7,6 @@ export type MemberUnreadMessagesPayload = {
   lastUnreadMessage: { id: string; number: number };
 };
 
-
 export async function updateCountUnreadMessagesJob(payload: MemberUnreadMessagesPayload) {
   return addJob('updateCountUnreadMessages', payload);
 }

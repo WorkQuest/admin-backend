@@ -5,7 +5,6 @@ export type UpdateCountUnreadChatsPayload = {
   readonly members: ChatMember[];
 };
 
-
 export async function updateCountUnreadChatsJob(payload: UpdateCountUnreadChatsPayload) {
   return addJob('updateCountUnreadChats', payload);
 }
