@@ -39,10 +39,10 @@ export async function getSupportUserTickets(r) {
 }
 
 export async function getTickets(r) {
+  const where = { ...(r.query.status in TicketStatus && { status: r.query.status }) }
+
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
-    where: {
-      ...(r.query.status && { status: r.query.status }),
-    },
+    where,
     limit: r.query.limit,
     offset: r.query.offset,
   });
@@ -82,9 +82,6 @@ export async function ticketDecide(r) {
   }
   if (ticket.resolvedByAdminId !== r.auth.credentials.id) {
     throw error(Errors.NoRole, 'In processing by another admin', {});
-  }
-  if (ticket.status === TicketStatus.Pending) {
-    throw error(Errors.InvalidStatus, 'Invalid status', {});
   }
 
   await ticket.update({
