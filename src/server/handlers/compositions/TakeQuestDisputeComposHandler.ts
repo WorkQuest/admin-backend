@@ -10,6 +10,7 @@ import {
   GetQuestDisputeByIdHandler,
   GetQuestDisputeByIdPostValidationHandler
 } from "../quest/dispute/GetQuestDisputeByIdHandler";
+import { GetQuestChatByIdHandler, GetQuestChatByIdPostValidationHandler } from "../chat/quest-chat/GetQuestChatById";
 
 export interface TakeQuestDisputeComposCommand {
   readonly meAdmin: Admin;
@@ -24,11 +25,13 @@ export class TakeQuestDisputeComposHandler extends BaseCompositeHandler<TakeQues
   }
 
   public async Handle(command: TakeQuestDisputeComposCommand): Promise<[Chat, Message, QuestDispute]> {
-    const questChat = await QuestChat.findOne({});
-
     const dispute = await new GetQuestDisputeByIdPostValidationHandler(
       new GetQuestDisputeByIdHandler()
-    ).Handle({ disputeId: command.disputeId })
+    ).Handle({ disputeId: command.disputeId });
+
+    const questChat = new GetQuestChatByIdPostValidationHandler(
+      new GetQuestChatByIdHandler()
+    ).Handle({ chatId: dispute.c, questId: dispute.questId });
 
     const messageWithInfo: Message = await this.dbContext.transaction(async (tx) => {
       await new TakeQuestDisputeHandler()
