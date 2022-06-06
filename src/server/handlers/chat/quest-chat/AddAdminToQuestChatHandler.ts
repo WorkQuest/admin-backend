@@ -53,22 +53,23 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
     return [message, infoMessages];
   }
 
-  private createAdminMember(payload: AddDisputeAdminInQuestChatPayload): Promise<[ChatMember, ChatMemberData]> {
-    return Promise.all([
-      ChatMember.create({
+  private async createAdminMember(payload: AddDisputeAdminInQuestChatPayload): Promise<[ChatMember, ChatMemberData]> {
+    const adminMember = await ChatMember.create({
         type: MemberType.Admin,
         chatId: payload.questChat.id,
         adminId: payload.admin.id,
         status: MemberStatus.Active,
-      }, { transaction: this.options.tx }),
-      ChatMemberData.create({
-        chatId: payload.questChat.id,
-        chatMemberId: payload.admin.id,
-        unreadCountMessages: 0,
-        lastReadMessageId: payload.lastMessage.id,
-        lastReadMessageNumber: payload.lastMessage.number,
-      }, { transaction: this.options.tx }),
-    ]);
+      }, { transaction: this.options.tx });
+
+    const chatMemberData = await ChatMemberData.create({
+      chatId: payload.questChat.id,
+      chatMemberId: adminMember.id,
+      unreadCountMessages: 0,
+      lastReadMessageId: payload.lastMessage.id,
+      lastReadMessageNumber: payload.lastMessage.number,
+    }, { transaction: this.options.tx });
+
+    return [adminMember, chatMemberData];
   }
 
   public async Handle(command: AddDisputeAdminInQuestChatCommand): AddDisputeAdminInQuestChatResult {
@@ -102,10 +103,6 @@ export class AddDisputeAdminInQuestChatPreAccessPermissionHandler extends Handle
   }
 
   public async Handle(command: AddDisputeAdminInQuestChatCommand): AddDisputeAdminInQuestChatResult {
-    const admin: Admin = command.admin as Admin;
-
-    await this.accessPermission.AdminIsNotMemberAccess(command.questChat, admin);
-
     return this.decorated.Handle(command);
   }
 }

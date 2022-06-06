@@ -46,7 +46,7 @@ export class TakeQuestDisputeComposHandler extends BaseCompositeHandler<TakeQues
         new TakeQuestDisputeHandler().setOptions({ tx })
       ).Handle({ disputeAdmin: command.meAdmin, dispute })
 
-      await new AddDisputeAdminInQuestChatPreValidateHandler(
+      return await new AddDisputeAdminInQuestChatPreValidateHandler(
         new AddDisputeAdminInQuestChatPreAccessPermissionHandler(
           new AddDisputeAdminInQuestChatHandler().setOptions({ tx })
         )
