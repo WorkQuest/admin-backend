@@ -1,7 +1,6 @@
 import { literal, Op } from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
-import {QueueClient} from "@workquest/workers-queue-client";
 import { updateChatDataJob } from "../../jobs/updateChatData";
 import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
 import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
@@ -22,7 +21,9 @@ import {
   QuestDispute,
   MemberStatus,
   DisputeDecision,
+  TransactionStatus,
   QuestDisputeReview,
+  QuestDisputeDecisionData,
 } from "@workquest/database-models/lib/models";
 
 export async function getQuestDispute(r) {
@@ -179,6 +180,13 @@ export async function disputeDecide(r) {
       disputeId,
       decisionDescription,
     });
+
+  // TODO !!
+  await QuestDisputeDecisionData.create({
+    decision: decision,
+    disputeId: questDispute.id,
+    status: TransactionStatus.Pending,
+  });
 
   //TODO: переделать
   const members = await ChatMember.findAll({
