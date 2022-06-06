@@ -12,9 +12,9 @@ import {
   questDisputeQuerySchema,
   questDisputeReviewSchema,
   questDisputeStatusesSchema,
+  questDisputeDecisionSchema,
   questDisputeDecisionDescriptionSchema,
 } from "@workquest/database-models/lib/schemes";
-import {questDisputeDecisionSchema} from "@workquest/database-models/src/schemes/quest";
 
 export default[{
   method: "GET",
