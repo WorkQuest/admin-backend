@@ -44,6 +44,7 @@ export async function getAllUsers(r) {
 
   const order = [];
   const include = [];
+  let distinctCol: '"User"."id"' | "id" = '"User"."id"';
   const where = {
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
     ...(r.query.role && { role: r.query.role }),
@@ -75,6 +76,8 @@ export async function getAllUsers(r) {
       required: true,
       where: { status: r.query.ratingStatuses },
     });
+
+    distinctCol = "id";
   }
 
   if (order.length === 0) {
@@ -84,8 +87,8 @@ export async function getAllUsers(r) {
   const { rows, count } = await User.findAndCountAll({
     where,
     include,
+    col: distinctCol,
     distinct: true,
-    col: '"User"."id"',
     limit: r.query.limit,
     offset: r.query.offset,
     order,
