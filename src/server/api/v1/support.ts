@@ -2,6 +2,7 @@ import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 import { Admin, SupportTicketForUser, TicketStatus, User } from "@workquest/database-models/lib/models";
+import { Op } from "sequelize";
 
 export async function getSupportTicket(r) {
   const ticket = await SupportTicketForUser.findByPk(r.params.ticketId, {
@@ -39,7 +40,7 @@ export async function getSupportUserTickets(r) {
 }
 
 export async function getTickets(r) {
-  const where = { ...(r.query.status in TicketStatus && { status: r.query.status }) }
+  const where = { ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }), }
 
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
     where,
@@ -51,13 +52,24 @@ export async function getTickets(r) {
 }
 
 export async function takeTicketToResolve(r) {
-  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId);
+  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId, {
+    include: [{
+      model: User.scope('short'),
+      as: 'authorUser'
+    }, {
+      model: Admin.scope('short'),
+      as: 'resolvedByAdmin',
+    }],
+  });
 
   if (!ticket) {
     return error(Errors.NotFound, 'Ticket is not found', {});
   }
   if (ticket.status !== TicketStatus.Pending) {
     throw error(Errors.InvalidStatus, 'Invalid status', {});
+  }
+  if (ticket.resolvedByAdminId !== null) {
+    throw error(Errors.NoRole, 'Cannot be executed by this admin', {});
   }
 
   await ticket.update({
@@ -75,7 +87,15 @@ export async function takeTicketToResolve(r) {
 }
 
 export async function ticketDecide(r) {
-  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId);
+  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId, {
+    include: [{
+      model: User.scope('short'),
+      as: 'authorUser'
+    }, {
+      model: Admin.scope('short'),
+      as: 'resolvedByAdmin',
+    }],
+  });
 
   if (!ticket) {
     return error(Errors.NotFound, 'Ticket is not found', {});
