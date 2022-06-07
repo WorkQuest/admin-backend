@@ -52,15 +52,7 @@ export async function getTickets(r) {
 }
 
 export async function takeTicketToResolve(r) {
-  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId, {
-    include: [{
-      model: User.scope('short'),
-      as: 'authorUser'
-    }, {
-      model: Admin.scope('short'),
-      as: 'resolvedByAdmin',
-    }],
-  });
+  const ticket = await SupportTicketForUser.findByPk(r.params.ticketId);
 
   if (!ticket) {
     return error(Errors.NotFound, 'Ticket is not found', {});
@@ -83,7 +75,17 @@ export async function takeTicketToResolve(r) {
     adminId: r.auth.credentials.id,
   });
 
-  return output(ticket);
+  const result = await SupportTicketForUser.findByPk(r.params.ticketId, {
+    include: [{
+      model: User.scope('short'),
+      as: 'authorUser'
+    }, {
+      model: Admin.scope('short'),
+      as: 'resolvedByAdmin',
+    }],
+  });
+
+  return output(result);
 }
 
 export async function ticketDecide(r) {
