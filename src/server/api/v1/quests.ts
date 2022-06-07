@@ -30,11 +30,23 @@ export async function getQuests(r) {
     `OR (SELECT "lastName" FROM "Users" WHERE "id" = "Quest"."userId") ILIKE '%${r.query.q}%'`
   );
 
+  const assignedWorkerSearchLiteral = literal(
+    `(SELECT "firstName" FROM "Users" WHERE "id" = "Quest"."assignedWorkerId") ILIKE '%${r.query.q}%'` +
+    `OR (SELECT "lastName" FROM "Users" WHERE "id" = "Quest"."assignedWorkerId") ILIKE '%${r.query.q}%'`
+  );
+
+  const orderByExistingDisputesLiteral = literal(
+    '(CASE WHEN EXISTS (SELECT "id" FROM "QuestDisputes" WHERE "questId" = "Quest".id) THEN 1 END) '
+  )
+
+  const order = [];
   const where = {
     ...(r.params.userId && { userId: r.params.userId }),
     ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
     ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
     ...(r.query.priorities && { priority: { [Op.in]:  r.query.priorities } }),
+    ...(r.query.createdBetween && { createdAt: { [Op.between]: [r.query.createdBetween.from, r.query.createdBetween.to] } }),
+    ...(r.query.createdBetween && { updatedAt: { [Op.between]: [r.query.updatedBetween.from, r.query.updatedBetween.to] } }),
   };
 
   if (r.query.q) {
@@ -42,7 +54,16 @@ export async function getQuests(r) {
       [field]: { [Op.iLike]: `%${r.query.q}%` }
     }));
 
-    where[Op.or].push(userSearchLiteral)
+    where[Op.or].push(userSearchLiteral);
+    where[Op.or].push(assignedWorkerSearchLiteral);
+  }
+
+  for (const [key, value] of Object.entries(r.query.sort || {})) {
+    if (key === "dispute") {
+      order.push([orderByExistingDisputesLiteral, value]);
+    } else {
+      order.push([key, value]);
+    }
   }
 
   const include = [{
@@ -72,6 +93,7 @@ export async function getQuests(r) {
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
     include, where,
+    order,
     distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
