@@ -60,7 +60,8 @@ export async function getReports(r) {
       model: Admin,
       as: 'admin',
       required: false
-    }]
+    }],
+    order: [['number', 'DESC']]
   });
 
   return output({ reports: rows, count });
