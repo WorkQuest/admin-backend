@@ -49,6 +49,8 @@ export async function getReports(r) {
 
   const { rows, count } = await Report.findAndCountAll({
     attributes: { exclude: ['updatedAt'] },
+    offset: r.query.offset,
+    limit: r.query.limit,
     where,
     replacements,
     include: [{

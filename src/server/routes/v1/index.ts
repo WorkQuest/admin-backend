@@ -10,6 +10,7 @@ import statistic from "./statistic";
 import proposal from "./proposal";
 import reports from "./reports";
 import support from "./support";
+import chat from "./chat";
 
 export default [
   ...auth,
@@ -23,5 +24,6 @@ export default [
   ...statistic,
   ...proposal,
   ...reports,
-  ...support
+  ...support,
+  ...chat,
 ];

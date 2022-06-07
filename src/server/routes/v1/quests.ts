@@ -3,6 +3,7 @@ import * as handlers from "../../api/v1/quests";
 import { getRbacSettings } from "../../utils/auth";
 import { AdminRole } from "@workquest/database-models/lib/models";
 import {
+  createdBetweenSchema,
   emptyOkSchema,
   idSchema,
   idsSchema,
@@ -20,9 +21,10 @@ import {
   questForAdminsGetSchema,
   questSchema,
   questStatusesSchema,
-  searchSchema,
+  searchSchema, sortDirectionSchema,
   specializationKeysSchema,
   workPlaceSchema,
+  updatedBetweenSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -38,6 +40,11 @@ export default[{
         q: searchSchema,
         statuses: questStatusesSchema,
         priorities: prioritiesSchema,
+        createdBetween: createdBetweenSchema,
+        updatedBetween: updatedBetweenSchema,
+        sort: Joi.object({
+          dispute: sortDirectionSchema.default('DESC')
+        }).label('GetUsersQuestsSort'),
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetQuestsQuery'),

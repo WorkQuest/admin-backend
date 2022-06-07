@@ -11,7 +11,7 @@ import {
   reportStatusSchema,
   reportEntityTypeSchema,
   outputPaginationSchema,
-  reportWithEntitiesSchema,
+  reportWithEntitiesSchema, limitSchema, offsetSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -29,6 +29,8 @@ export default [{
         adminId: idSchema,
         statuses: Joi.array().items(reportStatusSchema),
         entities: Joi.array().items(reportEntityTypeSchema),
+        limit: limitSchema,
+        offset: offsetSchema
       }).label('GetReportsQuery')
     },
     response: {

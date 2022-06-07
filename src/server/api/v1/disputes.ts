@@ -1,15 +1,29 @@
 import { literal, Op } from 'sequelize'
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
+import { updateChatDataJob } from "../../jobs/updateChatData";
+import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
+import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
+import { updateCountUnreadMessagesJob } from "../../jobs/updateCountUnreadMessages";
+import { resetUnreadCountMessagesOfMemberJob } from "../../jobs/resetUnreadCountMessagesOfMember";
+import { incrementUnreadCountMessageOfMembersJob } from "../../jobs/incrementUnreadCountMessageOfMembers";
+import {
+  TakeQuestDisputeComposHandler,
+  DecideQuestDisputeComposHandler,
+} from "../../handlers";
 import {
   User,
   Admin,
   Quest,
   QuestChat,
+  ChatMember,
   QuestDispute,
-  DisputeStatus,
+  MemberStatus,
+  DisputeDecision,
+  TransactionStatus,
   QuestDisputeReview,
+  QuestDisputeDecisionData,
 } from "@workquest/database-models/lib/models";
 
 export async function getQuestDispute(r) {
@@ -57,57 +71,6 @@ export async function getQuestDisputes(r) {
   return output({ count, disputes: rows });
 }
 
-export async function takeDisputeToResolve(r) {
-  const dispute = await QuestDispute.findByPk(r.params.disputeId);
-
-  if (!dispute) {
-    return error(Errors.NotFound, 'Dispute is not found', {});
-  }
-  if (dispute.status !== DisputeStatus.Created) {
-    throw error(Errors.InvalidStatus, 'Invalid status', {});
-  }
-
-  await dispute.update({
-    status: DisputeStatus.InProgress,
-    acceptedAt: Date.now(),
-    assignedAdminId: r.auth.credentials.id,
-  });
-
-  await saveAdminActionsMetadataJob({
-    path: r.path,
-    HTTPVerb: r.method,
-    adminId: r.auth.credentials.id,
-  });
-
-  return output(dispute);
-}
-
-export async function disputeDecide(r) {
-  const dispute = await QuestDispute.findByPk(r.params.disputeId);
-
-  if (!dispute) {
-    return error(Errors.NotFound, 'Dispute is not found', {});
-  }
-  if (dispute.assignedAdminId !== r.auth.credentials.id) {
-    throw error(Errors.Forbidden, 'You are not an assigned administrator', {});
-  }
-  if (dispute.status !== DisputeStatus.InProgress) {
-    throw error(Errors.InvalidStatus, 'Invalid status', {});
-  }
-
-  await dispute.update({
-    decisionDescription: r.payload.decisionDescription,
-  });
-
-  await saveAdminActionsMetadataJob({
-    path: r.path,
-    HTTPVerb: r.method,
-    adminId: r.auth.credentials.id,
-  });
-
-  return output(await QuestDispute.findByPk(dispute.id));
-}
-
 export async function getQuestDisputeReviews(r) {
   const where = {
     ...(r.params.adminId && { toAdminId: r.params.adminId }),
@@ -145,4 +108,116 @@ export async function getQuestDisputeReviewsForAdminMe(r) {
   });
 
   return output({ count, reviews: rows });
+}
+
+export async function takeDisputeToResolve(r) {
+  const meAdmin: Admin = r.auth.credentials;
+
+  const { disputeId } = r.params as { disputeId: string }
+
+  const [dispute, chat, meAdminChatMember, [message, ]] = await new TakeQuestDisputeComposHandler(r.server.app.db)
+    .Handle({
+      meAdmin,
+      disputeId,
+    });
+  console.log("here")
+
+  //TODO: переделать
+  const members = await ChatMember.findAll({
+    attributes: ['id'],
+    where: {
+      chatId: chat.id,
+      status: MemberStatus.Active,
+    }
+  });
+
+  await saveAdminActionsMetadataJob({
+    path: r.path,
+    HTTPVerb: r.method,
+    adminId: r.auth.credentials.id,
+  });
+  await resetUnreadCountMessagesOfMemberJob({
+    chatId: chat.id,
+    memberId: meAdminChatMember.id,
+    lastReadMessage: { id: message.id, number: message.number },
+  });
+  await incrementUnreadCountMessageOfMembersJob({
+    chatId: chat.id,
+    skipMemberIds: [meAdminChatMember.id],
+  });
+  await updateChatDataJob({
+    chatId: chat.id,
+    lastMessageId: message.id,
+  });
+  await updateCountUnreadMessagesJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: chat.id,
+    readerMemberId: meAdminChatMember.id,
+  });
+  await setMessageAsReadJob({
+    chatId: chat.id,
+    senderMemberId: meAdminChatMember.id,
+    lastUnreadMessage: { id: message.id, number: message.number }
+  });
+  await updateCountUnreadChatsJob({
+    members,
+  });
+
+
+  return output(dispute);
+}
+
+export async function disputeDecide(r) {
+  const meAdmin: Admin = r.auth.credentials;
+
+  const { disputeId } = r.params as { disputeId: string };
+  const { decision, decisionDescription } = r.payload as { decisionDescription: string, decision: DisputeDecision };
+
+  const [chat, questDispute, [message]] = await new DecideQuestDisputeComposHandler(r.server.app.db)
+    .Handle({
+      meAdmin,
+      decision,
+      disputeId,
+      decisionDescription,
+    });
+
+  // TODO !!
+  await QuestDisputeDecisionData.create({
+    decision: decision,
+    disputeId: questDispute.id,
+    status: TransactionStatus.Pending,
+  });
+
+  //TODO: переделать
+  const members = await ChatMember.findAll({
+    where: {
+      chatId: chat.id,
+      status: MemberStatus.Active,
+    }
+  });
+
+  await r.server.app.taskScheduler.publisher({
+    name: 'ResolveDisputeByAdmin',
+    payload: {
+      decision,
+      disputeId: questDispute.id,
+      questId: questDispute.questId,
+    }
+  });
+  await saveAdminActionsMetadataJob({
+    path: r.path,
+    HTTPVerb: r.method,
+    adminId: r.auth.credentials.id,
+  });
+  await incrementUnreadCountMessageOfMembersJob({
+    chatId: chat.id,
+    skipMemberIds: [],
+  });
+  await updateChatDataJob({
+    chatId: chat.id,
+    lastMessageId: message.id,
+  });
+  await updateCountUnreadChatsJob({ members });
+
+  return output(questDispute);
 }
