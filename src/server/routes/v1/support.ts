@@ -12,7 +12,7 @@ import {
   supportTicketQuerySchema,
   statusSupportTicketSchema,
   descriptionSupportTicketSchema,
-  postedDecisionSupportTicketSchema,
+  postedDecisionSupportTicketSchema, sortDirectionSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -46,6 +46,9 @@ export default [{
       query: Joi.object({
         limit: limitSchema,
         offset: offsetSchema,
+        sort: Joi.object({
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).default({ createdAt: 'DESC' }).label('SortTickets'),
       }).label('GetUserSupportTicketsQuery'),
       params: Joi.object({
         userId: idSchema.required(),
@@ -65,7 +68,10 @@ export default [{
     description: "Get all support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
-      query: supportTicketQuerySchema
+      query: supportTicketQuerySchema,
+      sort: Joi.object({
+        createdAt: sortDirectionSchema.default('DESC'),
+      }).default({ createdAt: 'DESC' }).label('SortTickets'),
     },
     response: {
       schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportTicketsResponse')
@@ -104,7 +110,7 @@ export default [{
       }).label("SupportTicketDecideParams"),
       payload: Joi.object({
         decisionPostedIn: postedDecisionSupportTicketSchema.required(),
-        decisionDescription: descriptionSupportTicketSchema.required(),
+        decisionDescription: descriptionSupportTicketSchema,
         status: statusSupportTicketSchema.required()
       }).label('SupportTicketSchema')
     },
