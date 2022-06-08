@@ -69,9 +69,6 @@ export default [{
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       query: supportTicketQuerySchema,
-      sort: Joi.object({
-        createdAt: sortDirectionSchema.default('DESC'),
-      }).default({ createdAt: 'DESC' }).label('SortTickets'),
     },
     response: {
       schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportTicketsResponse')
