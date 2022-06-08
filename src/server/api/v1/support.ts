@@ -47,7 +47,7 @@ export async function getTickets(r) {
     where,
     limit: r.query.limit,
     offset: r.query.offset,
-    order: [['createdAt', r.query.sort.createdAt]],
+    order: [['createdAt', r.query.sort]],
   });
 
   return output({ count, tickets: rows });
