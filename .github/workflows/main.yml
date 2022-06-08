@@ -265,3 +265,4 @@ jobs:
             BASE_URL=${{ secrets.BASE_URL }} \
             SERVICE_NAME=${{ secrets.SERVICE_NAME }} \
             SRC_DIR=${{ github.workspace }}/" backend-update.yml;
+            
