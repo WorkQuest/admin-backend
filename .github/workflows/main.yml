@@ -242,7 +242,9 @@ jobs:
           ansible-playbook -i "${{ secrets.REMOTE_HOST }}" -e "ansible_user=${{ secrets.REMOTE_USER }} \
             SERVER_HOST=${{ secrets.SERVER_HOST }} \
             SERVER_PORT=${{ secrets.SERVER_PORT }} \
+          
             DB_LINK=${{ secrets.DB_LINK }} \
+          
             JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }} \
             JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
           
@@ -261,8 +263,9 @@ jobs:
             CDN_BUCKET=${{ secrets.CDN_BUCKET }} \
             CDN_PUB_END_POINT=${{ secrets.CDN_PUB_END_POINT }} \
             CDN_EXPIRES_IN=${{ secrets.CDN_EXPIRES_IN }} \
+          
             BACKEND_BIN=${{ secrets.BACKEND_BIN }} \
             BASE_URL=${{ secrets.BASE_URL }} \
+          
             SERVICE_NAME=${{ secrets.SERVICE_NAME }} \
             SRC_DIR=${{ github.workspace }}/" backend-update.yml;
-            
