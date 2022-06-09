@@ -3,14 +3,17 @@ import { BindOrReplacements, literal, Op, WhereOptions } from 'sequelize';
 import { error, output } from "../../utils";
 import { Errors } from "../../utils/errors";
 import {
-  DiscussionComment,
-  reportEntities,
-  ReportStatus,
-  Report,
   Admin,
+  DiscussionComment,
   Quest,
+  Report,
+  reportEntities,
+  ReportEntityType,
+  ReportsPlatformStatisticFields,
+  ReportStatus,
   User,
 } from "@workquest/database-models/lib/models";
+import { writeActionStatistics } from "../../jobs/writeActionStatistics";
 
 const searchReportFields = [
   'title',
@@ -120,6 +123,12 @@ export async function rejectReport(r) {
     data: { reportId: report.id }
   })
 
+  if (report.entityType === ReportEntityType.User) {
+    await writeActionStatistics(ReportsPlatformStatisticFields.DeclinedUsers, 'report');
+  } else if (report.entityType === ReportEntityType.Quest) {
+    await writeActionStatistics(ReportsPlatformStatisticFields.DeclinedQuests, 'report');
+  }
+
   return output();
 }
 
@@ -171,7 +180,13 @@ export async function decideReport(r) {
     recipients: [report.authorId],
     action: ReportNotificationActions.ReportDecided,
     data: { reportId: report.id }
-  })
+  });
+
+  if (report.entityType === ReportEntityType.User) {
+    await writeActionStatistics(ReportsPlatformStatisticFields.DecidedUsers, 'report');
+  } else if (report.entityType === ReportEntityType.Quest) {
+    await writeActionStatistics(ReportsPlatformStatisticFields.DecidedQuests, 'report');
+  }
 
   return output();
 }
