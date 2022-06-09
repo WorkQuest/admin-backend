@@ -32,11 +32,11 @@ export async function getQuestDispute(r) {
       model: Quest,
       as: 'quest',
       include: [{
-        model: QuestChat.scope('idsOnly'),
+        model: QuestChat,
         as: 'questChat',
         on: literal('"QuestDispute"."assignedAdminId" = $adminId'),
         attributes: {
-          exclude: ['id', 'status', 'createdAt', 'updatedAt'],
+          exclude: ['id', 'status', 'createdAt', 'updatedAt', 'disputeAdminId'],
           include: [[literal('CASE WHEN "chatId" IS NULL THEN NULL ELSE "chatId" END'), 'chatId']],
         },
         required: false
