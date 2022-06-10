@@ -19,7 +19,7 @@ import {
   MemberStatus,
   StarredMessage,
   SenderMessageStatus,
-  ChatMemberDeletionData, ChatType, GroupChat, ChatMemberData, Media,
+  ChatMemberDeletionData, ChatType, GroupChat, ChatMemberData, Media, InfoMessage,
 } from '@workquest/database-models/lib/models';
 import {
   GetChatByIdHandler,
@@ -128,6 +128,10 @@ export async function getAdminChats(r) {
           as: 'admin',
           attributes: ["id", "firstName", "lastName"]
         }
+      }, {
+        model: InfoMessage.unscoped(),
+        attributes: ["messageAction"],
+        as: 'infoMessage'
       }]
     }]
   }, {
