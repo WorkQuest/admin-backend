@@ -20,6 +20,7 @@ import {
   chatsForGetWithCountSchema,
   messagesForGetWithCountSchema,
 } from '@workquest/database-models/lib/schemes';
+import { sendMessageToUser } from "../../api/v1/chat";
 
 export default [
   {
@@ -353,6 +354,29 @@ export default [
       },
       response: {
         schema: emptyOkSchema,
+      },
+    },
+  },
+  {
+    method: 'POST',
+    path: '/v1/user/{userId}/send-message',
+    handler: handlers.sendMessageToUser,
+    options: {
+      auth: 'jwt-access',
+      id: 'v1.admin.sendMessageToUser',
+      description: 'Send message to user',
+      tags: ['api', 'chat'],
+      validate: {
+        params: Joi.object({
+          userId: idSchema.required(),
+        }).label('SendMessageToUserParams'),
+        payload: Joi.object({
+          text: messageTextSchema.allow('').default(''),
+          mediaIds: idsSchema.required().unique(),
+        }).label('SendMessageToUserPayload'),
+      },
+      response: {
+        schema: outputOkSchema(messageSchema).label('SendMessageToUser'),
       },
     },
   },
