@@ -60,6 +60,12 @@ import {
 } from "../../handlers";
 import { updateChatDataJob } from "../../jobs/updateChatData";
 import { incrementUnreadCountMessageOfMembersJob } from "../../jobs/incrementUnreadCountMessageOfMembers";
+import {
+  GetUsersByIdHandler,
+  GetUsersByIdPostAccessPermissionHandler,
+  GetUsersByIdPostValidationHandler
+} from "../../handlers/user/GetUserByIdHandler";
+import { SendMessageToUserHandler } from "../../handlers/chat/private-chat/SendMessageToUserHandler";
 
 export const searchChatFields = ['name'];
 
@@ -804,4 +810,72 @@ export async function removeStarFromChat(r) {
   await new RemoveStarFromChatHandler().Handle({ admin: meAdmin, chatId });
 
   return output();
+}
+
+export async function sendMessageToUser(r) {
+  const meAdmin: Admin = r.auth.credentials;
+
+  const { userId } = r.params as { userId: string };
+  const { text, mediaIds } = r.payload as { text: string, mediaIds: string[] }
+
+  const recipientUser = await new GetUsersByIdPostAccessPermissionHandler(
+    new GetUsersByIdPostValidationHandler(
+      new GetUsersByIdHandler()
+    )
+  ).Handle({ userId });
+
+  const medias = await new GetMediasPostValidationHandler(
+    new GetMediaByIdsHandler()
+  ).Handle({ mediaIds });
+
+  const message = await new SendMessageToUserHandler(r.server.app.db).Handle({
+    text,
+    medias,
+    sender: meAdmin,
+    recipient: recipientUser,
+  });
+
+  const meMember = await new GetChatMemberByAdminHandler().Handle({ admin: meAdmin, chat: message.getDataValue('chat') });
+
+  await incrementUnreadCountMessageOfMembersJob({
+    chatId: message.chatId,
+    skipMemberIds: [meMember.id],
+  });
+
+  const recipientMember = await ChatMember.findOne({
+    where: {
+      userId: recipientUser.id,
+      chatId: message.getDataValue('chat').id
+    }
+  });
+
+  await updateChatDataJob({
+    chatId: message.getDataValue('chat').id,
+    lastMessageId: message.id,
+  });
+
+  await updateCountUnreadMessagesJob({
+    lastUnreadMessage: { id: message.id, number: message.number },
+    chatId: message.chatId,
+    readerMemberId: meMember.id,
+  });
+
+  await setMessageAsReadJob({
+    chatId: message.chatId,
+    lastUnreadMessage: { id: message.id, number: message.number },
+    senderMemberId: meMember.id,
+  });
+
+  //TODO
+  await updateCountUnreadChatsJob({
+    members: [meMember, recipientMember],
+  });
+
+  // r.server.app.broker.sendChatNotification({
+  //   data: message,
+  //   recipients: [userId],
+  //   action: ChatNotificationActions.newMessage,
+  // });
+
+  return output(message);
 }
