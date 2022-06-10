@@ -47,7 +47,7 @@ export class SendMessageToUserHandler implements IHandler<SendMessageToUserComma
     const sender = ChatMember.build({
       chatId: payload.privateChat.id,
       adminId: payload.sender.id,
-      type: MemberType.User,
+      type: MemberType.Admin,
       status: MemberStatus.Active,
     });
     const recipient = ChatMember.build({
