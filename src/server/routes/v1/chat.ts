@@ -113,7 +113,7 @@ export default [
     handler: handlers.sendMessageToAdmin,
     options: {
       auth: 'jwt-access',
-      id: 'v1.admin.sendMessageToA',
+      id: 'v1.admin.sendMessageToAdmin',
       description: 'Send message to admin',
       tags: ['api', 'chat'],
       validate: {
