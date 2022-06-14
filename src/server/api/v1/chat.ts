@@ -99,14 +99,18 @@ export async function getAdminChats(r) {
   const include: any[] = [{
     model: ChatMember,
     where: { adminId: r.auth.credentials.id },
-    include: {
+    include: [{
       model: ChatMemberDeletionData,
       as: 'chatMemberDeletionData',
       include: [{
         model: Message.unscoped(),
         as: 'beforeDeletionMessage'
       }]
-    },
+    }, {
+      model: ChatMemberData,
+      attributes: ["lastReadMessageId", "unreadCountMessages", "lastReadMessageNumber"],
+      as: 'chatMemberData',
+    }],
     required: true,
     as: 'meMember',
   }, {
@@ -137,11 +141,19 @@ export async function getAdminChats(r) {
   }, {
     model: ChatMember,
     as: 'members',
-    where: { [Op.and]: [ { adminId: { [Op.ne]: r.auth.credentials.id } }, chatTypeLiteral ] },
+    where: { [Op.and]: [ { [Op.or]: [{ adminId: { [Op.ne]: r.auth.credentials.id } }, { userId: { [Op.ne]: r.auth.credentials.id } }] }, chatTypeLiteral ] },
     include: [{
       model: Admin.unscoped(),
       as: 'admin',
       attributes: ["id", "firstName", "lastName"],
+    }, {
+      model: User.unscoped(),
+      as: 'user',
+      attributes: ["id", "avatarId", "firstName", "lastName"],
+      include: [{
+        model: Media,
+        as: 'avatar'
+      }],
     }, {
       model: ChatMemberData,
       as: 'chatMemberData'
