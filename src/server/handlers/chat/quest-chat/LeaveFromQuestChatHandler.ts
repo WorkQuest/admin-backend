@@ -78,9 +78,9 @@ export class LeaveFromQuestChatHandler extends BaseDomainHandler<LeaveFromQuestC
 
     const payload = { ...command, lastMessage };
 
-    const [, [message, infoMessage]] = await Promise.all([
-      this.leaveMember(payload),
+    const [[message, infoMessage] ,] = await Promise.all([
       this.sendInfoMessageAboutLeaveMember(payload),
+      this.leaveMember(payload),
     ]);
 
     return [message, infoMessage];
