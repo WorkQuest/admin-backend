@@ -215,20 +215,27 @@ export async function getChatMessages(r) {
     ...(meMember.chatMemberDeletionData && { createdAt: {[Op.lte]: meMember.chatMemberDeletionData.beforeDeletionMessage.createdAt }})
   }
 
+  const include = [
+    {
+      model: StarredMessage,
+      as: 'star',
+      where: { adminId: meMember.adminId },
+      required: r.query.starred,
+    },
+    {
+      model: Media,
+      as: 'medias',
+    },
+    {
+      model: InfoMessage.unscoped(),
+      attributes: ["messageId", "messageAction"],
+      as: 'infoMessage'
+    },
+  ]
+
   const { count, rows } = await Message.findAndCountAll({
     where,
-    include: [
-      {
-        model: StarredMessage,
-        as: 'star',
-        where: { adminId: meMember.adminId },
-        required: r.query.starred,
-      },
-      {
-        model: Media,
-        as: 'medias',
-      },
-    ],
+    include,
     distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
