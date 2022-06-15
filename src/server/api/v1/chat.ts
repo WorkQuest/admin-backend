@@ -19,7 +19,7 @@ import {
   MemberStatus,
   StarredMessage,
   SenderMessageStatus,
-  ChatMemberDeletionData, ChatType, GroupChat, ChatMemberData, Media, InfoMessage,
+  ChatMemberDeletionData, ChatType, GroupChat, ChatMemberData, Media, InfoMessage, MemberType,
 } from '@workquest/database-models/lib/models';
 import {
   GetChatByIdHandler,
@@ -66,6 +66,7 @@ import {
   GetUsersByIdPostValidationHandler
 } from "../../handlers/user/GetUserByIdHandler";
 import { SendMessageToUserHandler } from "../../handlers/chat/private-chat/SendMessageToUserHandler";
+import { ChatNotificationActions } from "../../controllers/controller.broker";
 
 export const searchChatFields = ['name'];
 
@@ -328,11 +329,11 @@ export async function createGroupChat(r) {
     members,
   });
 
-  // r.server.app.broker.sendChatNotification({
-  //   recipients: adminMemberIds.filter((id) => id !== adminChatOwner.id),
-  //   action: ChatNotificationActions.groupChatCreate,
-  //   data: chatDto,
-  // });
+  r.server.app.broker.sendChatNotification({
+    recipients: adminIds.filter((id) => id !== chatCreator.id),
+    action: ChatNotificationActions.groupChatCreate,
+    data: messageWithInfo,
+  });
 
   return output({ chat, infoMessage: messageWithInfo });
 }
@@ -396,11 +397,11 @@ export async function sendMessageToAdmin(r) {
     members: [meMember, recipientMember],
   });
 
-  // r.server.app.broker.sendChatNotification({
-  //   data: message,
-  //   action: ChatNotificationActions.newMessage,
-  //   recipients: [privateChatController.members.recipientMember.AdminId],
-  // });
+  r.server.app.broker.sendChatNotification({
+    data: message,
+    action: ChatNotificationActions.newMessage,
+    recipients: [recipientAdmin.id],
+  });
 
   return output(message);
 }
@@ -463,11 +464,26 @@ export async function sendMessageToChat(r) {
 
   // await updateCountUnreadChatsJob({ adminIds });
 
-  // r.server.app.broker.sendChatNotification({
-  //   action: ChatNotificationActions.newMessage,
-  //   recipients: ,
-  //   data: message,
-  // });
+  const members = await ChatMember.findAll({
+    attributes: ['userId', 'adminId'],
+    where: {
+      [Op.or]: {
+        [Op.and]: {
+          type: MemberType.Admin,
+          adminId: { [Op.ne]: meAdmin.id }
+        },
+        type: MemberType.User
+      },
+      status: MemberStatus.Active,
+      chatId
+    }
+  });
+
+  r.server.app.broker.sendChatNotification({
+    action: ChatNotificationActions.newMessage,
+    recipients: members.map(({ userId, adminId }) => userId || adminId),
+    data: message,
+  });
 
   return output(message);
 }
@@ -527,20 +543,23 @@ export async function removeMemberFromGroupChat(r) {
     lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
   });
 
-  //TODO: переделать
-  const members = await ChatMember.findAll({ where: {
-      chatId,
+  const members = await ChatMember.findAll({
+    attributes: ['userId', 'adminId'],
+    where: {
+      type: MemberType.Admin,
+      adminId: { [Op.ne]: meAdmin.id },
       status: MemberStatus.Active,
+      chatId
     }
   });
 
   await updateCountUnreadChatsJob({ members });
 
-  // r.server.app.broker.sendChatNotification({
-  //   action: ChatNotificationActions.groupChatDeleteAdmin,
-  //   recipients: adminIdsWithoutSender,
-  //   data: message,
-  // });
+  r.server.app.broker.sendChatNotification({
+    action: ChatNotificationActions.groupChatDeleteAdmin,
+    recipients: members.map(({ userId, adminId }) => adminId || userId),
+    data: messageWithInfo,
+  });
 
   return output(messageWithInfo);
 }
@@ -588,20 +607,28 @@ export async function leaveFromGroupChat(r) {
     lastUnreadMessage: { id: messageWithInfo.id, number: messageWithInfo.number },
   });
 
-  //TODO: переделать
-  const members = await ChatMember.findAll({ where: {
-      chatId,
+  const members = await ChatMember.findAll({
+    attributes: ['userId', 'adminId'],
+    where: {
+      [Op.or]: {
+        [Op.and]: {
+          type: MemberType.Admin,
+          adminId: { [Op.ne]: meAdmin.id }
+        },
+        type: MemberType.User
+      },
       status: MemberStatus.Active,
+      chatId
     }
   });
 
   await updateCountUnreadChatsJob({ members });
 
-  // r.server.app.broker.sendChatNotification({
-  //   action: ChatNotificationActions.groupChatLeaveAdmin,
-  //   recipients: group-chat.members,//adminIdsWithoutSender,
-  //   data: result,
-  // });
+  r.server.app.broker.sendChatNotification({
+    action: ChatNotificationActions.groupChatLeaveAdmin,
+    recipients: members.map(({ userId, adminId }) => adminId || userId),
+    data: messageWithInfo,
+  });
 
   return output(messageWithInfo);
 }
@@ -664,20 +691,28 @@ export async function addAdminsInGroupChat(r) {
     lastUnreadMessage: { id: lastMessage.id, number: lastMessage.number }
   });
 
-  //TODO: переделать
-  const members = await ChatMember.findAll({ where: {
-      chatId,
+  const members = await ChatMember.findAll({
+    attributes: ['userId', 'adminId'],
+    where: {
+      [Op.or]: {
+        [Op.and]: {
+          type: MemberType.Admin,
+          adminId: { [Op.ne]: meAdmin.id }
+        },
+        type: MemberType.User
+      },
       status: MemberStatus.Active,
+      chatId
     }
   });
 
   await updateCountUnreadChatsJob({ members });
 
-  // r.server.app.broker.sendChatNotification({
-  //   action: ChatNotificationActions.groupChatAddAdmin,
-  //   recipients: adminIdsInChatWithoutSender,
-  //   data: messagesResult,
-  // });
+  r.server.app.broker.sendChatNotification({
+    action: ChatNotificationActions.groupChatAddAdmin,
+    recipients: members.map(({ userId, adminId }) => adminId || userId),
+    data: messagesWithInfo,
+  });
 
   return output(messagesWithInfo);
 }
@@ -732,11 +767,11 @@ export async function setMessagesAsRead(r) {
     members: [meMember]
   });
 
-  // r.server.app.broker.sendChatNotification({
-  //   action: ChatNotificationActions.messageReadByRecipient,
-  //   recipients: otherSenders.map((sender) => sender.senderMemberId),
-  //   data: message,
-  // });
+  r.server.app.broker.sendChatNotification({
+    action: ChatNotificationActions.messageReadByRecipient,
+    recipients: otherSenders.map((sender) => sender.senderMemberId),
+    data: message,
+  });
 
   return output();
 }
@@ -886,11 +921,11 @@ export async function sendMessageToUser(r) {
     members: [meMember, recipientMember],
   });
 
-  // r.server.app.broker.sendChatNotification({
-  //   data: message,
-  //   recipients: [userId],
-  //   action: ChatNotificationActions.newMessage,
-  // });
+  r.server.app.broker.sendChatNotification({
+    data: message,
+    recipients: [userId],
+    action: ChatNotificationActions.newMessage,
+  });
 
   return output(message);
 }
