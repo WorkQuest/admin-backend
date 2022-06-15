@@ -9,9 +9,10 @@ export default [
     method: 'GET',
     path: '/v1/platform-statistics/{statistic}/dates',
     handler: handlers.getAllowedDates,
-    plugins: getRbacSettings(AdminRole.Main, AdminRole.Advertising),
     options: {
+      auth: 'jwt-access',
       id: 'v1.platform-statistics.getAllowedDates',
+      plugins: getRbacSettings(AdminRole.Main, AdminRole.Advertising),
       tags: ['api', 'platform-statistics'],
       description: 'Get allowed dates for platform statistics',
       validate: {
@@ -27,7 +28,9 @@ export default [
     handler: handlers.getUsersPlatformStatistic,
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Advertising),
     options: {
+      auth: 'jwt-access',
       id: 'v1.platform-statistics.getUsersStatistic',
+      plugins: getRbacSettings(AdminRole.Main, AdminRole.Advertising),
       tags: ['api', 'platform-statistics'],
       description: 'Get users platform statistic',
       validate: {
