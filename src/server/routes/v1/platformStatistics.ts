@@ -26,7 +26,6 @@ export default [
     method: 'GET',
     path: '/v1/platform-statistics/{statistic}',
     handler: handlers.getUsersPlatformStatistic,
-    plugins: getRbacSettings(AdminRole.Main, AdminRole.Advertising),
     options: {
       auth: 'jwt-access',
       id: 'v1.platform-statistics.getUsersStatistic',
