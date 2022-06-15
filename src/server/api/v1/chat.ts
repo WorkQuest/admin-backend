@@ -557,7 +557,7 @@ export async function removeMemberFromGroupChat(r) {
 
   r.server.app.broker.sendChatNotification({
     action: ChatNotificationActions.groupChatDeleteAdmin,
-    recipients: members.map(({ userId, adminId }) => adminId || userId),
+    recipients: members.map(({ adminId }) => adminId),
     data: messageWithInfo,
   });
 
