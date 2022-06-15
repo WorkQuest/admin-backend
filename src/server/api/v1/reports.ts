@@ -1,6 +1,7 @@
 import { ReportNotificationActions } from "../../controllers/controller.broker";
 import { BindOrReplacements, literal, Op, WhereOptions } from 'sequelize';
 import { error, output } from "../../utils";
+import { writeActionStatistics } from "../../jobs/writeActionStatistics";
 import { Errors } from "../../utils/errors";
 import {
   Admin,
@@ -13,7 +14,7 @@ import {
   ReportStatus,
   User,
 } from "@workquest/database-models/lib/models";
-import { writeActionStatistics } from "../../jobs/writeActionStatistics";
+import { StatisticController } from "../../controllers/controller.statistic";
 
 const searchReportFields = [
   'title',
@@ -123,11 +124,7 @@ export async function rejectReport(r) {
     data: { reportId: report.id }
   })
 
-  if (report.entityType === ReportEntityType.User) {
-    await writeActionStatistics(ReportsPlatformStatisticFields.DeclinedUsers, 'report');
-  } else if (report.entityType === ReportEntityType.Quest) {
-    await writeActionStatistics(ReportsPlatformStatisticFields.DeclinedQuests, 'report');
-  }
+  await StatisticController.reportRejectAction(report.entityType);
 
   return output();
 }
@@ -182,11 +179,7 @@ export async function decideReport(r) {
     data: { reportId: report.id }
   });
 
-  if (report.entityType === ReportEntityType.User) {
-    await writeActionStatistics(ReportsPlatformStatisticFields.DecidedUsers, 'report');
-  } else if (report.entityType === ReportEntityType.Quest) {
-    await writeActionStatistics(ReportsPlatformStatisticFields.DecidedQuests, 'report');
-  }
+  await StatisticController.reportDecideAction(report.entityType);
 
   return output();
 }

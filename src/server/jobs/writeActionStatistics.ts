@@ -10,6 +10,18 @@ type Statistics =
 
 type StatisticAction = 'increment' | 'decrement'
 
-export async function writeActionStatistics(incrementField, statistic: Statistics, by: string | number = 1, type: StatisticAction = 'increment') {
-  return addJob('writeActionStatistics', { incrementField, statistic, by, type });
+type WriteActionStatisticsPayload = {
+  incrementField: string;
+  statistic: Statistics;
+  by?: number | string;
+  type?: StatisticAction;
+}
+
+export async function writeActionStatistics(payload: WriteActionStatisticsPayload) {
+  return addJob('writeActionStatistics', {
+    incrementField: payload.incrementField,
+    statistic: payload.statistic,
+    by: payload.by,
+    type: payload.type
+  });
 }

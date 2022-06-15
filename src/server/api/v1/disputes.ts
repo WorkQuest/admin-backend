@@ -8,6 +8,7 @@ import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata
 import { updateCountUnreadMessagesJob } from "../../jobs/updateCountUnreadMessages";
 import { resetUnreadCountMessagesOfMemberJob } from "../../jobs/resetUnreadCountMessagesOfMember";
 import { incrementUnreadCountMessageOfMembersJob } from "../../jobs/incrementUnreadCountMessageOfMembers";
+import { StatisticController } from "../../controllers/controller.statistic";
 import {
   TakeQuestDisputeComposHandler,
   DecideQuestDisputeComposHandler,
@@ -162,6 +163,7 @@ export async function takeDisputeToResolve(r) {
   await updateCountUnreadChatsJob({
     members,
   });
+  await StatisticController.takeDisputeToResolveAction();
 
 
   return output(dispute);
@@ -218,6 +220,7 @@ export async function disputeDecide(r) {
     lastMessageId: message.id,
   });
   await updateCountUnreadChatsJob({ members });
+  await StatisticController.disputeDecideAction();
 
   return output(questDispute);
 }
