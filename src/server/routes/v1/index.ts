@@ -5,6 +5,7 @@ import quests from "./quests";
 import profile from "./profile";
 import disputes from "./disputes";
 import storageService from "./storageService";
+import platformStatistics from "./platformStatistics";
 import skillFilters from "./skillFilters";
 import statistic from "./statistic";
 import proposal from "./proposal";
@@ -20,10 +21,11 @@ export default [
   ...users,
   ...profile,
   ...storageService,
+  ...platformStatistics,
   ...skillFilters,
   ...statistic,
   ...proposal,
   ...reports,
   ...support,
-  ...chat,
+  ...chat
 ];

@@ -1,16 +1,20 @@
 import { ReportNotificationActions } from "../../controllers/controller.broker";
 import { BindOrReplacements, literal, Op, WhereOptions } from 'sequelize';
 import { error, output } from "../../utils";
+import { writeActionStatistics } from "../../jobs/writeActionStatistics";
 import { Errors } from "../../utils/errors";
 import {
-  DiscussionComment,
-  reportEntities,
-  ReportStatus,
-  Report,
   Admin,
+  DiscussionComment,
   Quest,
+  Report,
+  reportEntities,
+  ReportEntityType,
+  ReportsPlatformStatisticFields,
+  ReportStatus,
   User,
 } from "@workquest/database-models/lib/models";
+import { StatisticController } from "../../controllers/controller.statistic";
 
 const searchReportFields = [
   'title',
@@ -120,6 +124,8 @@ export async function rejectReport(r) {
     data: { reportId: report.id }
   })
 
+  await StatisticController.reportRejectAction(report.entityType);
+
   return output();
 }
 
@@ -171,7 +177,9 @@ export async function decideReport(r) {
     recipients: [report.authorId],
     action: ReportNotificationActions.ReportDecided,
     data: { reportId: report.id }
-  })
+  });
+
+  await StatisticController.reportDecideAction(report.entityType);
 
   return output();
 }
