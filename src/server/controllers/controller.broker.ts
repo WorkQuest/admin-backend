@@ -4,7 +4,8 @@ import { Buffer } from "buffer";
 
 export const enum AdminBrokerQueues {
   Quest = 'quest',
-  Report = 'report'
+  Report = 'report',
+  Chat = 'chat'
 }
 
 export const enum QuestNotificationActions {
@@ -14,6 +15,17 @@ export const enum QuestNotificationActions {
 export const enum ReportNotificationActions {
   ReportDecided = 'ReportDecided',
   ReportRejected = 'ReportRejected'
+}
+
+export const enum ChatNotificationActions {
+  /** Group group-chat */
+  groupChatCreate = 'groupChatCreate',
+  groupChatAddAdmin = 'groupChatAddAdmin',
+  groupChatDeleteAdmin = 'groupChatDeleteAdmin',
+  groupChatLeaveAdmin = 'groupChatLeaveAdmin',
+  /** */
+  messageReadByRecipient = 'messageReadByRecipient',
+  newMessage = 'newMessage',
 }
 
 type Notification<Action> = {
@@ -83,5 +95,15 @@ export class ControllerBroker {
     const convertedData = ControllerBroker.convertData(notification);
 
     this.channel.sendToQueue(AdminBrokerQueues.Report, convertedData);
+  }
+
+  public sendChatNotification(notification: Notification<ChatNotificationActions>) {
+    if (!this.channel) {
+      return;
+    }
+
+    const convertedData = ControllerBroker.convertData(notification);
+
+    this.channel.sendToQueue(AdminBrokerQueues.Chat, convertedData);
   }
 }

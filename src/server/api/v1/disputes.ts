@@ -28,18 +28,21 @@ import {
 } from "@workquest/database-models/lib/models";
 
 export async function getQuestDispute(r) {
+  const chatDataLiteral = literal(
+    `("QuestDispute"."assignedAdminId" = '${ r.auth.credentials.id }' )`
+  )
   const dispute = await QuestDispute.findByPk(r.params.disputeId, {
     include: [{
       model: Quest,
       as: 'quest',
       include: [{
-        model: QuestChat.scope('idsOnly'),
+        model: QuestChat,
         as: 'questChat',
-        on: literal('"QuestDispute"."assignedAdminId" = $adminId'),
         attributes: {
-          exclude: ['id', 'status', 'createdAt', 'updatedAt'],
-          include: [[literal('CASE WHEN "chatId" IS NULL THEN NULL ELSE "chatId" END'), 'chatId']],
+          exclude: ['id', 'status', 'createdAt', 'updatedAt', 'disputeAdminId'],
+          include: ['chatId'],
         },
+        where: { chatDataLiteral },
         required: false
       }]
     }],

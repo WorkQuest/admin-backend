@@ -1,16 +1,16 @@
 import { QuestChatValidator } from './QuestChatValidator';
 import { QuestChatAccessPermission } from './QuestChatAccessPermission';
-import {LeaveFromQuestChatResult, LeaveFromQuestChatCommand} from "./types";
-import {IHandler, HandlerDecoratorBase, BaseDomainHandler} from '../../types';
+import { LeaveFromQuestChatCommand, LeaveFromQuestChatResult } from "./types";
+import { BaseDomainHandler, HandlerDecoratorBase, IHandler } from '../../types';
 import {
   Chat,
-  Message,
-  InfoMessage,
-  MessageType,
-  MemberStatus,
-  MessageAction,
   ChatMemberData,
   ChatMemberDeletionData,
+  InfoMessage,
+  MemberStatus,
+  Message,
+  MessageAction,
+  MessageType,
   ReasonForRemovingFromChat,
 } from '@workquest/database-models/lib/models';
 
@@ -78,10 +78,11 @@ export class LeaveFromQuestChatHandler extends BaseDomainHandler<LeaveFromQuestC
 
     const payload = { ...command, lastMessage };
 
-    const [, [message, infoMessage]] = await Promise.all([
-      this.leaveMember(payload),
-      this.sendInfoMessageAboutLeaveMember(payload),
-    ]);
+    const [message, infoMessage] = await this.sendInfoMessageAboutLeaveMember(payload);
+
+    payload.lastMessage = await this.getLastMessage(command.questChat);
+
+    await this.leaveMember(payload);
 
     return [message, infoMessage];
   }

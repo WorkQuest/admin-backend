@@ -46,7 +46,7 @@ export async function getQuests(r) {
     ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
     ...(r.query.priorities && { priority: { [Op.in]:  r.query.priorities } }),
     ...(r.query.createdBetween && { createdAt: { [Op.between]: [r.query.createdBetween.from, r.query.createdBetween.to] } }),
-    ...(r.query.createdBetween && { updatedAt: { [Op.between]: [r.query.updatedBetween.from, r.query.updatedBetween.to] } }),
+    ...(r.query.updatedBetween && { updatedAt: { [Op.between]: [r.query.updatedBetween.from, r.query.updatedBetween.to] } }),
   };
 
   if (r.query.q) {
