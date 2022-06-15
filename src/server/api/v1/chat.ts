@@ -715,7 +715,7 @@ export async function setMessagesAsRead(r) {
   await updateCountUnreadMessagesJob({
     lastUnreadMessage: { id: message.id, number: message.number },
     chatId: chat.id,
-    readerMemberId: chat.meMember.id,
+    readerMemberId: meMember.id,
   });
 
   if (otherSenders.length === 0) {
@@ -728,24 +728,9 @@ export async function setMessagesAsRead(r) {
     senderMemberId: meMember.id,
   });
 
-  // await updateCountUnreadMessagesJob({
-  //   lastUnreadMessage: { id: message.id, number: message.number },
-  //   chatId: chat.id,
-  //   readerMemberId: chat.meMember.id,
-  // });
-  //
-  // if (otherSenders.length === 0) {
-  //   return output();
-  // }
-  //
-  // await setMessageAsReadJob({
-  //   lastUnreadMessage: { id: message.id, number: message.number },
-  //   chatId: r.params.chatId,
-  //   senderMemberId: meMember.id,
-  // });
-  // await updateCountUnreadChatsJob({
-  //   adminIds: [r.auth.credentials.id],
-  // });
+  await updateCountUnreadChatsJob({
+    members: [meMember]
+  });
 
   // r.server.app.broker.sendChatNotification({
   //   action: ChatNotificationActions.messageReadByRecipient,
