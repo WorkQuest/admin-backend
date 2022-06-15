@@ -86,10 +86,11 @@ export async function getQuests(r) {
   }, {
     model: QuestDispute.unscoped(),
     attributes: ["id", "status", "number"],
-    as: 'openDispute',
+    as: 'questDisputes',
     required: false,
-    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] }
-  }];
+    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] },
+    order: [['createdAt', 'DESC']]
+  }] as any;
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
     include, where,
