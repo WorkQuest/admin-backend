@@ -124,7 +124,6 @@ export async function takeDisputeToResolve(r) {
       meAdmin,
       disputeId,
     });
-  console.log("here")
 
   //TODO: переделать
   const members = await ChatMember.findAll({

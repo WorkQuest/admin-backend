@@ -3,7 +3,6 @@ import { output } from '../../utils';
 import { setMessageAsReadJob } from '../../jobs/setMessageAsRead';
 import { updateCountUnreadChatsJob } from '../../jobs/updateCountUnreadChats';
 import { updateCountUnreadMessagesJob } from '../../jobs/updateCountUnreadMessages';
-//import { listOfAdminsByChatsCountQuery, listOfAdminsByChatsQuery } from '../../queries';
 import { resetUnreadCountMessagesOfMemberJob } from '../../jobs/resetUnreadCountMessagesOfMember';
 
 import {
@@ -68,8 +67,6 @@ import {
 import { SendMessageToUserHandler } from "../../handlers/chat/private-chat/SendMessageToUserHandler";
 import { ChatNotificationActions } from "../../controllers/controller.broker";
 
-export const searchChatFields = ['name'];
-
 export async function getAdminChats(r) {
   const searchByQuestNameLiteral = literal(
     `(SELECT "title" FROM "Quests" WHERE "id" = ` +
@@ -81,7 +78,16 @@ export async function getAdminChats(r) {
     `INNER JOIN "ChatMembers" AS "member" ON "adminMember"."id" = "member"."adminId" AND "member"."chatId" = "Chat"."id" ` +
     `WHERE "adminMember"."firstName" || ' ' || "adminMember"."lastName" ILIKE :query AND "adminMember"."id" <> :searcherId) THEN 1 ELSE 0 END ) `,
   );
-
+  const searchByFirstAndLastUserNameLiteral = literal(
+    `1 = (CASE WHEN EXISTS (SELECT "firstName", "lastName" FROM "Users" as "userMember" ` +
+    `INNER JOIN "ChatMembers" AS "member" ON "userMember"."id" = "member"."adminId" AND "member"."chatId" = "Chat"."id" ` +
+    `WHERE "userMember"."firstName" || ' ' || "userMember"."lastName" ILIKE :query AND "userMember"."id" <> :searcherId) THEN 1 ELSE 0 END ) `,
+  );
+  const searchByGroupNameLiteral = literal(
+    `(SELECT "name" FROM "GroupChats" WHERE "id" = ` +
+    `(SELECT "id" FROM "GroupChats" WHERE "chatId" = "Chat"."id")) ` +
+    ` ILIKE :query`,
+  );
   /**TODO: попытаться сократить запрос*/
   const orderByMessageDateLiteral = literal(
     '(CASE WHEN EXISTS (SELECT "Messages"."createdAt" FROM "ChatMemberDeletionData" INNER JOIN "Messages" ON "beforeDeletionMessageId" = "Messages"."id" ' +
@@ -174,11 +180,9 @@ export async function getAdminChats(r) {
   }];
 
   if (r.query.q) {
-    where[Op.or] = searchChatFields.map(field => ({
-      [field]: { [Op.iLike]: `%${r.query.q}%` }
-    }));
+    where[Op.or] = [];
 
-    where[Op.or].push(searchByQuestNameLiteral, searchByFirstAndLastNameLiteral);
+    where[Op.or].push(searchByQuestNameLiteral, searchByFirstAndLastNameLiteral, searchByGroupNameLiteral, searchByFirstAndLastUserNameLiteral);
 
     replacements['query'] = `%${r.query.q}%`;
     replacements['searcherId'] = r.auth.credentials.id;
