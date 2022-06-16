@@ -38,8 +38,8 @@ export class DecideQuestDisputeComposHandler extends BaseCompositeHandler<Decide
     const { chat } = await QuestChat.findOne({
       where: {
         questId: dispute.questId,
-        employerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
-        workerId: { [Op.or]: [dispute.openDisputeUserId, dispute.opponentUserId] },
+        employerId: dispute.quest.userId,
+        workerId: dispute.quest.assignedWorkerId,
       },
       include: {
         model: Chat,

@@ -36,17 +36,17 @@ export class ChatMemberAccessPermission {
         });
       }
     }
-    if (member.type === MemberType.Admin) {
+    if (member.type === MemberType.User) {
       if (member.chatId !== chat.id) {
-        throw error(Errors.Forbidden, 'Admin is not a member of this chat', {
+        throw error(Errors.Forbidden, 'User is not a member of this chat', {
           chatId: chat.id,
-          adminId: member.adminId,
+          userId: member.userId,
         });
       }
       if (member.status === MemberStatus.Deleted) {
-        throw error(Errors.Forbidden, 'Admin is deleted of this chat', {
+        throw error(Errors.Forbidden, 'User has been deleted from this chat', {
           chatId: chat.id,
-          adminId: member.adminId,
+          userId: member.userId,
         });
       }
     }
