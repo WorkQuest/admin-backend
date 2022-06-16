@@ -40,7 +40,7 @@ export async function getQuests(r) {
   );
 
   const getLatestDisputeLiteral = literal(
-    '(SELECT "id" FROM "QuestDisputes" ORDER BY "createdAt" DESC limit 1 offset 0)'
+    '"openDispute"."id" = (SELECT "id" FROM "QuestDisputes" ORDER BY "createdAt" DESC limit 1 offset 0) '
   );
 
   const order = [];
@@ -92,7 +92,10 @@ export async function getQuests(r) {
     attributes: ["id", "status", "number"],
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed], id: getLatestDisputeLiteral },
+    where: {
+      getLatestDisputeLiteral,
+      status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed],
+    },
   }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
