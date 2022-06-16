@@ -40,10 +40,10 @@ export async function getQuests(r) {
   );
 
   const getLatestDisputeLiteral = literal(
-    '"openDispute"."id" = (SELECT "id" FROM "QuestDisputes" WHERE "id" = "openDispute"."id" ORDER BY "createdAt" DESC limit 1 offset 0) '
+    '"openDispute"."id" = (SELECT "id" FROM "QuestDisputes" WHERE "QuestDisputes"."questId" = "Quest"."id" ORDER BY "createdAt" DESC limit 1 offset 0) '
   );
 
-  const order = [];
+  const order = [["createdAt", 'DESC']] as any;
   const where = {
     ...(r.params.userId && { userId: r.params.userId }),
     ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
