@@ -178,3 +178,6 @@ export async function changePassword(r) {
   return output();
 }
 
+export async function changeAdminRole(r) {
+}
+
