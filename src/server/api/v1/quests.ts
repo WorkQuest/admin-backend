@@ -37,9 +37,13 @@ export async function getQuests(r) {
 
   const orderByExistingDisputesLiteral = literal(
     '(CASE WHEN EXISTS (SELECT "id" FROM "QuestDisputes" WHERE "questId" = "Quest".id) THEN 1 END) '
-  )
+  );
 
-  const order = [];
+  const getLatestDisputeLiteral = literal(
+    '"openDispute"."id" = (SELECT "id" FROM "QuestDisputes" WHERE "QuestDisputes"."questId" = "Quest"."id" ORDER BY "createdAt" DESC limit 1 offset 0) '
+  );
+
+  const order = [["createdAt", 'DESC']] as any;
   const where = {
     ...(r.params.userId && { userId: r.params.userId }),
     ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
@@ -88,9 +92,11 @@ export async function getQuests(r) {
     attributes: ["id", "status", "number"],
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] },
-    order: [['createdAt', 'DESC']],
-  }] as any;
+    where: {
+      getLatestDisputeLiteral,
+      status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed],
+    },
+  }];
 
   const { rows, count } = await Quest.unscoped().findAndCountAll({
     include, where,

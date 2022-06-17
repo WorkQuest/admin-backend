@@ -22,6 +22,13 @@ interface AddDisputeAdminInQuestChatPayload {
   readonly lastMessage: Message;
 }
 
+interface RestoreAdminMemberPayload {
+  readonly admin: Admin;
+  readonly questChat: Chat;
+  readonly lastMessage: Message;
+  readonly adminDeletedMember: ChatMember;
+}
+
 interface SendInfoMessageAboutAddMemberPayload extends AddDisputeAdminInQuestChatPayload {
   readonly adminMember: ChatMember;
 }
@@ -53,6 +60,22 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
     return [message, infoMessages];
   }
 
+  private async restoreAdminMember(payload: RestoreAdminMemberPayload): Promise<[ChatMember, ChatMemberData]> {
+    const adminMember = await payload.adminDeletedMember.update({
+      status: MemberStatus.Active,
+    }, { transaction: this.options.tx });
+
+    const chatMemberData = await ChatMemberData.create({
+      chatId: payload.questChat.id,
+      chatMemberId: adminMember.id,
+      unreadCountMessages: 0,
+      lastReadMessageId: payload.lastMessage.id,
+      lastReadMessageNumber: payload.lastMessage.number,
+    }, { transaction: this.options.tx });
+
+    return [adminMember, chatMemberData];
+  }
+
   private async createAdminMember(payload: AddDisputeAdminInQuestChatPayload): Promise<[ChatMember, ChatMemberData]> {
     const adminMember = await ChatMember.create({
         type: MemberType.Admin,
@@ -75,10 +98,25 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
   public async Handle(command: AddDisputeAdminInQuestChatCommand): AddDisputeAdminInQuestChatResult {
     const lastMessage = await this.getLastMessage(command.questChat);
 
-    const [adminMember, ] = await this.createAdminMember({
-      ...command,
-      lastMessage,
+    const adminDeletedMember = await ChatMember.findOne({
+      where: {
+        adminId: command.admin.id,
+        chatId: command.questChat.id,
+        status: MemberStatus.Deleted,
+      }
     });
+
+    const [adminMember, ] =
+      adminDeletedMember
+        ? await this.restoreAdminMember({
+            ...command,
+            lastMessage,
+            adminDeletedMember,
+          })
+        : await this.createAdminMember({
+            ...command,
+            lastMessage,
+          })
 
     const messageAndInfoMessage = await this.sendInfoMessageAboutAddMember({
       ...command,

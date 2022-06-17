@@ -1,5 +1,5 @@
 import {QuestDisputeValidator} from "./QuestDisputeValidator";
-import {QuestDispute} from "@workquest/database-models/lib/models";
+import {QuestDispute, Quest} from "@workquest/database-models/lib/models";
 import {BaseDomainHandler, HandlerDecoratorBase, IHandler} from "../../types";
 
 export interface GetQuestDisputeByIdCommand {
@@ -8,7 +8,10 @@ export interface GetQuestDisputeByIdCommand {
 
 export class GetQuestDisputeByIdHandler extends BaseDomainHandler<GetQuestDisputeByIdCommand, Promise<QuestDispute>> {
   public async Handle(command: GetQuestDisputeByIdCommand): Promise<QuestDispute> {
-    return await QuestDispute.findByPk(command.disputeId, { transaction: this.options.tx });
+    return await QuestDispute.findByPk(command.disputeId, {
+      include: { model: Quest, as: 'quest' },
+      transaction: this.options.tx,
+    });
   }
 }
 
