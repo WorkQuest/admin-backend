@@ -74,10 +74,7 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
     }, { transaction: this.options.tx });
 
     await ChatMemberDeletionData.destroy({
-      where: {
-        chatId: payload.questChat.id,
-        chatMemberId: adminMember.id,
-      },
+      where: { chatMemberId: adminMember.id },
       transaction: this.options.tx,
     });
 
