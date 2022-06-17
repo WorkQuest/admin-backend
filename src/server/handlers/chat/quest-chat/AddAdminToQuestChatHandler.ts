@@ -171,3 +171,4 @@ export class AddDisputeAdminInQuestChatPreValidateHandler extends HandlerDecorat
     return this.decorated.Handle(command);
   }
 }
+
