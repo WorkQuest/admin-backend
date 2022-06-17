@@ -66,9 +66,9 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
     }, { transaction: this.options.tx });
 
     const chatMemberData = await ChatMemberData.create({
+      unreadCountMessages: 0,
       chatId: payload.questChat.id,
       chatMemberId: adminMember.id,
-      unreadCountMessages: 0,
       lastReadMessageId: payload.lastMessage.id,
       lastReadMessageNumber: payload.lastMessage.number,
     }, { transaction: this.options.tx });
