@@ -25,7 +25,7 @@ export default [
   {
     method: 'GET',
     path: '/v1/platform-statistics/{statistic}',
-    handler: handlers.getUsersPlatformStatistic,
+    handler: handlers.getPlatformStatistic,
     options: {
       auth: 'jwt-access',
       id: 'v1.platform-statistics.getUsersStatistic',
