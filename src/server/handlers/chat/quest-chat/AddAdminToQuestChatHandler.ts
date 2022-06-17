@@ -13,8 +13,8 @@ import {
   MemberStatus,
   MessageAction,
   ChatMemberData,
+  ChatMemberDeletionData,
 } from '@workquest/database-models/lib/models';
-
 
 interface AddDisputeAdminInQuestChatPayload {
   readonly admin: Admin;
@@ -72,6 +72,14 @@ export class AddDisputeAdminInQuestChatHandler extends BaseDomainHandler<AddDisp
       lastReadMessageId: payload.lastMessage.id,
       lastReadMessageNumber: payload.lastMessage.number,
     }, { transaction: this.options.tx });
+
+    await ChatMemberDeletionData.destroy({
+      where: {
+        chatId: payload.questChat.id,
+        chatMemberId: adminMember.id,
+      },
+      transaction: this.options.tx,
+    });
 
     return [adminMember, chatMemberData];
   }
