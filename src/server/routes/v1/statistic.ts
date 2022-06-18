@@ -1,16 +1,18 @@
 import * as Joi from "joi";
-import {getRbacSettings} from "../../utils/auth";
+import { getRbacSettings } from "../../utils/auth";
 import * as handlers from '../../api/v1/statistic';
-import {AdminRole} from "@workquest/database-models/lib/models";
+import { AdminRole } from "@workquest/database-models/lib/models";
 import {
+  adminActionMetadataSchema,
+  adminDisputeStatisticSchema,
+  adminSupportStatisticSchema,
+  adminQuestDisputesStatisticSchema,
   idSchema,
   limitSchema,
   offsetSchema,
-  searchSchema,
   outputOkSchema,
   outputPaginationSchema,
-  adminActionMetadataSchema,
-  adminQuestDisputesStatisticSchema,
+  searchSchema,
 } from '@workquest/database-models/lib/schemes';
 
 export default [{
@@ -80,25 +82,6 @@ export default [{
   },
 }, {
   method: 'GET',
-  path: '/v1/admin/{adminId}/statistic/quest/dispute-statistic',
-  handler: handlers.getQuestDisputesAdminStatistic,
-  options: {
-    auth: 'jwt-access',
-    plugins: getRbacSettings(AdminRole.Main),
-    id: 'v1.admin.statistic.quest.getQuestDisputesAdminStatistic',
-    tags: ['api', 'statistic'],
-    description: 'Get quest dispute admin statistic',
-    validate: {
-      params: Joi.object({
-        adminId: idSchema.required(),
-      }).label('GetQuestDisputeAdminStatisticParams'),
-    },
-    response: {
-      schema: outputOkSchema(adminQuestDisputesStatisticSchema).label('GetQuestDisputeAdminStatisticResponse'),
-    },
-  },
-}, {
-  method: 'GET',
   path: '/v1/admin/me/statistic/quest/dispute-statistic',
   handler: handlers.getQuestDisputesAdminMeStatistic,
   options: {
@@ -111,4 +94,42 @@ export default [{
       schema: outputOkSchema(adminQuestDisputesStatisticSchema).label('GetQuestDisputesStatisticMeResponse'),
     },
   },
+}, {
+  method: 'GET',
+  path: '/v1/admin/{adminId}/statistic/dispute',
+  handler: handlers.getDisputeAdminStatistics,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.Main),
+    id: 'v1.admin.getDisputeStatistics',
+    description: 'Get dispute admin statistics',
+    tags: ['api', 'statistic'],
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required()
+      }).label('GetAdminDisputeStatistics')
+    },
+    response: {
+      schema: outputOkSchema(adminDisputeStatisticSchema).label('GetDisputeAdminStatisticResponse'),
+    }
+  }
+}, {
+  method: 'GET',
+  path: '/v1/admin/{adminId}/statistic/support',
+  handler: handlers.getSupportAdminStatistic,
+  options: {
+    auth: 'jwt-access',
+    plugins: getRbacSettings(AdminRole.Main),
+    id: 'v1.admin.getSupportStatistics',
+    description: 'Get support admin statistics',
+    tags: ['api', 'statistic'],
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required()
+      }).label('GetAdminSupportStatistics')
+    },
+    response: {
+      schema: outputOkSchema(adminSupportStatisticSchema).label('GetSupportAdminStatisticResponse'),
+    }
+  }
 }];
