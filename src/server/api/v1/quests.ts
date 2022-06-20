@@ -94,7 +94,7 @@ export async function getQuests(r) {
     required: false,
     where: {
       getLatestDisputeLiteral,
-      status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed],
+      status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed, DisputeStatus.PendingClosed],
     },
   }];
 

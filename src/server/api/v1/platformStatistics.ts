@@ -33,7 +33,7 @@ export async function getAllowedDates(r) {
   });
 }
 
-export async function getUsersPlatformStatistic(r) {
+export async function getPlatformStatistic(r) {
   const where = {
     ...(r.query.dateTo && { date: new Date(r.query.dateTo) }),
     ...(r.query.dateFrom && { date: { [Op.in]: [r.query.dateFrom, r.query.dateTo] } })
