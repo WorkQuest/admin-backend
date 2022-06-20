@@ -26,7 +26,7 @@
     "@types/joi": "^14.3.4",
     "@types/validator": "^13.1.0",
     "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#a76d641d4a6cb856d1b1ed64a5732e678530730f",
-    "@workquest/workers-queue-client": "https://gitpkg.now.sh/WorkQuest/workers-queue-server-client/client?devnet",
+    "@workquest/workers-queue-client": "https://gitpkg.now.sh/WorkQuest/workers-queue-server-client/client?testnet",
     "amqplib": "^0.8.0",
     "aws-sdk": "^2.963.0",
     "axios": "^0.21.1",
