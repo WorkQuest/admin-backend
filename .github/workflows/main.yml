@@ -229,6 +229,8 @@ jobs:
             JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }} \
             JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
 
+            DEBUG=${{ secrets.DEBUG }} \
+
             NOTIFICATION_MESSAGE_BROKER_LINK=${{ secrets.NOTIFICATION_MESSAGE_BROKER_LINK }} \
 
             SMTP_HOST=${{ secrets.SMTP_HOST }} \
