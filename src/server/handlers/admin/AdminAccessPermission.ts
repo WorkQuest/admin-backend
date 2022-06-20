@@ -1,4 +1,4 @@
-import { Admin } from "@workquest/database-models/lib/models";
+import { Admin, DisputeStatus, QuestDispute } from "@workquest/database-models/lib/models";
 import { error } from "../../utils";
 import { Errors } from "../../utils/errors";
 
@@ -20,6 +20,16 @@ export class AdminAccessPermission {
     if (!admin.isActive) {
       throw error(Errors.InactiveAdmin, 'Admin must be active', {
         adminId: admin.id,
+      });
+    }
+  }
+  public async HasNoActiveDisputes(changedRoleAdminId: string) {
+    const dispute = await QuestDispute.findOne({ where: { assignedAdminId: changedRoleAdminId, status: DisputeStatus.InProgress } });
+
+    if (dispute) {
+      throw error(Errors.Forbidden, 'Admin has active disputes', {
+        adminId: changedRoleAdminId,
+        disputeId: dispute.id,
       });
     }
   }

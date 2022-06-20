@@ -17,8 +17,8 @@ export class AdminValidator {
       throw error(Errors.NotFound, 'Admins not found', { adminIds: notFoundAdminIds });
     }
   }
-  public DontChangeRoleToMe(mainAdmin: Admin, changeRoleAdminId: string) {
-    if (mainAdmin.id === changeRoleAdminId) {
+  public CantChangeSelfRole(changeByAdminId: string, changeRoleAdminId: string) {
+    if (changeByAdminId === changeRoleAdminId) {
       throw error(Errors.Forbidden, 'You can not change your role', { adminId: changeRoleAdminId });
     }
   }
