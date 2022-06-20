@@ -4,6 +4,7 @@ import { Errors } from "../../utils/errors";
 import { updateChatDataJob } from "../../jobs/updateChatData";
 import { setMessageAsReadJob } from "../../jobs/setMessageAsRead";
 import { updateCountUnreadChatsJob } from "../../jobs/updateCountUnreadChats";
+import { QuestNotificationActions } from "../../controllers/controller.broker";
 import { saveAdminActionsMetadataJob } from "../../jobs/saveAdminActionsMetadata";
 import { updateCountUnreadMessagesJob } from "../../jobs/updateCountUnreadMessages";
 import { resetUnreadCountMessagesOfMemberJob } from "../../jobs/resetUnreadCountMessagesOfMember";
@@ -167,6 +168,11 @@ export async function takeDisputeToResolve(r) {
   });
   await StatisticController.takeDisputeToResolveAction();
 
+  r.server.app.broker.sendQuestNotification({
+    action: QuestNotificationActions.AdminTakeDispute,
+    recipients: members.map(({ userId}) => userId),
+    data: dispute,
+  });
 
   return output(dispute);
 }
@@ -223,6 +229,12 @@ export async function disputeDecide(r) {
   });
   await updateCountUnreadChatsJob({ members });
   await StatisticController.disputeDecideAction();
+
+  r.server.app.broker.sendQuestNotification({
+    action: QuestNotificationActions.AdminTakeDispute,
+    recipients: members.map(({ userId}) => userId),
+    data: questDispute,
+  });
 
   return output(questDispute);
 }
