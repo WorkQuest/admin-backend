@@ -30,7 +30,7 @@ export default [{
     id: "v1.getUser",
     tags: ["api", "user"],
     description: "Get user",
-    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
