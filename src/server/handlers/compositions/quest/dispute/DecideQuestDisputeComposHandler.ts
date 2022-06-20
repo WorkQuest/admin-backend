@@ -1,5 +1,5 @@
 import {Op} from "sequelize";
-import {BaseCompositeHandler} from "../types";
+import {BaseCompositeHandler} from "../../../types";
 import {QuestChat, Chat} from "@workquest/database-models/lib/models";
 import {
   DecideQuestDisputeComposCommand,
@@ -8,11 +8,11 @@ import {
 import {
   GetQuestDisputeByIdHandler,
   GetQuestDisputeByIdPostValidationHandler,
-} from "../quest/dispute/GetQuestDisputeByIdHandler";
+} from "../../../quest/dispute/GetQuestDisputeByIdHandler";
 import {
   DecideQuestDisputeHandler,
   DecideQuestDisputePreAccessPermissionHandler,
-} from "../quest/dispute/DecideQuestDisputeHandler";
+} from "../../../quest/dispute/DecideQuestDisputeHandler";
 import {
   LeaveFromQuestChatHandler,
   GetChatMemberByAdminHandler,
@@ -20,7 +20,7 @@ import {
   LeaveFromQuestChatPreValidateHandler,
   GetChatMemberPostFullAccessPermissionHandler,
   LeaveFromQuestChatPreAccessPermissionHandler,
-} from "../chat";
+} from "../../../chat";
 
 export class DecideQuestDisputeComposHandler extends BaseCompositeHandler<DecideQuestDisputeComposCommand, DecideQuestDisputeComposResults> {
   constructor(

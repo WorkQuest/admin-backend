@@ -37,4 +37,3 @@ export type DecideQuestDisputeComposResults = Promise<[
   [Message, InfoMessage],
 ]>;
 
-
