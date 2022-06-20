@@ -215,4 +215,25 @@ export default[{
       schema: emptyOkSchema
     }
   }
+}, {
+  method: "POST",
+  path: "/v1/admin/{adminId}/change-role",
+  handler: handlers.changeAdminRole,
+  options: {
+    id: "v1.admin.changeAdminRole",
+    tags: ["api", "admin"],
+    description: "Change admin role",
+    plugins: getRbacSettings(AdminRole.Main),
+    validate: {
+      params: Joi.object({
+        adminId: idSchema.required(),
+      }).label("ChangeAdminRoleParams"),
+      payload: Joi.object({
+        role: adminRoleSchema
+      }).label("ChangeAdminRolePayload")
+    },
+    response: {
+      schema: emptyOkSchema
+    }
+  }
 },]

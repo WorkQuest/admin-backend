@@ -7,6 +7,7 @@ import {
   AdminRole,
   AdminSession,
 } from "@workquest/database-models/lib/models"
+import { ChangeAdminRoleComposHandler } from "../../handlers";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
@@ -179,5 +180,17 @@ export async function changePassword(r) {
 }
 
 export async function changeAdminRole(r) {
+  const meAdmin = r.auth.credentials;
+  const { adminId } = r.params;
+  const { role } = r.payload;
+
+  await new ChangeAdminRoleComposHandler(r.server.app.db)
+    .Handle({
+      meAdmin,
+      moveToRole: role,
+      changeRoleAdminId: adminId,
+    });
+
+  return output();
 }
 
