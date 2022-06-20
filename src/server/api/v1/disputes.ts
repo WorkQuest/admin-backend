@@ -231,7 +231,7 @@ export async function disputeDecide(r) {
   await StatisticController.disputeDecideAction();
 
   r.server.app.broker.sendQuestNotification({
-    action: QuestNotificationActions.AdminTakeDispute,
+    action: QuestNotificationActions.DisputeDecision,
     recipients: members.map(({ userId}) => userId),
     data: questDispute,
   });
