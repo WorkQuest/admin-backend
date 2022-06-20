@@ -4,7 +4,7 @@ import {
   User,
   UserRole,
   UserStatus,
-  ChatsStatistic,
+  UserChatsStatistic,
   QuestsStatistic,
   RatingStatistic
 } from '@workquest/database-models/lib/models';
@@ -104,7 +104,7 @@ abstract class UserHelper {
       where: {userId: userId},
       defaults: {userId: userId},
     });
-    await ChatsStatistic.findOrCreate({
+    await UserChatsStatistic.findOrCreate({
       where: {userId: userId},
       defaults: {userId: userId},
     });

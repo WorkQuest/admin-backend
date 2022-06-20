@@ -3,11 +3,30 @@ import config from "../config/config";
 import { Buffer } from "buffer";
 
 export const enum AdminBrokerQueues {
-  Quest = 'quest'
+  Quest = 'quest',
+  Report = 'report',
+  Chat = 'chat'
 }
 
 export const enum QuestNotificationActions {
+  AdminTakeDispute = 'adminTakeDispute',
   DisputeDecision = 'disputeDecision'
+}
+
+export const enum ReportNotificationActions {
+  ReportDecided = 'ReportDecided',
+  ReportRejected = 'ReportRejected'
+}
+
+export const enum ChatNotificationActions {
+  /** Group group-chat */
+  groupChatCreate = 'groupChatCreate',
+  groupChatAddAdmin = 'groupChatAddAdmin',
+  groupChatDeleteAdmin = 'groupChatDeleteAdmin',
+  groupChatLeaveAdmin = 'groupChatLeaveAdmin',
+  /** */
+  messageReadByRecipient = 'messageReadByRecipient',
+  newMessage = 'newMessage',
 }
 
 type Notification<Action> = {
@@ -60,10 +79,32 @@ export class ControllerBroker {
   }
 
   public sendQuestNotification(notification: Notification<QuestNotificationActions>) {
-    if (!this.channel) return;
+    if (!this.channel) {
+      return;
+    }
 
     const convertedData = ControllerBroker.convertData(notification);
 
     this.channel.sendToQueue(AdminBrokerQueues.Quest, convertedData);
+  }
+
+  public sendReportNotification(notification: Notification<ReportNotificationActions>) {
+    if (!this.channel) {
+      return;
+    }
+
+    const convertedData = ControllerBroker.convertData(notification);
+
+    this.channel.sendToQueue(AdminBrokerQueues.Report, convertedData);
+  }
+
+  public sendChatNotification(notification: Notification<ChatNotificationActions>) {
+    if (!this.channel) {
+      return;
+    }
+
+    const convertedData = ControllerBroker.convertData(notification);
+
+    this.channel.sendToQueue(AdminBrokerQueues.Chat, convertedData);
   }
 }

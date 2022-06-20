@@ -14,7 +14,9 @@ import {
   QuestDispute,
   DisputeStatus,
   QuestBlackList,
+  QuestRaiseView,
   BlackListStatus,
+  QuestSpecializationFilter
 } from "@workquest/database-models/lib/models";
 
 export const searchQuestFields = [
@@ -28,11 +30,27 @@ export async function getQuests(r) {
     `OR (SELECT "lastName" FROM "Users" WHERE "id" = "Quest"."userId") ILIKE '%${r.query.q}%'`
   );
 
+  const assignedWorkerSearchLiteral = literal(
+    `(SELECT "firstName" FROM "Users" WHERE "id" = "Quest"."assignedWorkerId") ILIKE '%${r.query.q}%'` +
+    `OR (SELECT "lastName" FROM "Users" WHERE "id" = "Quest"."assignedWorkerId") ILIKE '%${r.query.q}%'`
+  );
+
+  const orderByExistingDisputesLiteral = literal(
+    '(CASE WHEN EXISTS (SELECT "id" FROM "QuestDisputes" WHERE "questId" = "Quest".id) THEN 1 END) '
+  );
+
+  const getLatestDisputeLiteral = literal(
+    '"openDispute"."id" = (SELECT "id" FROM "QuestDisputes" WHERE "QuestDisputes"."questId" = "Quest"."id" ORDER BY "createdAt" DESC limit 1 offset 0) '
+  );
+
+  const order = [["createdAt", 'DESC']] as any;
   const where = {
     ...(r.params.userId && { userId: r.params.userId }),
     ...(r.params.workerId && { assignedWorkerId: r.params.workerId }),
     ...(r.query.statuses && { status: { [Op.in]:  r.query.statuses } }),
     ...(r.query.priorities && { priority: { [Op.in]:  r.query.priorities } }),
+    ...(r.query.createdBetween && { createdAt: { [Op.between]: [r.query.createdBetween.from, r.query.createdBetween.to] } }),
+    ...(r.query.updatedBetween && { updatedAt: { [Op.between]: [r.query.updatedBetween.from, r.query.updatedBetween.to] } }),
   };
 
   if (r.query.q) {
@@ -40,10 +58,70 @@ export async function getQuests(r) {
       [field]: { [Op.iLike]: `%${r.query.q}%` }
     }));
 
-    where[Op.or].push(userSearchLiteral)
+    where[Op.or].push(userSearchLiteral);
+    where[Op.or].push(assignedWorkerSearchLiteral);
+  }
+
+  for (const [key, value] of Object.entries(r.query.sort || {})) {
+    if (key === "dispute") {
+      order.push([orderByExistingDisputesLiteral, value]);
+    } else {
+      order.push([key, value]);
+    }
   }
 
   const include = [{
+    model: Media.scope('urlOnly'),
+    as: 'avatar',
+  }, {
+    model: QuestSpecializationFilter,
+    as: 'questSpecializations',
+    attributes: ['path'],
+  }, {
+    model: QuestRaiseView,
+    as: "raiseView",
+    attributes: ['status', 'duration', 'type', 'endedAt'],
+  }, {
+    model: User.scope('short'),
+    as: 'user',
+  }, {
+    model: User.scope('short'),
+    as: 'assignedWorker'
+  }, {
+    model: QuestDispute.unscoped(),
+    attributes: ["id", "status", "number"],
+    as: 'openDispute',
+    required: false,
+    where: {
+      getLatestDisputeLiteral,
+      status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed, DisputeStatus.PendingClosed],
+    },
+  }];
+
+  const { rows, count } = await Quest.unscoped().findAndCountAll({
+    include, where,
+    order,
+    distinct: true,
+    limit: r.query.limit,
+    offset: r.query.offset,
+  });
+
+  return output({ count, quests: rows });
+}
+
+export async function getQuest(r) {
+  const include = [{
+    model: Media.scope('urlOnly'),
+    as: 'avatar',
+  }, {
+    model: QuestSpecializationFilter,
+    as: 'questSpecializations',
+    attributes: ['path'],
+  }, {
+    model: QuestRaiseView,
+    as: "raiseView",
+    attributes: ['status', 'duration', 'type', 'endedAt'],
+  }, {
     model: Media.scope('urlOnly'),
     as: 'medias',
     through: { attributes: [] }
@@ -54,31 +132,15 @@ export async function getQuests(r) {
     model: User.scope('short'),
     as: 'assignedWorker'
   }, {
-    model: QuestDispute,
+    model: QuestDispute.unscoped(),
+    attributes: ["id", "status", "number"],
     as: 'openDispute',
     required: false,
-    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress] }
+    where: { status: [DisputeStatus.Created, DisputeStatus.InProgress, DisputeStatus.Closed] }
   }];
 
-  const { rows, count } = await Quest.unscoped().findAndCountAll({
-    include, where,
-    distinct: true,
-    limit: r.query.limit,
-    offset: r.query.offset,
-  });
-
-  return output({ count, quests: rows });
-}
-
-export async function getQuest(r) {
-  const quest = await Quest.findByPk(r.params.questId, {
-    include: {
-      model: QuestDispute,
-      as: 'openDispute',
-      where: {
-        status: [DisputeStatus.Created, DisputeStatus.InProgress]
-      },
-    }
+  const quest = await Quest.unscoped().findByPk(r.params.questId, {
+    include
   });
 
   if (!quest) {
@@ -107,10 +169,10 @@ export async function editQuest(r) {
 
   questController.quest = await questController.quest.update({
     avatarId,
-    title: r.payload.title,
     priority: r.payload.priority,
     workplace: r.payload.workplace,
-    employment: r.payload.employment,
+    payPeriod: r.payload.payPeriod,
+    typeOfEmployment: r.payload.employment,
     location: r.payload.locationFull.location,
     locationPlaceName: r.payload.locationFull.locationPlaceName,
     locationPostGIS: transformToGeoPostGIS(r.payload.locationFull.location),
