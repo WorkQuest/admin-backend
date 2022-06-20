@@ -1,7 +1,7 @@
 import {output} from "../../utils";
 import {literal, Op} from "sequelize";
 import {searchProposalFields} from "./statistic";
-import {Proposal, User} from "@workquest/database-models/lib/models";
+import { Proposal, ProposalCreatedEvent, ProposalVoteCastEvent, User } from "@workquest/database-models/lib/models";
 
 export async function getProposals(r) {
   const searchByFirstAndLastNameLiteral = literal(
@@ -23,6 +23,14 @@ export async function getProposals(r) {
   const include = [{
     model: User.scope('shortWithWallet'),
     as: 'proposerUser'
+  }, {
+    model: ProposalCreatedEvent,
+    as: 'createdEvent',
+    attributes: ["votingPeriod"],
+  }, {
+    model: ProposalVoteCastEvent,
+    as: 'voteCastEvents',
+    attributes: ["voter", "support", "votes"]
   }];
 
   if (r.query.q) {
@@ -34,11 +42,13 @@ export async function getProposals(r) {
     replacements['query'] = `%${r.query.q}%`;
   }
 
+
   for (const [key, value] of Object.entries(r.query.sort || {})) {
     order.push([key, value]);
   }
 
   const {count, rows} = await Proposal.findAndCountAll({
+    distinct: true,
     where,
     include,
     order,

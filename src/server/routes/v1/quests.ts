@@ -1,29 +1,33 @@
 import * as Joi from "joi";
 import * as handlers from "../../api/v1/quests";
-import {getRbacSettings} from "../../utils/auth";
-import {AdminRole} from "@workquest/database-models/lib/models";
+import { getRbacSettings } from "../../utils/auth";
+import { AdminRole } from "@workquest/database-models/lib/models";
 import {
+  createdBetweenSchema,
+  emptyOkSchema,
   idSchema,
   idsSchema,
-  questSchema,
   limitSchema,
-  offsetSchema,
-  emptyOkSchema,
-  prioritySchema,
-  outputOkSchema,
-  workPlaceSchema,
-  questTitleSchema,
   locationFullSchema,
-  questEmploymentSchema,
+  offsetSchema,
+  outputOkSchema,
   outputPaginationSchema,
-  questForAdminsGetSchema,
-  specializationKeysSchema,
-  questBlackListSchema,
-  questBlackListReasonSchema,
-  questStatusesSchema,
+  payPeriodSchema,
   prioritiesSchema,
+  prioritySchema,
+  questBlackListReasonSchema,
+  questBlackListSchema,
+  questEmploymentSchema,
+  questForAdminsGetSchema,
+  questSchema,
+  questStatusesSchema,
   searchSchema,
+  sortDirectionSchema,
+  specializationKeysSchema,
+  updatedBetweenSchema,
+  workPlaceSchema,
 } from "@workquest/database-models/lib/schemes";
+
 export default[{
   method: "GET",
   path: "/v1/quests",
@@ -37,6 +41,11 @@ export default[{
         q: searchSchema,
         statuses: questStatusesSchema,
         priorities: prioritiesSchema,
+        createdBetween: createdBetweenSchema,
+        updatedBetween: updatedBetweenSchema,
+        sort: Joi.object({
+          dispute: sortDirectionSchema.default('DESC')
+        }).label('GetUsersQuestsSort'),
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetQuestsQuery'),
@@ -53,7 +62,7 @@ export default[{
     id: "v1.quest.info",
     tags: ["api", "quest"],
     description: "Get info about quest",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -71,7 +80,7 @@ export default[{
     id: "v1.user.getQuests",
     tags: ["api", "quest"],
     description: "Get info about quests of the user",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       params: Joi.object({
         userId: idSchema.required(),
@@ -95,17 +104,17 @@ export default[{
     id: "v1.quest.editQuest",
     tags: ["api", "quest"],
     description: "Edit quest",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
       }).label("EditQuestParams"),
       payload: Joi.object({
         workplace: workPlaceSchema.required(),
-        employment: questEmploymentSchema.required(),
+        typeOfEmployment: questEmploymentSchema.required(),
+        payPeriod: payPeriodSchema.required(),
         priority: prioritySchema.required(),
         locationFull: locationFullSchema.required(),
-        title: questTitleSchema.required(),
         medias: idsSchema.unique().required(),
         specializationKeys: specializationKeysSchema.unique().required(),
       }).label('EditQuestPayload'),
@@ -122,7 +131,7 @@ export default[{
     id: "v1.quest.getBlockHistory",
     tags: ["api", "quest"],
     description: "Show quest block story",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         questId: idSchema.required()
@@ -144,7 +153,7 @@ export default[{
     id: "v1.quest.blockQuest",
     tags: ["api", "quest"],
     description: "Block quest",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -165,7 +174,7 @@ export default[{
     id: "v1.quest.unblockQuest",
     tags: ["api", "quest"],
     description: "Unblock quest",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
@@ -183,7 +192,7 @@ export default[{
     id: "v1.quest.deleteQuest",
     tags: ["api", "quest"],
     description: "Delete quest",
-    plugins: getRbacSettings(AdminRole.main),
+    plugins: getRbacSettings(AdminRole.Main),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),

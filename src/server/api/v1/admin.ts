@@ -7,6 +7,7 @@ import {
   AdminRole,
   AdminSession,
 } from "@workquest/database-models/lib/models"
+import { ChangeAdminRoleComposHandler } from "../../handlers";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
@@ -112,7 +113,7 @@ export async function activateAdminAccount(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
+  if (admin.role === AdminRole.Main) {
     return error(Errors.InvalidType, 'Can not activate your own account', {});
   }
 
@@ -129,7 +130,7 @@ export async function deactivateAdminAccount(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
+  if (admin.role === AdminRole.Main) {
     return error(Errors.InvalidType, 'Can not deactivate your own account', {});
   }
 
@@ -174,6 +175,21 @@ export async function changePassword(r) {
   await admin.update({ password: r.payload.newPassword });
 
   await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
+  return output();
+}
+
+export async function changeAdminRole(r) {
+  const meAdmin = r.auth.credentials;
+  const { adminId } = r.params;
+  const { role } = r.payload;
+
+  await new ChangeAdminRoleComposHandler(r.server.app.db)
+    .Handle({
+      meAdmin,
+      moveToRole: role,
+      changeRoleAdminId: adminId,
+    });
 
   return output();
 }
