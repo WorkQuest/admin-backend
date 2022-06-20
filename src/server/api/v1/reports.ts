@@ -6,13 +6,13 @@ import { Errors } from "../../utils/errors";
 import {
   Admin,
   DiscussionComment,
-  Quest,
+  Quest, QuestBlackList,
   Report,
   reportEntities,
   ReportEntityType,
   ReportsPlatformStatisticFields,
   ReportStatus,
-  User,
+  User, UserBlackList,
 } from "@workquest/database-models/lib/models";
 import { StatisticController } from "../../controllers/controller.statistic";
 
@@ -167,6 +167,24 @@ export async function decideReport(r) {
         resolvedAt: new Date()
       }, { transaction }
     );
+
+    if (report.entityType === ReportEntityType.User) {
+      await UserBlackList.create({
+        blockedByAdminId: r.auth.credentials.id,
+        userId: entity.id,
+        reason: report.description,
+        userStatusBeforeBlocking: entity.status
+      }, { transaction });
+    }
+
+    if (report.entityType === ReportEntityType.Quest) {
+      await QuestBlackList.create({
+        blockedByAdminId: r.auth.credentials.id,
+        questId: entity.id,
+        reason: report.description,
+        questStatusBeforeBlocking: entity.status
+      }, { transaction });
+    }
 
     await entity.update({
       status: entityObject.statuses.Blocked
