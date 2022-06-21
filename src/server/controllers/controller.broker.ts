@@ -9,6 +9,7 @@ export const enum AdminBrokerQueues {
 }
 
 export const enum QuestNotificationActions {
+  AdminTakeDispute = 'adminTakeDispute',
   DisputeDecision = 'disputeDecision'
 }
 

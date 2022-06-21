@@ -21,10 +21,11 @@ import {
   questForAdminsGetSchema,
   questSchema,
   questStatusesSchema,
-  searchSchema, sortDirectionSchema,
+  searchSchema,
+  sortDirectionSchema,
   specializationKeysSchema,
-  workPlaceSchema,
   updatedBetweenSchema,
+  workPlaceSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -61,7 +62,7 @@ export default[{
     id: "v1.quest.info",
     tags: ["api", "quest"],
     description: "Get info about quest",
-    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
+    plugins: getRbacSettings(AdminRole.Main, AdminRole.Support, AdminRole.Dispute),
     validate: {
       params: Joi.object({
         questId: idSchema.required(),
