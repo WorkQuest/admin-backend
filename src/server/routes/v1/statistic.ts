@@ -107,7 +107,7 @@ export default [{
     validate: {
       params: Joi.object({
         adminId: idSchema.required()
-      }).label('GetAdminDisputeStatistics')
+      }).label('GetAdminDisputeStatisticsParams')
     },
     response: {
       schema: outputOkSchema(adminDisputeStatisticSchema).label('GetDisputeAdminStatisticResponse'),
@@ -126,7 +126,7 @@ export default [{
     validate: {
       params: Joi.object({
         adminId: idSchema.required()
-      }).label('GetAdminSupportStatistics')
+      }).label('GetAdminSupportStatisticsParams')
     },
     response: {
       schema: outputOkSchema(adminSupportStatisticSchema).label('GetSupportAdminStatisticResponse'),
