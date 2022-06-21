@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "dev-admin-backend",
+      "name": "main-admin-backend",
       "exec_mode": "fork",
       "instances": "1",
       "script": "./build/main.js",
