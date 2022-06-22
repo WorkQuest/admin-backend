@@ -7,7 +7,8 @@ import {
   QuestsPlatformStatistic,
   ReportsPlatformStatistic,
   DisputesPlatformStatistic,
-  RaiseViewsPlatformStatistic
+  RaiseViewsPlatformStatistic,
+  UsersPlatformStatisticFields
 } from "@workquest/database-models/lib/models";
 
 const statisticModels = {
@@ -66,6 +67,17 @@ export async function getPlatformStatistic(r) {
     if (statisticFrom) {
       const toValue = new BigNumber(statisticTo[statisticKey]);
       const fromValue = new BigNumber(statisticFrom[statisticKey]);
+
+      if (statisticKey === UsersPlatformStatisticFields.AverageSessionTime) {
+        const avg = await UsersPlatformStatistic.findOne({
+          attributes: [[fn('AVG', col(UsersPlatformStatisticFields.AverageSessionTime)), 'averageSessionTime']],
+          where: { date: { [Op.between]: [dateFromStatistic.date, dateToStatistic.date] } }
+        });
+
+        statisticTo[statisticKey] = avg.averageSessionTime.toString();
+
+        continue;
+      }
 
       statisticTo[statisticKey] = toValue.minus(fromValue).toString();
 
