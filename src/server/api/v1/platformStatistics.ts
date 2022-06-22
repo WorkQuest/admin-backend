@@ -79,7 +79,9 @@ export async function getPlatformStatistic(r) {
         continue;
       }
 
-      statisticTo[statisticKey] = toValue.minus(fromValue).toString();
+      const value = toValue.minus(fromValue);
+
+      statisticTo[statisticKey] = value.lt(0) ? '0' : value.toString();
 
       continue;
     }
