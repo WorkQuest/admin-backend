@@ -38,6 +38,11 @@
     src: ./{{ backend_env }}.j2
     dest: '{{ BACKEND_BIN }}/{{ backend_env }}'
 
+- name: Copy or generate env file
+  template:
+    src: ./app.json.j2
+    dest: '{{ BACKEND_BIN }}/app.json'
+
 - name: Start backend process
   shell: pm2 reload app.json
   args:
