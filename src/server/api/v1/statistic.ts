@@ -1,8 +1,17 @@
-import {output} from "../../utils";
-import {literal, Op} from "sequelize";
+import { error, output } from "../../utils";
+import { Errors } from "../../utils/errors";
+import { literal, Op } from "sequelize";
 import {
   Admin,
+  Report,
+  AdminRole,
+  TicketStatus,
+  QuestDispute,
+  ReportStatus,
+  DisputeStatus,
+  ReportEntityType,
   AdminActionMetadata,
+  SupportTicketForUser,
   AdminQuestDisputesStatistic,
 } from "@workquest/database-models/lib/models";
 
@@ -72,15 +81,6 @@ export async function getQuestDisputesStatistics(r) {
   return output({ count, statistics: rows });
 }
 
-export async function getQuestDisputesAdminStatistic(r) {
-  const adminQuestDisputesStatistic = await AdminQuestDisputesStatistic.findOne({
-    where: { adminId: r.params.adminId },
-    include: { model: Admin, as: 'admin'}
-  });
-
-  return output(adminQuestDisputesStatistic);
-}
-
 export async function getQuestDisputesAdminMeStatistic(r) {
   const adminQuestDisputesStatistic = await AdminQuestDisputesStatistic.findOne({
     include: { model: Admin, as: 'admin' },
@@ -90,3 +90,84 @@ export async function getQuestDisputesAdminMeStatistic(r) {
   return output(adminQuestDisputesStatistic);
 }
 
+export async function getDisputeAdminStatistics(r) {
+  const disputeAdmin = await Admin.findByPk(r.params.adminId);
+
+  if (!disputeAdmin) {
+    return error(Errors.NotFound, 'Admin not found', {});
+  }
+
+  if (disputeAdmin.role !== AdminRole.Dispute) {
+    return error(Errors.InvalidPayload, 'Admin does not has Dispute Admin role', {});
+  }
+
+  const disputeDecideStatisticByDecision: any = await QuestDispute.unscoped().count({
+    attributes: [[literal('SUM(COUNT(status)) OVER()'), 'total']],
+    where: {
+      assignedAdminId: r.params.adminId,
+      status: { [Op.in]: [DisputeStatus.Closed] },
+      decision: { [Op.not]: null }
+    },
+    group: ['decision']
+  });
+
+  const disputeDecideStatistic = { AcceptWork: 0, RejectWork: 0, Rework: 0 };
+
+  disputeDecideStatisticByDecision.map(({ decision, count, total }) => {
+    disputeDecideStatistic[decision] = (parseInt(count) / parseInt(total)) * 100;
+  });
+
+  const reportStatisticByStatus: any = await Report.unscoped().count({
+    where: {
+      resolvedByAdminId: r.params.adminId,
+      entityType: { [Op.ne]: ReportEntityType.DiscussionComment },
+      status: { [Op.ne]: ReportStatus.Created }
+    },
+    group: ['status', 'entityType']
+  });
+
+  const reportStatistic = {
+    User: { Decided: 0, Rejected: 0 },
+    Quest: { Decided: 0, Rejected: 0 }
+  }
+
+  const totalCountByEntityType = { User: 0, Quest: 0 };
+  reportStatisticByStatus.map(({ entityType, count }) => totalCountByEntityType[entityType] += parseInt(count));
+
+  reportStatisticByStatus.map(({ status, entityType, count }) => {
+    reportStatistic[entityType][ReportStatus[status]] =
+      (parseInt(count) / parseInt(totalCountByEntityType[entityType])) * 100;
+  });
+
+  const adminQuestDisputesStatistic = await AdminQuestDisputesStatistic.findOne({
+    where: { adminId: r.params.adminId },
+    include: { model: Admin, as: 'admin'}
+  });
+
+  return output({ disputeDecideStatistic, reportStatistic, disputeStatistic: adminQuestDisputesStatistic });
+}
+
+export async function getSupportAdminStatistic(r) {
+  const supportAdmin = await Admin.findByPk(r.params.adminId);
+
+  if (!supportAdmin) {
+    return error(Errors.NotFound, 'Admin not found', {});
+  }
+
+  if (supportAdmin.role !== AdminRole.Support) {
+    return error(Errors.InvalidPayload, 'Admin does not has Support Admin role', {});
+  }
+
+  const supportStatisticByStatus: any = await SupportTicketForUser.count({
+    where: { resolvedByAdminId: r.params.adminId },
+    group: ['status']
+  });
+
+  const supportStatistic = { Decided: 0, Rejected: 0, Pending: 0 };
+
+  supportStatisticByStatus.map(({ status, count, }) => {
+    supportStatistic[TicketStatus[status]] = parseInt(count);
+  });
+
+  return output(supportStatistic);
+}
