@@ -1,12 +1,12 @@
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 import { error, } from './index';
-import { Admin,
+import {
+  Admin,
   AdminSession,
   AdminRole,
 } from "@workquest/database-models/lib/models";
 import { Errors, } from './errors';
-
 
 export const generateJwt = (data: object) => {
   const access = jwt.sign(data, config.auth.jwt.access.secret, { expiresIn: config.auth.jwt.access.lifetime, });
@@ -32,14 +32,24 @@ export function tokenValidate(tokenType: 'access' | 'refresh'): validateFunc {
   return async function (r, token: string) {
     const data = await decodeJwt(token, config.auth.jwt[tokenType].secret);
 
-    const { admin } = await AdminSession.findByPk(data.id, {
+    const session = await AdminSession.findByPk(data.id, {
       include: [{ model: Admin}],
     });
 
-    if (admin) {
-      return { isValid: true, credentials: admin, artifacts: { token, type: tokenType, }, };
+    if (!session) {
+      throw error(Errors.SessionNotFound, 'Session not found', {});
     }
-    throw error(Errors.SessionNotFound, 'User not found', {});
+    if (session.invalidating) {
+      throw error(Errors.SessionNotFound, 'Session not found', {});
+    }
+    if (!session.admin) {
+      throw error(Errors.NotFound, 'User not found', {});
+    }
+    if (!session.admin.isActive) {
+      throw error(Errors.InvalidStatus, 'Admin is deactivate', {});
+    }
+
+    return { isValid: true, credentials: session.admin, artifacts: { token, type: tokenType, sessionId: session.id } };
   };
 }
 

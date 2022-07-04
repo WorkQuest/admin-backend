@@ -37,6 +37,12 @@ module.exports = {
           changePasswordCode: null,
           changePasswordCodeValidUntil: null
         }
+      },
+      createdAt: {
+        type: Sequelize.DataTypes.DATE
+      },
+      updatedAt: {
+        type: Sequelize.DataTypes.DATE
       }
     });
   },

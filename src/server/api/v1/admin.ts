@@ -1,7 +1,13 @@
 import * as speakeasy from "speakeasy"
 import {Errors} from "../../utils/errors";
 import {error, output} from "../../utils";
-import {Admin, AdminRole} from "@workquest/database-models/lib/models"
+import {saveAdminActionsMetadataJob} from "../../jobs/saveAdminActionsMetadata";
+import {
+  Admin,
+  AdminRole,
+  AdminSession,
+} from "@workquest/database-models/lib/models"
+import { ChangeAdminRoleComposHandler } from "../../handlers";
 
 export async function getAdmins(r) {
   const { count, rows } = await Admin.findAndCountAll({
@@ -12,12 +18,51 @@ export async function getAdmins(r) {
   return output({ count, admins: rows });
 }
 
-export async function registerAdminAccount(r) {
-  if (await Admin.isEmailExist(r.payload.email)) {
-    return error(Errors.AlreadyExist, "Account with this email already exist", {});
+export async function getAdmin(r) {
+  const admin = await Admin.findByPk(r.params.adminId);
+
+  if (!admin) {
+    return error(Errors.NotFound, "Admin is not found", {});
   }
 
-  const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWokQuest'});
+  return output(admin);
+}
+
+export async function getAdminSessions(r) {
+  const admin = await Admin.findByPk(r.params.adminId);
+
+  if (!admin) {
+    return error(Errors.NotFound, 'Admin is not found', {});
+  }
+
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin', required: true },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    where: { adminId: admin.id },
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function getAdminsSessions(r) {
+  const { rows, count } = await AdminSession.findAndCountAll({
+    include: { model: Admin, as: 'admin', required: true },
+    limit: r.query.limit,
+    offset: r.query.offset,
+    order: [ ['createdAt', 'DESC'] ],
+  });
+
+  return output({ count: count, sessions: rows });
+}
+
+export async function createAdminAccount(r) {
+  if (await Admin.isEmailExist(r.payload.email)) {
+    return error(Errors.AlreadyExists, "Account with this email already exist", {});
+  }
+
+  const { base32 } = speakeasy.generateSecret({ length: 10, name: 'AdminWorkQuest'});
 
   const newAdmin = await Admin.create({
     firstName: r.payload.firstName,
@@ -30,8 +75,11 @@ export async function registerAdminAccount(r) {
       security: {
         TOTP: { secret: base32 }
       }
-    }
+    },
   });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output({
     admin: await Admin.findByPk(newAdmin.id),
     secret: base32,
@@ -41,14 +89,20 @@ export async function registerAdminAccount(r) {
 export async function deleteAdminAccount(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
+  /** TODO: controller */
+  if (r.auth.credentials.id === r.params.adminId) {
+    return error(Errors.InvalidType, 'Can not delete your own account', {});
+  }
+
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
-  }
 
-  await admin.destroy();
+  await admin.update({ email: null })
+    .then(async () => await admin.destroy());
+
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -59,13 +113,13 @@ export async function activateAdminAccount(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+  if (admin.role === AdminRole.Main) {
+    return error(Errors.InvalidType, 'Can not activate your own account', {});
   }
 
-  await admin.update({
-    isActive: true
-  });
+  await admin.update({ isActive: true });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -74,36 +128,35 @@ export async function deactivateAdminAccount(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
   if (!admin) {
-    return error(Errors.InvalidUserId, 'Can not activate your own account', {});
+    return error(Errors.NotFound, 'Account is not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+  if (admin.role === AdminRole.Main) {
+    return error(Errors.InvalidType, 'Can not deactivate your own account', {});
   }
 
   await admin.update({
     isActive: false
   });
 
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
+
   return output();
 }
 
-export async function changeLogin(r) {
+export async function changeEmail(r) {
   const admin = await Admin.findByPk(r.params.adminId);
 
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
+
+  if (await Admin.isEmailExist(r.payload.email)) {
+    return error(Errors.InvalidType, 'Email already exist', {});
   }
 
-  if (await Admin.isEmailExist(r.payload.newLogin)) {
-    return error(Errors.AlreadyExist, 'Email already exist', {});
-  }
+  await admin.update({ email: r.payload.email });
 
-  await admin.update({
-    email: r.payload.newLogin
-  });
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
@@ -114,16 +167,30 @@ export async function changePassword(r) {
   if (!admin) {
     return error(Errors.NotFound, 'Account not found', {});
   }
-  if (admin.role === AdminRole.main) {
-    return error(Errors.InvalidAdminType, 'Main admin can not do it', {})
-  }
-  if(await admin.passwordCompare(r.payload.newPassword)) {
-    return error(Errors.AlreadyExist, "New password is the same with the old one", {});
+
+  if (await admin.passwordCompare(r.payload.newPassword)) {
+    return error(Errors.InvalidType, "New password is the same with the old one", {});
   }
 
-  await admin.update({
-    password: r.payload.newPassword
-  });
+  await admin.update({ password: r.payload.newPassword });
+
+  await saveAdminActionsMetadataJob({ adminId: r.auth.credentials.id, HTTPVerb: r.method, path: r.path });
 
   return output();
 }
+
+export async function changeAdminRole(r) {
+  const meAdmin = r.auth.credentials;
+  const { adminId } = r.params;
+  const { role } = r.payload;
+
+  await new ChangeAdminRoleComposHandler(r.server.app.db)
+    .Handle({
+      meAdmin,
+      moveToRole: role,
+      changeRoleAdminId: adminId,
+    });
+
+  return output();
+}
+

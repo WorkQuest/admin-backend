@@ -1,30 +1,31 @@
 import * as Joi from "joi";
-import { login, logout } from "../../api/v1/auth";
+import * as handlers from "../../api/v1/auth";
 import {
-  adminEmailSchema,
-  adminPasswordSchema,
   jwtTokens,
-  outputOkSchema,
+  totpSchema,
   emptyOkSchema,
-  totpSchema
+  outputOkSchema,
+  adminEmailSchema,
+  adminPasswordSchema, tokensWithStatus,
 } from "@workquest/database-models/lib/schemes";
+import {refreshTokens} from "../../api/v1/auth";
 
 export default[{
-  method: "GET",
+  method: "POST",
   path: "/v1/auth/logout",
-  handler: logout,
+  handler: handlers.logout,
   options: {
     id: "v1.auth.logout",
     tags: ["api", "auth"],
     description: "Logout from account",
     response: {
-      schema: emptyOkSchema.label("LogoutResponse")
+      schema: emptyOkSchema
     }
   }
 }, {
   method: "POST",
   path: "/v1/auth/login",
-  handler: login,
+  handler: handlers.login,
   options: {
     auth: false,
     id: "v1.auth.login",
@@ -41,4 +42,17 @@ export default[{
       schema: outputOkSchema(jwtTokens).label("TokensResponse")
     }
   }
-}]
+}, {
+  method: "POST",
+  path: "/v1/auth/refresh-tokens",
+  handler: refreshTokens,
+  options: {
+    auth: 'jwt-refresh',
+    id: "v1.auth.refreshTokens",
+    tags: ["api", "auth"],
+    description: "Refresh auth tokens",
+    response: {
+      schema: outputOkSchema(tokensWithStatus).label("TokensWithStatusResponse")
+    }
+  }
+},]
