@@ -13,7 +13,7 @@ import {
   questDisputeReviewSchema,
   questDisputeStatusesSchema,
   questDisputeDecisionSchema,
-  questDisputeDecisionDescriptionSchema,
+  questDisputeDecisionDescriptionSchema, questDisputeDecisionsSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default[{
@@ -232,6 +232,7 @@ export default[{
     validate: {
       query: Joi.object({
         statuses: questDisputeStatusesSchema,
+        decisions: questDisputeDecisionsSchema,
         limit: limitSchema,
         offset: offsetSchema,
       }).label('GetAdminQuestDisputesQuery'),
