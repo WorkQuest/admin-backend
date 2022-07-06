@@ -25,7 +25,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/joi": "^14.3.4",
     "@types/validator": "^13.1.0",
-    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#fee26f7b8dccd5a37155260b255436958bb31e23",
+    "@workquest/database-models": "git+https://github.com/WorkQuest/database-models.git#78f4e709baf324581292dcee75baf89e51c8b291",
     "@workquest/workers-queue-client": "https://gitpkg.now.sh/WorkQuest/workers-queue-server-client/client?devnet",
     "amqplib": "^0.8.0",
     "aws-sdk": "^2.963.0",
