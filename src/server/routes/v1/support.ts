@@ -8,13 +8,13 @@ import {
   offsetSchema,
   outputOkSchema,
   supportTicketSchema,
+  sortDirectionSchema,
   outputPaginationSchema,
-  supportTicketQuerySchema,
   statusSupportTicketSchema,
+  supportTicketStatusesSchema,
   descriptionSupportTicketSchema,
-  postedDecisionSupportTicketSchema, sortDirectionSchema,
+  postedDecisionSupportTicketSchema,
 } from "@workquest/database-models/lib/schemes";
-import { supportTicketStatusesSchema } from "@workquest/database-models/src/schemes/supportUser";
 
 export default [{
   method: "GET",
