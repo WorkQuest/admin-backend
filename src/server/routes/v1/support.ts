@@ -70,6 +70,7 @@ export default [{
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
       query: Joi.object({
+        limit: limitSchema,
         offset: offsetSchema,
         statuses: supportTicketStatusesSchema,
         adminId: idSchema,
