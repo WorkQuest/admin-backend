@@ -1,4 +1,6 @@
+import { AdminRole } from "@workquest/database-models/lib/models";
 import * as handlers from "../../api/v1/transaction";
+import { getRbacSettings } from "../../utils/auth";
 import * as Joi from 'joi';
 import {
   limitSchema,
@@ -15,6 +17,7 @@ export default [{
   options: {
     id: 'v1.transactions.dispute',
     description: 'Get dispute transactions',
+    plugins: getRbacSettings(AdminRole.Main),
     tags: ['api', 'transactions'],
     validate: {
       query: Joi.object({
@@ -34,6 +37,7 @@ export default [{
   options: {
     id: 'v1.transactions.swap-usdt',
     description: 'Get swap usdt transactions',
+    plugins: getRbacSettings(AdminRole.Main),
     tags: ['api', 'transactions'],
     validate: {
       query: Joi.object({
