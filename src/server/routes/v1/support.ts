@@ -14,6 +14,7 @@ import {
   descriptionSupportTicketSchema,
   postedDecisionSupportTicketSchema, sortDirectionSchema,
 } from "@workquest/database-models/lib/schemes";
+import { supportTicketStatusesSchema } from "@workquest/database-models/src/schemes/supportUser";
 
 export default [{
   method: "GET",
@@ -68,7 +69,14 @@ export default [{
     description: "Get all support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
-      query: supportTicketQuerySchema,
+      query: Joi.object({
+        offset: offsetSchema,
+        statuses: supportTicketStatusesSchema,
+        adminId: idSchema,
+        sort: Joi.object({
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).default({ createdAt: 'DESC' }).label('SortTickets'),
+      }),
     },
     response: {
       schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportTicketsResponse')
