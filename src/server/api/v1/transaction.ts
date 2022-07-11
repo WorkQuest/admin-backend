@@ -13,11 +13,9 @@ export async function getDisputeDecisionTransactions(r) {
     offset: r.query.offset,
     order: [['createdAt', 'desc']],
     include: [{
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
       model: Transaction,
       as: 'tx',
     }, {
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
       model: QuestDispute,
       as: 'dispute'
     }],
@@ -32,11 +30,9 @@ export async function getSendFirstWqtTransactions(r) {
     offset: r.query.offset,
     order: [['createdAt', 'desc']],
     include: [{
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
       model: Transaction,
       as: 'tx',
     }, {
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
       model: BridgeSwapUsdtTokenEvent,
       as: 'bridgeEvent'
     }],
