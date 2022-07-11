@@ -217,7 +217,7 @@ export async function getChatMessages(r) {
 
   const where = {
     chatId: chat.id,
-    ...(meMember.chatMemberDeletionData && { createdAt: {[Op.lte]: meMember.chatMemberDeletionData.beforeDeletionMessage.createdAt }})
+    ...(meMember.chatDeletionData && { createdAt: {[Op.lte]: meMember.chatDeletionData.beforeDeletionMessage.createdAt }})
   }
 
   const include = [
