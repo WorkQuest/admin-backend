@@ -9,15 +9,18 @@ import { output } from "../../utils";
 
 export async function getDisputeDecisionTransactions(r) {
   const { rows, count } = await QuestDisputeDecisionData.findAndCountAll({
+    distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
     order: [['createdAt', 'desc']],
     include: [{
       model: Transaction,
       as: 'tx',
+      required: false
     }, {
       model: QuestDispute,
-      as: 'dispute'
+      as: 'dispute',
+      required: false
     }],
   });
 
@@ -26,15 +29,18 @@ export async function getDisputeDecisionTransactions(r) {
 
 export async function getSendFirstWqtTransactions(r) {
   const { rows, count } = await FirstWqtTransmissionData.findAndCountAll({
+    distinct: true,
     limit: r.query.limit,
     offset: r.query.offset,
     order: [['createdAt', 'desc']],
     include: [{
       model: Transaction,
       as: 'tx',
+      required: false
     }, {
       model: BridgeSwapUsdtTokenEvent,
-      as: 'bridgeEvent'
+      as: 'bridgeEvent',
+      required: false
     }],
   });
 
