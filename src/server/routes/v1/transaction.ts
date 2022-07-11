@@ -15,7 +15,7 @@ export default [{
   path: '/v1/dispute/decide/transactions',
   handler: handlers.getDisputeDecisionTransactions,
   options: {
-    id: 'v1.platform-transactions.dispute',
+    id: 'v1.platformTransactions.dispute',
     description: 'Get dispute platform-transactions',
     plugins: getRbacSettings(AdminRole.Main),
     tags: ['api', 'platform-transactions'],
@@ -35,7 +35,7 @@ export default [{
   path: '/v1/swap-usdt/sended-users/transactions',
   handler: handlers.getSendFirstWqtTransactions,
   options: {
-    id: 'v1.platform-transactions.swap-usdt',
+    id: 'v1.platformTransactions.swapUsdt',
     description: 'Get swap usdt platform-transactions',
     plugins: getRbacSettings(AdminRole.Main),
     tags: ['api', 'platform-transactions'],
