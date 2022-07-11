@@ -12,13 +12,13 @@ import {
 
 export default [{
   method: 'GET',
-  path: '/v1/transactions/dispute',
+  path: '/v1/dispute/decide/transactions',
   handler: handlers.getDisputeDecisionTransactions,
   options: {
-    id: 'v1.transactions.dispute',
-    description: 'Get dispute transactions',
+    id: 'v1.platform-transactions.dispute',
+    description: 'Get dispute platform-transactions',
     plugins: getRbacSettings(AdminRole.Main),
-    tags: ['api', 'transactions'],
+    tags: ['api', 'platform-transactions'],
     validate: {
       query: Joi.object({
         limit: limitSchema,
@@ -32,13 +32,13 @@ export default [{
   }
 }, {
   method: 'GET',
-  path: '/v1/transactions/swap-usdt',
+  path: '/v1/swap-usdt/sended-users/transactions',
   handler: handlers.getSendFirstWqtTransactions,
   options: {
-    id: 'v1.transactions.swap-usdt',
-    description: 'Get swap usdt transactions',
+    id: 'v1.platform-transactions.swap-usdt',
+    description: 'Get swap usdt platform-transactions',
     plugins: getRbacSettings(AdminRole.Main),
-    tags: ['api', 'transactions'],
+    tags: ['api', 'platform-transactions'],
     validate: {
       query: Joi.object({
         limit: limitSchema,
