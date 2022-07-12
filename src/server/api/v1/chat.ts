@@ -108,7 +108,7 @@ export async function getAdminChats(r) {
     where: { adminId: r.auth.credentials.id },
     include: [{
       model: ChatMemberDeletionData,
-      as: 'chatMemberDeletionData',
+      as: 'deletionData',
       include: [{
         model: Message.unscoped(),
         as: 'beforeDeletionMessage'
