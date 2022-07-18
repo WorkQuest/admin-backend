@@ -41,7 +41,10 @@ export async function getSupportUserTickets(r) {
 }
 
 export async function getTickets(r) {
-  const where = { ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }), }
+  const where = {
+    ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+    ...(r.query.adminId && { resolvedByAdminId: r.query.adminId })
+  }
 
   const { count, rows } = await SupportTicketForUser.findAndCountAll({
     where,

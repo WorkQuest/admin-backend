@@ -62,6 +62,7 @@ export async function getQuestDisputes(r) {
     ...(r.params.questId && { questId: r.params.questId }),
     ...(r.params.adminId && { assignedAdminId: r.params.adminId }),
     ...(r.query.statuses && { status: { [Op.in]: r.query.statuses } }),
+    ...(r.query.decisions && { decision: { [Op.in]: r.query.decisions } }),
     ...(r.params.userId && { [Op.or]: { opponentUserId: r.params.userId, openDisputeUserId: r.params.userId } }),
   }
 

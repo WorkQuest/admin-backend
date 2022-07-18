@@ -8,11 +8,12 @@ import {
   offsetSchema,
   outputOkSchema,
   supportTicketSchema,
+  sortDirectionSchema,
   outputPaginationSchema,
-  supportTicketQuerySchema,
   statusSupportTicketSchema,
+  supportTicketStatusesSchema,
   descriptionSupportTicketSchema,
-  postedDecisionSupportTicketSchema, sortDirectionSchema,
+  postedDecisionSupportTicketSchema,
 } from "@workquest/database-models/lib/schemes";
 
 export default [{
@@ -68,7 +69,15 @@ export default [{
     description: "Get all support tickets",
     plugins: getRbacSettings(AdminRole.Main, AdminRole.Support),
     validate: {
-      query: supportTicketQuerySchema,
+      query: Joi.object({
+        limit: limitSchema,
+        offset: offsetSchema,
+        statuses: supportTicketStatusesSchema,
+        adminId: idSchema,
+        sort: Joi.object({
+          createdAt: sortDirectionSchema.default('DESC'),
+        }).default({ createdAt: 'DESC' }).label('SortTickets'),
+      }),
     },
     response: {
       schema: outputPaginationSchema('tickets', supportTicketSchema).label('GetSupportTicketsResponse')
