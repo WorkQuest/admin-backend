@@ -108,7 +108,7 @@ export async function getAdminChats(r) {
     where: { adminId: r.auth.credentials.id },
     include: [{
       model: ChatMemberDeletionData,
-      as: 'chatMemberDeletionData',
+      as: 'deletionData',
       include: [{
         model: Message.unscoped(),
         as: 'beforeDeletionMessage'
@@ -217,7 +217,7 @@ export async function getChatMessages(r) {
 
   const where = {
     chatId: chat.id,
-    ...(meMember.chatMemberDeletionData && { createdAt: {[Op.lte]: meMember.chatMemberDeletionData.beforeDeletionMessage.createdAt }})
+    ...(meMember.chatDeletionData && { createdAt: {[Op.lte]: meMember.chatDeletionData.beforeDeletionMessage.createdAt }})
   }
 
   const include = [

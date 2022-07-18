@@ -12,6 +12,7 @@ import proposal from "./proposal";
 import reports from "./reports";
 import support from "./support";
 import chat from "./chat";
+import transaction from "./transaction";
 
 export default [
   ...auth,
@@ -23,6 +24,7 @@ export default [
   ...storageService,
   ...platformStatistics,
   ...skillFilters,
+  ...transaction,
   ...statistic,
   ...proposal,
   ...reports,
